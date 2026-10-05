@@ -321,6 +321,7 @@ export function MoreInfoTab({ view, now }: { view: RequestView; now: number }) {
 
 export function HistoryTab({ view }: { view: RequestView }) {
   const t = useTranslations("requestDetail.history");
+  const tw = useTranslations("screening.level");
   const fmt = useFormat();
   const { db } = view;
 
@@ -334,6 +335,8 @@ export function HistoryTab({ view }: { view: RequestView }) {
         return t("actions.routed", { team: h.teamId ? fmt.text(db.teams[h.teamId]?.name) : "" });
       case "approved_stage":
         return t("actions.approved_stage", { stage: stageName(h.stageNodeId) });
+      case "watchlist_marked":
+        return t("actions.watchlist_marked", { level: tw(String(h.meta?.level ?? "low") as "low") });
       case "final_approved":
         return t("actions.final_approved", { used: String(h.meta?.placesUsed ?? ""), limit: String(h.meta?.limit ?? "") });
       default:

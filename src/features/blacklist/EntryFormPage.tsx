@@ -30,6 +30,8 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/useNow";
 import { BLACKLIST_ERRORS, blacklistService } from "@/services/blacklist";
+import { watchlistService } from "@/services/watchlist";
+import { blacklistDraftFromWatch } from "@/domain/watchlist";
 import { useDb } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 import { Section } from "@/features/teams/EditorSections";
@@ -85,7 +87,7 @@ function Issues({ issues, show }: { issues: EntryIssue[]; show: boolean }) {
 }
 
 /** Up to five other spellings; Enter or comma adds one. */
-function AliasInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+export function AliasInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const [text, setText] = useState("");
   const add = () => {
     const v = text.trim();
@@ -134,8 +136,14 @@ export function EntryFormPage({ id }: { id: ID | null }) {
   const entry = id ? db.blacklist[id] : null;
   const fromRequest = !id ? params.get("fromRequest") : null;
   const sourceRequest = fromRequest ? db.requests[fromRequest] : null;
+  const fromWatchlist = !id ? params.get("fromWatchlist") : null;
+  const sourceWatch = fromWatchlist ? db.watchlist[fromWatchlist] : null;
 
-  const [draft, setDraft] = useState<EntryDraft>(() => (entry ? draftFromEntry(entry) : (fromRequest && draftFromRequest(db, fromRequest, Date.now())) || emptyDraft(Date.now())));
+  const [draft, setDraft] = useState<EntryDraft>(() =>
+    entry
+      ? draftFromEntry(entry)
+      : (sourceWatch && blacklistDraftFromWatch(sourceWatch)) || (fromRequest && draftFromRequest(db, fromRequest, Date.now())) || emptyDraft(Date.now()),
+  );
   const [revision] = useState(entry?.revision ?? 0);
   const [showErrors, setShowErrors] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -188,6 +196,7 @@ export function EntryFormPage({ id }: { id: ID | null }) {
       : await blacklistService.propose({ draft, source: sourceRequest ? "request" : "manual", sourceRequestId: sourceRequest?.id ?? null, actorId: viewer.id });
     setBusy(false);
     if (!r.ok) return setError(BLACKLIST_ERRORS[r.error]);
+    if (sourceWatch) await watchlistService.movedToBlacklist({ entryId: sourceWatch.id, blacklistId: r.entryId, actorId: viewer.id });
     toast(entry && status === "active" ? "Change sent for approval. The current version keeps working." : `${r.entryId} sent for approval`);
     router.push(`/screening/blacklist/${r.entryId}`);
   };
@@ -221,6 +230,18 @@ export function EntryFormPage({ id }: { id: ID | null }) {
               {sourceRequest.id}
             </Link>
             . When you submit, that request goes to Screening Hold until someone decides.
+          </span>
+        </p>
+      )}
+      {sourceWatch && (
+        <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-600/20">
+          <ShieldBan className="mt-0.5 size-4 shrink-0" />
+          <span>
+            Moving watchlist entry{" "}
+            <Link href={`/screening/watchlist/${sourceWatch.id}`} className="font-mono font-semibold underline">
+              {sourceWatch.id}
+            </Link>{" "}
+            to the blacklist. The watchlist entry stays as it is; the blacklist entry waits for a second person.
           </span>
         </p>
       )}

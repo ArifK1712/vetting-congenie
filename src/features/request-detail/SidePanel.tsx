@@ -69,7 +69,7 @@ export function DecisionPanel({
   const secondary = [
     { key: "release", icon: Undo2, show: mine, onSelect: () => quick.run("release", () => requestService.release(ref), tt("released", { id: request.id })).then((ok) => ok && onActed()) },
     { key: "reassign", icon: UserRoundCog, show: reassignable, onSelect: () => setDialog("reassign") },
-    { key: "addWatchlist", icon: Eye, show: viewer.can("watchlist.manage"), onSelect: soon },
+    { key: "addWatchlist", icon: Eye, show: viewer.can("watchlist.manage"), onSelect: () => router.push(`/screening/watchlist/new?fromRequest=${request.id}`) },
     { key: "addBlacklist", icon: ShieldBan, show: viewer.can("blacklist.propose"), onSelect: () => router.push(`/screening/blacklist/new?fromRequest=${request.id}`) },
   ] as const;
   const visibleSecondary = secondary.filter((s) => s.show);

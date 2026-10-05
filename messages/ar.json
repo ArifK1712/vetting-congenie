@@ -343,7 +343,8 @@
         "badge_suspended": "أُوقفت الشارة",
         "document_downloaded": "نزّل مستندًا",
         "withdrawn": "سحب التسجيل",
-        "screening_review": "مراجعة الفحص"
+        "screening_review": "مراجعة الفحص",
+        "watchlist_marked": "وُسم بقائمة المراقبة ({level})"
       },
       "screenedDetail": "{blacklist, plural, =0 {لا مطابقات في القائمة السوداء} one {مطابقة واحدة في القائمة السوداء} two {مطابقتان في القائمة السوداء} other {{b} مطابقات في القائمة السوداء}}، {watchlist, plural, =0 {لا مطابقات في قائمة المراقبة} one {مطابقة واحدة في قائمة المراقبة} two {مطابقتان في قائمة المراقبة} other {{w} مطابقات في قائمة المراقبة}}",
       "reassignedTo": "أُسند إلى {name}"

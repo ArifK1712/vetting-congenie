@@ -19,7 +19,8 @@ Other scripts: `npm test` (domain + seed tests), `npm run typecheck`,
 two-tab edit conflict, read-only lead) and `npm run e2e:workflows` (create, publish
 checks, publish, allot with a clash, versions, undo, unsaved-changes guard, edit conflict) and
 `npm run e2e:blacklist` (add from a request, second-person approval, badge suspension,
-not approving, removal, import). Screenshots and e2e need the dev server running.
+not approving, removal, import) and `npm run e2e:watchlist` (add from a request, marks and
+emails, a lead clearing a match, move to blacklist, removal, import). Screenshots and e2e need the dev server running.
 
 ## Using the prototype
 
@@ -44,6 +45,11 @@ not approving, removal, import). Screenshots and e2e need the dev server running
   proposed-change comparison, matches and history, and CSV import with a row check. Arif and
   Sara can both propose and approve, but never their own proposal: propose as one, approve
   as the other. Approving re-checks current requests and suspends matching approved badges.
+- **Watchlist** (English only): list with level, on-match action and match counts; add /
+  edit form (saved directly, no second approval; also from a request's "Add to watchlist");
+  entry detail with matches you can clear as "Not the same person"; move to blacklist;
+  CSV import. Saving marks matching requests (never suspends badges). "Mark and add a review
+  stage" inserts one extra stage before final approval. Sara and Arif manage; Lina views.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 

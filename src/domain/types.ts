@@ -386,7 +386,8 @@ export type HistoryAction =
   | "badge_issued"
   | "badge_suspended"
   | "document_downloaded"
-  | "withdrawn";
+  | "withdrawn"
+  | "watchlist_marked";
 
 export interface HistoryEvent {
   id: ID;
@@ -509,15 +510,43 @@ export interface WatchlistEntry {
   eventScope: "all" | ID[];
   level: WatchlistLevel;
   onMatch: "mark" | "markEmail" | "markStage";
+  /**
+   * For "markStage": "watchlist_review" (the standard stage) or
+   * "<workflowId>:<nodeId>" (a stage copied from that workflow).
+   */
   extraStage: string | null;
+  /** User ids and team ids to email on a match. */
   notify: ID[];
   reviewerNote: string;
+  reasonType: BlacklistReason;
   reason: string;
+  evidence: { id: ID; fileName: string; sizeKb: number }[];
   startsOn: ISODate;
   endsOn: ISODate | null;
   status: "active" | "removed" | "expired";
   createdBy: ID;
   createdAt: ISODate;
+  source: "manual" | "request" | "import";
+  sourceRequestId: ID | null;
+  removedBy: ID | null;
+  removedAt: ISODate | null;
+  removalReason: string | null;
+  revision: number;
+  updatedAt: ISODate;
+  updatedBy: ID;
+}
+
+export interface WatchlistHistoryEvent {
+  id: ID;
+  entryId: ID;
+  action: "created" | "edited" | "removed" | "match_cleared" | "moved_to_blacklist";
+  actorId: ID;
+  at: ISODate;
+  note?: string;
+  /** Requests newly marked when the entry was saved. */
+  marked?: number;
+  /** Request (cleared match) or blacklist entry (moved). */
+  ref?: ID;
 }
 
 export type MatchType = "id" | "company" | "nameDob" | "name";
@@ -588,6 +617,7 @@ export interface Database {
   blacklist: Record<ID, BlacklistEntry>;
   blacklistHistory: Record<ID, BlacklistHistoryEvent>;
   watchlist: Record<ID, WatchlistEntry>;
+  watchlistHistory: Record<ID, WatchlistHistoryEvent>;
   matches: Record<ID, ScreeningMatch>;
   allocations: Record<ID, CapacityAllocation>;
   rejectReasons: Record<ID, RejectReason>;

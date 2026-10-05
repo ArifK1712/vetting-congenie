@@ -1,10 +1,39 @@
 import { evaluateCondition, readField } from "./conditions";
-import type { Attendee, ID, StageConfig, VettingRequest, WorkflowGraph, WorkflowNode } from "./types";
+import type { Attendee, Database, ID, StageConfig, VettingRequest, WorkflowGraph, WorkflowNode } from "./types";
 
 export type StageNode = Extract<WorkflowNode, { type: "stage" }>;
 
+/**
+ * Watchlist extra review (10.3): "watchlist_review" is the standard stage;
+ * "watchlist_review:<nodeId>" is a copy of one of the workflow's own stages.
+ * Neither is drawn in the graph; they run once, just before final approval.
+ */
+export const WATCHLIST_REVIEW = "watchlist_review";
+
+export const STANDARD_WATCHLIST_STAGE: StageConfig = {
+  name: { en: "Watchlist Review", ar: "مراجعة قائمة المراقبة" },
+  instructions: { en: "This applicant matched the watchlist. Read the reviewer note and check carefully before approving.", ar: "" },
+  teams: ["t_senior"],
+  fallbackTeamId: "t_secreview",
+  allowedActions: ["approve", "reject", "moreInfo"],
+  escalateTo: [],
+  afterMoreInfoReturnTo: "same",
+  rejectReasonRequired: true,
+  timeLimitHours: 24,
+  mandatory: true,
+};
+
+export const isWatchlistStage = (id: ID | null | undefined) => !!id && (id === WATCHLIST_REVIEW || id.startsWith(`${WATCHLIST_REVIEW}:`));
+
 export function nodeById(graph: WorkflowGraph, id: ID | null): WorkflowNode | undefined {
-  return id ? graph.nodes.find((n) => n.id === id) : undefined;
+  if (!id) return undefined;
+  if (isWatchlistStage(id)) {
+    if (id === WATCHLIST_REVIEW) return { id, type: "stage", position: { x: 0, y: 0 }, stage: STANDARD_WATCHLIST_STAGE };
+    const base = graph.nodes.find((n) => n.id === id.slice(WATCHLIST_REVIEW.length + 1));
+    if (base?.type !== "stage") return { id, type: "stage", position: { x: 0, y: 0 }, stage: STANDARD_WATCHLIST_STAGE };
+    return { ...base, id, stage: { ...base.stage, name: { en: `${base.stage.name.en} (watchlist)`, ar: base.stage.name.ar }, escalateTo: [], allowedActions: base.stage.allowedActions.filter((a) => a !== "escalate") } };
+  }
+  return graph.nodes.find((n) => n.id === id);
 }
 
 export function stageOf(graph: WorkflowGraph, id: ID | null): StageConfig | undefined {
@@ -56,4 +85,25 @@ export function requestPath(
       evaluateCondition(b.condition, readField(b.condition.field, attendee, request)),
     )?.id,
   );
+}
+
+/**
+ * The extra watchlist stage a request still owes before final approval, if
+ * any: an open match on an active "add a review stage" entry, and the stage
+ * not run yet for this request (it runs once).
+ */
+export function pendingWatchlistStage(db: Database, r: VettingRequest, graph: WorkflowGraph): StageNode | undefined {
+  const done = new Set(Object.values(db.stageExecutions).filter((e) => e.requestId === r.id).map((e) => e.stageNodeId));
+  if ([...done].some(isWatchlistStage)) return undefined;
+  for (const m of Object.values(db.matches)) {
+    if (m.requestId !== r.id || m.listType !== "watchlist" || m.status === "cleared") continue;
+    const entry = db.watchlist[m.entryId];
+    if (!entry || entry.status !== "active" || entry.onMatch !== "markStage") continue;
+    const choice = entry.extraStage ?? WATCHLIST_REVIEW;
+    const [workflowId, nodeId] = choice.includes(":") ? choice.split(":") : [null, null];
+    const id = workflowId && workflowId === r.workflowId ? `${WATCHLIST_REVIEW}:${nodeId}` : WATCHLIST_REVIEW;
+    const node = nodeById(graph, id);
+    if (node?.type === "stage") return node as StageNode;
+  }
+  return undefined;
 }

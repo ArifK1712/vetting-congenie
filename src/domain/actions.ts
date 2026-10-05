@@ -13,7 +13,7 @@ import type {
   VettingRequest,
   WorkflowGraph,
 } from "./types";
-import { nodeById, stageOf, target, type StageNode } from "./workflow";
+import { isWatchlistStage, nodeById, pendingWatchlistStage, stageOf, target, type StageNode } from "./workflow";
 
 /**
  * Request actions (spec 8.3, 11). Each is a pure function: it validates
@@ -70,7 +70,7 @@ export class Tx {
   id(prefix: string) {
     return `${prefix}_${this.now.toString(36)}${(++this.seq).toString(36)}`;
   }
-  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory">(
+  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory">(
     key: K,
     record: Database[K][string],
   ) {
@@ -233,7 +233,7 @@ export function previewApprove(db: Database, r: VettingRequest):
   | null {
   const graph = graphOf(db, r);
   if (!graph || !r.currentStageNodeId) return null;
-  const next = resolveNext(db, r, graph, r.currentStageNodeId, "approve");
+  const next = nextAfterApprove(db, r, graph);
   if (next?.type === "stage") {
     return { kind: "stage", node: next, teamId: routeStage(db, next.stage, r, db.attendees[r.attendeeId]).teamId };
   }
@@ -242,6 +242,18 @@ export function previewApprove(db: Database, r: VettingRequest):
     return { kind: "final", used: placesUsed(db, reg.id), limit: reg.capacityLimit };
   }
   return null;
+}
+
+/**
+ * Where Approve leads. The watchlist extra stage (10.3) slots in once just
+ * before final approval, and always continues to final approval itself.
+ */
+function nextAfterApprove(db: Database, r: VettingRequest, graph: WorkflowGraph) {
+  const final = graph.nodes.find((n) => n.type === "final");
+  if (isWatchlistStage(r.currentStageNodeId)) return final;
+  const next = resolveNext(db, r, graph, r.currentStageNodeId!, "approve");
+  if (next?.type === "final") return pendingWatchlistStage(db, r, graph) ?? next;
+  return next;
 }
 
 export function placesUsed(db: Database, registrationId: ID) {
@@ -259,7 +271,7 @@ export function approve(db: Database, a: Base & { comment?: string }): ActionRes
 
   const tx = new Tx(db, a.now);
   completeExecution(tx, r.id, "approve", a.now);
-  const next = resolveNext(db, r, graph, r.currentStageNodeId!, "approve");
+  const next = nextAfterApprove(db, r, graph);
   const lastStage = next?.type !== "stage";
   tx.log({
     requestId: r.id,
@@ -318,6 +330,13 @@ function runFinalApproval(tx: Tx, r: VettingRequest, actorId: ID, now: number): 
         decidedBy: null, decidedAt: null, decisionNote: null,
       });
     }
+  }
+  const newWatch = hits.watchlist.filter((m) => !known.has(m.entryId));
+  if (newWatch.length && r.screening !== "blacklist_hit") {
+    const rank = { low: 1, medium: 2, high: 3 } as const;
+    const levels = [...newWatch.map((m) => db.watchlist[m.entryId].level), ...(r.watchlistLevel ? [r.watchlistLevel] : [])];
+    const top = levels.sort((a, b) => rank[b] - rank[a])[0];
+    r = tx.updateRequest(r, { screening: "watchlist_hit", watchlistLevel: top });
   }
   const newBlacklist = hits.blacklist.filter((m) => !known.has(m.entryId));
   if (newBlacklist.length) {

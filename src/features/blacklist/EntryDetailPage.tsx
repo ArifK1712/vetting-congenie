@@ -72,7 +72,7 @@ function IdentityRows({ identity }: { identity: ListIdentity }) {
       {person ? (
         <>
           <Row label="National ID / Iqama">{identity.nationalId ? <span className="font-mono">{identity.nationalId}</span> : null}</Row>
-          <Row label="Passport">{identity.passportNo ? <span className="font-mono">{identity.passportNo}{identity.nationality ? ` · ${fmt.country(identity.nationality)}` : ""}</span> : null}</Row>
+          <Row label="Passport">{identity.passportNo ? <span><span className="font-mono">{identity.passportNo}</span>{identity.nationality ? ` · ${fmt.country(identity.nationality)}` : ""}</span> : null}</Row>
           <Row label="Date of birth">{identity.dob ? fmt.day(identity.dob) : null}</Row>
         </>
       ) : (

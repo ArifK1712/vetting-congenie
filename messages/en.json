@@ -343,7 +343,8 @@
         "badge_suspended": "Badge suspended",
         "document_downloaded": "Downloaded a document",
         "withdrawn": "Withdrew the registration",
-        "screening_review": "Screening review"
+        "screening_review": "Screening review",
+        "watchlist_marked": "Marked by the watchlist ({level})"
       },
       "screenedDetail": "{blacklist, plural, =0 {No blacklist matches} one {1 blacklist match} other {{b} blacklist matches}}, {watchlist, plural, =0 {no watchlist matches} one {1 watchlist match} other {{w} watchlist matches}}",
       "reassignedTo": "Assigned to {name}"

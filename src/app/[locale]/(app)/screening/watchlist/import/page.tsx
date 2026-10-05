@@ -1,10 +1,10 @@
 import { EnglishOnly } from "@/features/workflows/EnglishOnly";
-import { WatchlistListPage } from "@/features/watchlist/WatchlistListPage";
+import { WatchImportPage } from "@/features/watchlist/WatchImportPage";
 
 export default function Page() {
   return (
     <EnglishOnly>
-      <WatchlistListPage />
+      <WatchImportPage />
     </EnglishOnly>
   );
 }

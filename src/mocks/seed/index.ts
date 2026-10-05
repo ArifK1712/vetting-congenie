@@ -17,6 +17,7 @@ import type {
   StageExecution,
   VettingRequest,
   WatchlistEntry,
+  WatchlistHistoryEvent,
   WatchlistLevel,
 } from "@/domain/types";
 import { COMPANIES, MEDIA_OUTLETS, generatePerson, type GeneratedPerson } from "./people";
@@ -25,7 +26,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -134,6 +135,7 @@ export function createSeed(now: number = Date.now()): Database {
     blacklist: {},
     blacklistHistory: {},
     watchlist: {},
+    watchlistHistory: {},
     matches: {},
     allocations: {},
     rejectReasons: byId(rejectReasons),
@@ -310,13 +312,33 @@ export function createSeed(now: number = Date.now()): Database {
       extraStage: level === "high" ? "watchlist_review" : null,
       notify: level !== "low" ? ["u_arif"] : [],
       reviewerNote: rng.pick(WL_NOTES),
+      reasonType: "other",
       reason: "Raised by accreditation team after a previous event.",
+      evidence: [],
       startsOn: iso(createdAt),
       endsOn: null,
       status: "active",
       createdBy: rng.pick(["u_arif", "u_tariq", "u_sara"]),
       createdAt: iso(createdAt),
+      source: "manual",
+      sourceRequestId: null,
+      removedBy: null,
+      removedAt: null,
+      removalReason: null,
+      revision: 1,
+      updatedAt: iso(createdAt),
+      updatedBy: "",
     };
+    entry.updatedBy = entry.createdBy;
+    // Varied reasons without drawing from the seeded random sequence.
+    const n = Object.keys(db.watchlist).length;
+    entry.reasonType = (["past_misconduct", "other", "fake_registration", "unpaid_dues"] as const)[n % 4];
+    entry.reason = [
+      "Badge was lent to another person at the 2025 edition.",
+      "Raised by accreditation team after a previous event.",
+      "Organisation letter could not be verified last year.",
+      "Exhibitor balance settled late; confirm current standing.",
+    ][n % 4];
     db.watchlist[entry.id] = entry;
   };
   [7, 33, 52, 79, 97, 120, 133, 171, 188, 207, 224, 249, 277, 290, 311, 344, 371, 390].forEach((i, n) => {
@@ -724,6 +746,32 @@ export function createSeed(now: number = Date.now()): Database {
     if (e.status === "not_approved") logList({ entryId: e.id, action: "not_approved", actorId: e.proposedBy === "u_arif" ? "u_tariq" : "u_arif", at: iso(Date.parse(e.proposedAt) + DAY), note: e.decisionNote ?? undefined });
     if (e.removedBy && e.removedAt) logList({ entryId: e.id, action: "removed", actorId: e.removedBy, at: e.removedAt, note: e.removalReason ?? undefined });
     if (e.pendingChange) logList({ entryId: e.id, action: "change_proposed", actorId: e.pendingChange.proposedBy, at: e.pendingChange.proposedAt });
+  }
+
+  // ─── 6. Watchlist: one removed entry, and history for every entry ──
+  const wlRemoved = Object.values(db.watchlist).find((w) => w.level === "low" && !Object.values(db.matches).some((m) => m.entryId === w.id));
+  if (wlRemoved) {
+    Object.assign(wlRemoved, {
+      status: "removed",
+      removedBy: "u_arif",
+      removedAt: iso(Date.parse(wlRemoved.createdAt) + 20 * DAY),
+      removalReason: "Concern resolved with the sponsoring organisation.",
+      revision: 2,
+    });
+    wlRemoved.updatedAt = wlRemoved.removedAt!;
+    wlRemoved.updatedBy = "u_arif";
+  }
+  let wh = 0;
+  for (const w of Object.values(db.watchlist)) {
+    const add = (e: Omit<WatchlistHistoryEvent, "id" | "entryId">) => {
+      const id = `wlh_${(++wh).toString(36)}`;
+      db.watchlistHistory[id] = { ...e, id, entryId: w.id };
+    };
+    add({ action: "created", actorId: w.createdBy, at: w.createdAt });
+    for (const m of Object.values(db.matches)) {
+      if (m.entryId === w.id && m.status === "cleared" && m.decidedBy && m.decidedAt) add({ action: "match_cleared", actorId: m.decidedBy, at: m.decidedAt, ref: m.requestId, note: m.decisionNote ?? undefined });
+    }
+    if (w.removedBy && w.removedAt) add({ action: "removed", actorId: w.removedBy, at: w.removedAt, note: w.removalReason ?? undefined });
   }
 
   return db;
