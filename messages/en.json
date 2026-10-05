@@ -1,0 +1,384 @@
+{
+  "app": {
+    "name": "Vetting",
+    "workspace": "Accreditation workspace"
+  },
+  "navigation": {
+    "groups": {
+      "operate": "Operate",
+      "screening": "Screening",
+      "configure": "Configure",
+      "insights": "Insights",
+      "prototype": "Prototype"
+    },
+    "dashboard": "Dashboard",
+    "queue": "Review Queue",
+    "attendees": "Attendees",
+    "matchReview": "Match Review",
+    "blacklist": "Blacklist",
+    "watchlist": "Watchlist",
+    "teams": "Teams",
+    "workflows": "Workflows",
+    "registrations": "Registrations",
+    "reports": "Reports",
+    "settings": "Settings",
+    "simulate": "Simulate registration",
+    "outbox": "Email outbox",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "mainNavigation": "Main navigation"
+  },
+  "header": {
+    "eventScope": "Event",
+    "allEvents": "All events",
+    "search": "Search requests, people, IDs",
+    "notifications": "Notifications",
+    "language": "Language",
+    "viewingAs": "Viewing as",
+    "switchPersona": "Switch persona",
+    "personaHint": "Personas let you see the product with different permissions.",
+    "resetDemo": "Reset demo data",
+    "resetDemoDone": "Demo data has been reset.",
+    "permissions": "{count, plural, one {{n} permission} other {{n} permissions}}"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "clear": "Clear",
+    "clearAll": "Clear all",
+    "apply": "Apply",
+    "search": "Search",
+    "filters": "Filters",
+    "none": "None",
+    "dash": "—",
+    "yes": "Yes",
+    "no": "No",
+    "open": "Open",
+    "view": "View",
+    "back": "Back",
+    "loading": "Loading…",
+    "notProvided": "Not provided",
+    "version": "v{n}",
+    "amount": "{amount} SAR",
+    "noResults": "No matches",
+    "selected": "{n} selected",
+    "searchOptions": "Search options",
+    "sizeMb": "{n} MB",
+    "sizeKb": "{n} KB"
+  },
+  "duration": {
+    "justNow": "just now",
+    "minutes": "{m} min",
+    "hours": "{h} h",
+    "hoursMinutes": "{h} h {m} min",
+    "daysHours": "{d} d {h} h",
+    "ago": "{time} ago",
+    "limit": "{h} h limit"
+  },
+  "status": {
+    "pending_review": "Pending review",
+    "under_review": "Under review",
+    "more_info_required": "More info required",
+    "escalated": "Escalated",
+    "screening_hold": "Screening hold",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "configuration_error": "Configuration error"
+  },
+  "badgeStatus": {
+    "not_issued": "Not issued",
+    "issued": "Issued",
+    "suspended": "Suspended",
+    "revoked": "Revoked"
+  },
+  "payment": {
+    "paid": "Paid",
+    "pending": "Payment pending",
+    "free": "Free"
+  },
+  "screening": {
+    "clear": "Clear",
+    "blacklist": "Blacklist match",
+    "hit": "Screening hit",
+    "watchlist": "Watchlist",
+    "level": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "blacklistShort": "Blacklist"
+  },
+  "queue": {
+    "title": "Review Queue",
+    "subtitle": "Requests for your teams. Late requests first, then oldest first.",
+    "subtitleAll": "All requests in scope. Late requests first, then oldest first.",
+    "tilesLabel": "Requests by status",
+    "openTile": "All open",
+    "filters": {
+      "status": "Status",
+      "team": "Team",
+      "stage": "Stage",
+      "registration": "Registration",
+      "badgeType": "Badge type",
+      "workflow": "Workflow",
+      "screening": "Screening",
+      "assigned": "Assigned to",
+      "submitted": "Submitted",
+      "search": "Search name, email, ID or request",
+      "assignedOptions": {
+        "anyone": "Anyone",
+        "me": "Me",
+        "nobody": "Nobody"
+      },
+      "submittedOptions": {
+        "any": "Any time",
+        "today": "Last 24 hours",
+        "7d": "Last 7 days",
+        "30d": "Last 30 days"
+      },
+      "screeningOptions": {
+        "blacklist": "Blacklist hit",
+        "watchlist": "Watchlist hit",
+        "clear": "Clear"
+      },
+      "reset": "Reset filters"
+    },
+    "columns": {
+      "request": "Request",
+      "applicant": "Applicant",
+      "registration": "Registration / Badge",
+      "stage": "Workflow / Stage",
+      "team": "Team / Assigned",
+      "screening": "Screening",
+      "status": "Status",
+      "submitted": "Submitted / Waiting",
+      "actions": "Actions"
+    },
+    "claim": "Claim",
+    "claimedBy": "Claimed by {name}",
+    "unclaimed": "Unclaimed",
+    "you": "You",
+    "late": "Late",
+    "lateBy": "Past the {h} h limit",
+    "responseReceived": "Response received",
+    "awaitingCapacity": "Limit reached",
+    "range": "{from}–{to} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "empty": {
+      "title": "No requests match these filters",
+      "body": "Try removing a filter or searching for something else.",
+      "noAccessTitle": "You have no review access",
+      "noAccessBody": "Your role does not include Review Queue access."
+    },
+    "preview": {
+      "open": "Open request",
+      "close": "Close preview",
+      "hint": "↑ ↓ move · Enter open · Esc close",
+      "progress": "Progress",
+      "details": "Details"
+    },
+    "kpi": {
+      "late": "{n} late",
+      "onTrack": "On track",
+      "waitingAttendee": "With attendee",
+      "needsDecision": "Needs a decision",
+      "ofDecided": "{p}% of decided",
+      "noneYet": "None yet",
+      "breakdown": "Open requests by status",
+      "moreInfoShort": "More info"
+    }
+  },
+  "requestDetail": {
+    "notFound": "This request does not exist or you cannot see it.",
+    "backToQueue": "Review Queue",
+    "tabs": {
+      "applicant": "Applicant",
+      "answers": "Registration answers",
+      "documents": "Documents",
+      "screening": "Screening",
+      "progress": "Vetting progress",
+      "moreInfo": "More information",
+      "history": "History"
+    },
+    "meta": {
+      "event": "Event",
+      "registration": "Registration",
+      "badgeType": "Badge type",
+      "workflow": "Workflow",
+      "stage": "Current stage",
+      "team": "Team",
+      "reviewer": "Reviewer",
+      "submitted": "Submitted",
+      "waiting": "Waiting",
+      "timeLimit": "Stage time limit",
+      "inStage": "In this stage",
+      "payment": "Payment",
+      "badge": "Badge",
+      "noLimit": "No limit",
+      "decided": "Decided"
+    },
+    "bars": {
+      "blacklist": "Blacklist match. This request is on hold until a Blacklist approver confirms or clears the match.",
+      "blacklistRetro": "A blacklist entry approved after this decision matches the applicant. The badge is suspended until it is reviewed.",
+      "hit": "Screening hit. Details are restricted to users with Blacklist access.",
+      "watchlist": "Watchlist · {level}",
+      "awaitingCapacity": "All stages are approved, but the registration limit is full. The request stays under review until a place is free.",
+      "responseReceived": "The attendee has answered the latest information request."
+    },
+    "fields": {
+      "fullName": "Full name",
+      "fullNameAr": "Name in Arabic",
+      "email": "Email",
+      "mobile": "Mobile",
+      "nationalId": "National ID / Iqama",
+      "passportNo": "Passport number",
+      "nationality": "Nationality",
+      "dob": "Date of birth",
+      "company": "Company",
+      "jobTitle": "Job title",
+      "badgeType": "Badge type",
+      "requestId": "Request ID"
+    },
+    "hiddenFields": "{count, plural, one {{n} field is hidden for your team.} other {{n} fields are hidden for your team.}}",
+    "editable": "Editable",
+    "answersEmpty": "Your team cannot see any registration answers for this request.",
+    "documents": {
+      "empty": "No documents are visible to your team.",
+      "download": "Download",
+      "viewOnly": "View only",
+      "round": "More information · round {n}",
+      "uploaded": "Uploaded {date}",
+      "downloadSimulated": "Download simulated: {file}"
+    },
+    "screening": {
+      "noMatches": "No blacklist or watchlist matches.",
+      "restricted": "A screening hit exists. Details require Blacklist View.",
+      "entry": "Entry",
+      "matchedOn": "Matched on",
+      "strength": {
+        "strong": "Strong",
+        "possible": "Possible"
+      },
+      "matchType": {
+        "id": "Identifier match",
+        "company": "Company match",
+        "nameDob": "Name and date of birth",
+        "name": "Name only"
+      },
+      "score": "{score}% similar",
+      "stagePoint": {
+        "submission": "At submission",
+        "resubmission": "At resubmission",
+        "final": "At final approval",
+        "retro": "Retro-screening"
+      },
+      "matchStatus": {
+        "open": "Awaiting decision",
+        "confirmed": "Confirmed",
+        "cleared": "Cleared"
+      },
+      "reason": "Reason",
+      "note": "Note for reviewers",
+      "blacklistReason": {
+        "security_threat": "Security threat",
+        "past_misconduct": "Past misconduct",
+        "fake_registration": "Fake registration",
+        "authority_instruction": "Instruction from authority",
+        "unpaid_dues": "Unpaid dues",
+        "other": "Other"
+      },
+      "found": "Found"
+    },
+    "progress": {
+      "completed": "Approved",
+      "current": "Current stage",
+      "upcoming": "Upcoming",
+      "escalation": "Escalation stage",
+      "finalApproval": "Final approval",
+      "finalApprovalHint": "Re-screening and registration limit check, then the badge is issued.",
+      "timeSpent": "{time} in stage",
+      "waitingFor": "Waiting {time}",
+      "returned": "Returned for more information",
+      "escalated": "Escalated",
+      "rejected": "Rejected",
+      "mandatory": "Mandatory",
+      "versionNote": "{name} · version {n}"
+    },
+    "moreInfo": {
+      "empty": "No information has been requested.",
+      "round": "Round {n} of 3",
+      "requestedBy": "Requested by {name}",
+      "expires": "Link expires {date}",
+      "expired": "Link expired",
+      "awaiting": "Waiting for the attendee",
+      "answered": "Answered {date}",
+      "instructions": "Instructions",
+      "required": "Required",
+      "noAnswer": "No answer"
+    },
+    "history": {
+      "system": "System",
+      "attendee": "Attendee",
+      "actions": {
+        "submitted": "Registration submitted",
+        "screened": "Screening completed",
+        "routed": "Routed to {team}",
+        "claimed": "Claimed",
+        "released": "Released the request",
+        "approved_stage": "Approved {stage}",
+        "rejected": "Rejected",
+        "more_info_requested": "Asked for more information",
+        "more_info_received": "Sent the requested information",
+        "escalated": "Escalated",
+        "reassigned": "Reassigned",
+        "commented": "Added a comment",
+        "screening_hold": "Placed on screening hold",
+        "match_cleared": "Cleared the match: not the same person",
+        "match_confirmed": "Confirmed the blacklist match",
+        "final_approved": "Final approval, place {used} of {limit}",
+        "limit_reached": "Final approval blocked: registration limit reached",
+        "badge_issued": "Badge issued",
+        "badge_suspended": "Badge suspended",
+        "document_downloaded": "Downloaded a document",
+        "withdrawn": "Withdrew the registration",
+        "screening_review": "Screening review"
+      },
+      "screenedDetail": "{blacklist, plural, =0 {No blacklist matches} one {1 blacklist match} other {{b} blacklist matches}}, {watchlist, plural, =0 {no watchlist matches} one {1 watchlist match} other {{w} watchlist matches}}"
+    },
+    "actions": {
+      "title": "Decision",
+      "claim": "Claim request",
+      "approve": "Approve",
+      "reject": "Reject",
+      "moreInfo": "Ask for more information",
+      "escalate": "Escalate",
+      "reassign": "Assign / reassign",
+      "comment": "Add comment",
+      "addWatchlist": "Add to watchlist",
+      "addBlacklist": "Propose for blacklist",
+      "claimFirst": "Claim this request to decide it.",
+      "claimedByOther": "Claimed by {name}. Actions are disabled while it is theirs.",
+      "readOnly": "You can view this request but cannot act on it.",
+      "finished": "This request is closed.",
+      "onHold": "On hold for a blacklist decision in Match Review.",
+      "waitingAttendee": "Waiting for the attendee to answer.",
+      "comingNext": "Decisions are wired up in the next build step.",
+      "more": "More actions"
+    },
+    "comments": {
+      "title": "Internal comments",
+      "empty": "No comments yet.",
+      "internal": "Never shown to the attendee"
+    }
+  },
+  "placeholder": {
+    "title": "{area} is part of a later build step",
+    "body": "The Review Queue and Request Detail are built first to set the visual direction. This area follows in the agreed sequence.",
+    "goToQueue": "Go to Review Queue"
+  },
+  "toast": {
+    "dismiss": "Dismiss"
+  }
+}

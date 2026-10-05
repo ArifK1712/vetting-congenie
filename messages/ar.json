@@ -1,0 +1,384 @@
+{
+  "app": {
+    "name": "التدقيق",
+    "workspace": "مساحة الاعتماد"
+  },
+  "navigation": {
+    "groups": {
+      "operate": "التشغيل",
+      "screening": "الفحص",
+      "configure": "الإعداد",
+      "insights": "التحليلات",
+      "prototype": "النموذج الأولي"
+    },
+    "dashboard": "لوحة المتابعة",
+    "queue": "قائمة المراجعة",
+    "attendees": "الحضور",
+    "matchReview": "مراجعة المطابقات",
+    "blacklist": "القائمة السوداء",
+    "watchlist": "قائمة المراقبة",
+    "teams": "الفرق",
+    "workflows": "مسارات العمل",
+    "registrations": "التسجيلات",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "simulate": "محاكاة تسجيل",
+    "outbox": "صندوق البريد الصادر",
+    "collapse": "طي الشريط الجانبي",
+    "expand": "توسيع الشريط الجانبي",
+    "mainNavigation": "التنقل الرئيسي"
+  },
+  "header": {
+    "eventScope": "الفعالية",
+    "allEvents": "كل الفعاليات",
+    "search": "ابحث في الطلبات والأشخاص والأرقام",
+    "notifications": "الإشعارات",
+    "language": "اللغة",
+    "viewingAs": "تعرض بصفة",
+    "switchPersona": "تبديل الشخصية",
+    "personaHint": "تتيح لك الشخصيات رؤية المنتج بصلاحيات مختلفة.",
+    "resetDemo": "إعادة تعيين البيانات التجريبية",
+    "resetDemoDone": "تمت إعادة تعيين البيانات التجريبية.",
+    "permissions": "{count, plural, zero {لا صلاحيات} one {صلاحية واحدة} two {صلاحيتان} few {{n} صلاحيات} many {{n} صلاحية} other {{n} صلاحية}}"
+  },
+  "common": {
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "clear": "مسح",
+    "clearAll": "مسح الكل",
+    "apply": "تطبيق",
+    "search": "بحث",
+    "filters": "عوامل التصفية",
+    "none": "لا يوجد",
+    "dash": "—",
+    "yes": "نعم",
+    "no": "لا",
+    "open": "فتح",
+    "view": "عرض",
+    "back": "رجوع",
+    "loading": "جارٍ التحميل…",
+    "notProvided": "غير مُدخل",
+    "version": "الإصدار {n}",
+    "amount": "{amount} ر.س",
+    "noResults": "لا توجد نتائج",
+    "selected": "{n} محدد",
+    "searchOptions": "ابحث في الخيارات",
+    "sizeMb": "{n} م.ب",
+    "sizeKb": "{n} ك.ب"
+  },
+  "duration": {
+    "justNow": "الآن",
+    "minutes": "{m} د",
+    "hours": "{h} س",
+    "hoursMinutes": "{h} س {m} د",
+    "daysHours": "{d} ي {h} س",
+    "ago": "قبل {time}",
+    "limit": "مهلة {h} س"
+  },
+  "status": {
+    "pending_review": "بانتظار المراجعة",
+    "under_review": "قيد المراجعة",
+    "more_info_required": "مطلوب معلومات إضافية",
+    "escalated": "مُصعَّد",
+    "screening_hold": "معلّق للفحص",
+    "approved": "مقبول",
+    "rejected": "مرفوض",
+    "withdrawn": "مسحوب",
+    "configuration_error": "خطأ في الإعداد"
+  },
+  "badgeStatus": {
+    "not_issued": "لم تُصدر",
+    "issued": "صادرة",
+    "suspended": "موقوفة",
+    "revoked": "ملغاة"
+  },
+  "payment": {
+    "paid": "مدفوع",
+    "pending": "بانتظار الدفع",
+    "free": "مجاني"
+  },
+  "screening": {
+    "clear": "سليم",
+    "blacklist": "مطابقة في القائمة السوداء",
+    "hit": "نتيجة فحص",
+    "watchlist": "قائمة المراقبة",
+    "level": {
+      "low": "منخفض",
+      "medium": "متوسط",
+      "high": "مرتفع"
+    },
+    "blacklistShort": "قائمة سوداء"
+  },
+  "queue": {
+    "title": "قائمة المراجعة",
+    "subtitle": "طلبات فرقك. الطلبات المتأخرة أولًا، ثم الأقدم.",
+    "subtitleAll": "كل الطلبات ضمن النطاق. الطلبات المتأخرة أولًا، ثم الأقدم.",
+    "tilesLabel": "الطلبات حسب الحالة",
+    "openTile": "كل المفتوحة",
+    "filters": {
+      "status": "الحالة",
+      "team": "الفريق",
+      "stage": "المرحلة",
+      "registration": "التسجيل",
+      "badgeType": "نوع الشارة",
+      "workflow": "مسار العمل",
+      "screening": "الفحص",
+      "assigned": "مُسند إلى",
+      "submitted": "تاريخ التقديم",
+      "search": "ابحث بالاسم أو البريد أو رقم الهوية أو الطلب",
+      "assignedOptions": {
+        "anyone": "أي شخص",
+        "me": "أنا",
+        "nobody": "غير مُسند"
+      },
+      "submittedOptions": {
+        "any": "أي وقت",
+        "today": "آخر 24 ساعة",
+        "7d": "آخر 7 أيام",
+        "30d": "آخر 30 يومًا"
+      },
+      "screeningOptions": {
+        "blacklist": "مطابقة في القائمة السوداء",
+        "watchlist": "مطابقة في قائمة المراقبة",
+        "clear": "سليم"
+      },
+      "reset": "إعادة تعيين عوامل التصفية"
+    },
+    "columns": {
+      "request": "الطلب",
+      "applicant": "مقدم الطلب",
+      "registration": "التسجيل / الشارة",
+      "stage": "مسار العمل / المرحلة",
+      "team": "الفريق / المُسند إليه",
+      "screening": "الفحص",
+      "status": "الحالة",
+      "submitted": "التقديم / الانتظار",
+      "actions": "الإجراءات"
+    },
+    "claim": "استلام",
+    "claimedBy": "استلمه {name}",
+    "unclaimed": "غير مُستلَم",
+    "you": "أنت",
+    "late": "متأخر",
+    "lateBy": "تجاوز مهلة {h} س",
+    "responseReceived": "وصل الرد",
+    "awaitingCapacity": "اكتمل الحد",
+    "range": "{from}–{to} من {total}",
+    "previousPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "empty": {
+      "title": "لا توجد طلبات تطابق عوامل التصفية",
+      "body": "جرّب إزالة أحد عوامل التصفية أو البحث عن شيء آخر.",
+      "noAccessTitle": "ليست لديك صلاحية المراجعة",
+      "noAccessBody": "لا يتضمن دورك صلاحية الوصول إلى قائمة المراجعة."
+    },
+    "preview": {
+      "open": "فتح الطلب",
+      "close": "إغلاق المعاينة",
+      "hint": "↑ ↓ تنقّل · Enter فتح · Esc إغلاق",
+      "progress": "التقدّم",
+      "details": "التفاصيل"
+    },
+    "kpi": {
+      "late": "{n} متأخر",
+      "onTrack": "ضمن المهلة",
+      "waitingAttendee": "لدى مقدم الطلب",
+      "needsDecision": "بانتظار قرار",
+      "ofDecided": "{p}٪ من القرارات",
+      "noneYet": "لا يوجد بعد",
+      "breakdown": "الطلبات المفتوحة حسب الحالة",
+      "moreInfoShort": "معلومات إضافية"
+    }
+  },
+  "requestDetail": {
+    "notFound": "هذا الطلب غير موجود أو لا يمكنك الاطلاع عليه.",
+    "backToQueue": "قائمة المراجعة",
+    "tabs": {
+      "applicant": "مقدم الطلب",
+      "answers": "إجابات التسجيل",
+      "documents": "المستندات",
+      "screening": "الفحص",
+      "progress": "مراحل التدقيق",
+      "moreInfo": "المعلومات الإضافية",
+      "history": "السجل"
+    },
+    "meta": {
+      "event": "الفعالية",
+      "registration": "التسجيل",
+      "badgeType": "نوع الشارة",
+      "workflow": "مسار العمل",
+      "stage": "المرحلة الحالية",
+      "team": "الفريق",
+      "reviewer": "المراجع",
+      "submitted": "تاريخ التقديم",
+      "waiting": "مدة الانتظار",
+      "timeLimit": "مهلة المرحلة",
+      "inStage": "في هذه المرحلة",
+      "payment": "الدفع",
+      "badge": "الشارة",
+      "noLimit": "بلا مهلة",
+      "decided": "تاريخ القرار"
+    },
+    "bars": {
+      "blacklist": "مطابقة في القائمة السوداء. الطلب معلّق حتى يؤكد أحد معتمدي القائمة السوداء المطابقة أو يلغيها.",
+      "blacklistRetro": "بعد صدور القرار، اعتُمد إدخال في القائمة السوداء يطابق مقدم الطلب. الشارة موقوفة إلى حين المراجعة.",
+      "hit": "نتيجة فحص. التفاصيل متاحة فقط لمن يملك صلاحية القائمة السوداء.",
+      "watchlist": "قائمة المراقبة · {level}",
+      "awaitingCapacity": "اعتُمدت جميع المراحل لكن الحد الأقصى للتسجيل مكتمل. يبقى الطلب قيد المراجعة حتى يتوفر مقعد.",
+      "responseReceived": "أجاب مقدم الطلب على آخر طلب للمعلومات."
+    },
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "fullNameAr": "الاسم بالعربية",
+      "email": "البريد الإلكتروني",
+      "mobile": "الجوال",
+      "nationalId": "رقم الهوية / الإقامة",
+      "passportNo": "رقم جواز السفر",
+      "nationality": "الجنسية",
+      "dob": "تاريخ الميلاد",
+      "company": "الجهة",
+      "jobTitle": "المسمى الوظيفي",
+      "badgeType": "نوع الشارة",
+      "requestId": "رقم الطلب"
+    },
+    "hiddenFields": "{count, plural, one {حقل واحد مخفي عن فريقك.} two {حقلان مخفيان عن فريقك.} few {{n} حقول مخفية عن فريقك.} other {{n} حقلًا مخفيًا عن فريقك.}}",
+    "editable": "قابل للتعديل",
+    "answersEmpty": "لا يمكن لفريقك الاطلاع على أي من إجابات التسجيل لهذا الطلب.",
+    "documents": {
+      "empty": "لا توجد مستندات متاحة لفريقك.",
+      "download": "تنزيل",
+      "viewOnly": "عرض فقط",
+      "round": "معلومات إضافية · الجولة {n}",
+      "uploaded": "رُفع في {date}",
+      "downloadSimulated": "تنزيل تجريبي: {file}"
+    },
+    "screening": {
+      "noMatches": "لا توجد مطابقات في القائمة السوداء أو قائمة المراقبة.",
+      "restricted": "توجد نتيجة فحص. تتطلب التفاصيل صلاحية عرض القائمة السوداء.",
+      "entry": "الإدخال",
+      "matchedOn": "المطابقة على",
+      "strength": {
+        "strong": "قوية",
+        "possible": "محتملة"
+      },
+      "matchType": {
+        "id": "مطابقة معرّف",
+        "company": "مطابقة جهة",
+        "nameDob": "الاسم وتاريخ الميلاد",
+        "name": "الاسم فقط"
+      },
+      "score": "تشابه {score}٪",
+      "stagePoint": {
+        "submission": "عند التقديم",
+        "resubmission": "عند إعادة التقديم",
+        "final": "عند الموافقة النهائية",
+        "retro": "فحص لاحق"
+      },
+      "matchStatus": {
+        "open": "بانتظار القرار",
+        "confirmed": "مؤكدة",
+        "cleared": "أُلغيت"
+      },
+      "reason": "السبب",
+      "note": "ملاحظة للمراجعين",
+      "blacklistReason": {
+        "security_threat": "تهديد أمني",
+        "past_misconduct": "سوء سلوك سابق",
+        "fake_registration": "تسجيل مزيف",
+        "authority_instruction": "توجيه من جهة مختصة",
+        "unpaid_dues": "مستحقات غير مسددة",
+        "other": "أخرى"
+      },
+      "found": "تاريخ المطابقة"
+    },
+    "progress": {
+      "completed": "معتمدة",
+      "current": "المرحلة الحالية",
+      "upcoming": "قادمة",
+      "escalation": "مرحلة تصعيد",
+      "finalApproval": "الموافقة النهائية",
+      "finalApprovalHint": "إعادة الفحص والتحقق من الحد الأقصى للتسجيل، ثم تُصدر الشارة.",
+      "timeSpent": "{time} في المرحلة",
+      "waitingFor": "ينتظر منذ {time}",
+      "returned": "أُعيد لطلب معلومات إضافية",
+      "escalated": "صُعّد",
+      "rejected": "رُفض",
+      "mandatory": "إلزامية",
+      "versionNote": "{name} · الإصدار {n}"
+    },
+    "moreInfo": {
+      "empty": "لم تُطلب أي معلومات إضافية.",
+      "round": "الجولة {n} من 3",
+      "requestedBy": "طلبها {name}",
+      "expires": "ينتهي الرابط في {date}",
+      "expired": "انتهت صلاحية الرابط",
+      "awaiting": "بانتظار رد مقدم الطلب",
+      "answered": "أُجيب في {date}",
+      "instructions": "التعليمات",
+      "required": "مطلوب",
+      "noAnswer": "لا توجد إجابة"
+    },
+    "history": {
+      "system": "النظام",
+      "attendee": "مقدم الطلب",
+      "actions": {
+        "submitted": "قُدّم التسجيل",
+        "screened": "اكتمل الفحص",
+        "routed": "أُحيل إلى {team}",
+        "claimed": "استلم الطلب",
+        "released": "أعاد الطلب إلى الفريق",
+        "approved_stage": "اعتمد {stage}",
+        "rejected": "رفض الطلب",
+        "more_info_requested": "طلب معلومات إضافية",
+        "more_info_received": "أرسل المعلومات المطلوبة",
+        "escalated": "صعّد الطلب",
+        "reassigned": "أعاد الإسناد",
+        "commented": "أضاف تعليقًا",
+        "screening_hold": "عُلّق الطلب للفحص",
+        "match_cleared": "ألغى المطابقة: ليس الشخص نفسه",
+        "match_confirmed": "أكد مطابقة القائمة السوداء",
+        "final_approved": "الموافقة النهائية، المقعد {used} من {limit}",
+        "limit_reached": "تعذّرت الموافقة النهائية: اكتمل الحد الأقصى للتسجيل",
+        "badge_issued": "صدرت الشارة",
+        "badge_suspended": "أُوقفت الشارة",
+        "document_downloaded": "نزّل مستندًا",
+        "withdrawn": "سحب التسجيل",
+        "screening_review": "مراجعة الفحص"
+      },
+      "screenedDetail": "{blacklist, plural, =0 {لا مطابقات في القائمة السوداء} one {مطابقة واحدة في القائمة السوداء} two {مطابقتان في القائمة السوداء} other {{b} مطابقات في القائمة السوداء}}، {watchlist, plural, =0 {لا مطابقات في قائمة المراقبة} one {مطابقة واحدة في قائمة المراقبة} two {مطابقتان في قائمة المراقبة} other {{w} مطابقات في قائمة المراقبة}}"
+    },
+    "actions": {
+      "title": "القرار",
+      "claim": "استلام الطلب",
+      "approve": "اعتماد",
+      "reject": "رفض",
+      "moreInfo": "طلب معلومات إضافية",
+      "escalate": "تصعيد",
+      "reassign": "إسناد / إعادة إسناد",
+      "comment": "إضافة تعليق",
+      "addWatchlist": "إضافة إلى قائمة المراقبة",
+      "addBlacklist": "اقتراح للقائمة السوداء",
+      "claimFirst": "استلم هذا الطلب لتتمكن من اتخاذ القرار.",
+      "claimedByOther": "استلمه {name}. الإجراءات معطلة ما دام مُسندًا إليه.",
+      "readOnly": "يمكنك عرض هذا الطلب دون اتخاذ إجراء عليه.",
+      "finished": "هذا الطلب مغلق.",
+      "onHold": "معلّق بانتظار قرار القائمة السوداء في مراجعة المطابقات.",
+      "waitingAttendee": "بانتظار رد مقدم الطلب.",
+      "comingNext": "تُفعّل القرارات في مرحلة البناء التالية.",
+      "more": "إجراءات أخرى"
+    },
+    "comments": {
+      "title": "تعليقات داخلية",
+      "empty": "لا توجد تعليقات بعد.",
+      "internal": "لا تظهر لمقدم الطلب أبدًا"
+    }
+  },
+  "placeholder": {
+    "title": "{area} ضمن مرحلة بناء لاحقة",
+    "body": "بُنيت قائمة المراجعة وتفاصيل الطلب أولًا لتحديد الاتجاه البصري. يأتي هذا القسم وفق التسلسل المتفق عليه.",
+    "goToQueue": "الانتقال إلى قائمة المراجعة"
+  },
+  "toast": {
+    "dismiss": "إغلاق"
+  }
+}
