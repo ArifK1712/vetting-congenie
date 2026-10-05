@@ -17,7 +17,9 @@ Other scripts: `npm test` (domain + seed tests), `npm run typecheck`,
 `npm run e2e` (two-tab action test: claim, live update, approve, reject, escalate) and
 `npm run e2e:teams` (create, deactivate rules, field access reaching Request Detail,
 two-tab edit conflict, read-only lead) and `npm run e2e:workflows` (create, publish
-checks, publish, allot with a clash, versions, undo, unsaved-changes guard, edit conflict). Screenshots and e2e need the dev server running.
+checks, publish, allot with a clash, versions, undo, unsaved-changes guard, edit conflict) and
+`npm run e2e:blacklist` (add from a request, second-person approval, badge suspension,
+not approving, removal, import). Screenshots and e2e need the dev server running.
 
 ## Using the prototype
 
@@ -37,6 +39,11 @@ checks, publish, allot with a clash, versions, undo, unsaved-changes guard, edit
   palette, React Flow canvas, settings panel, publish checks, versions and allotment.
   Sara edits and publishes; Daniel sees workflows read-only. Media has unpublished
   draft changes and Contractor Night Access is an unfinished draft, for demoing.
+- **Blacklist** (English only, like Workflows): list with filters, a "Waiting for approval"
+  queue, add / edit form (also from a request's "Add to blacklist"), entry detail with the
+  proposed-change comparison, matches and history, and CSV import with a row check. Arif and
+  Sara can both propose and approve, but never their own proposal: propose as one, approve
+  as the other. Approving re-checks current requests and suspends matching approved badges.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 

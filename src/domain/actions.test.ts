@@ -133,6 +133,8 @@ describe("approve", () => {
           identity: { subjectType: "person", fullName: attendee.profile.fullName, aliases: [], email: attendee.profile.email },
           eventScope: "all", reasonType: "other", reasonDetail: "test", evidence: [], startsOn: "2026-01-01T00:00:00.000Z",
           endsOn: null, status: "active", proposedBy: "u_arif", proposedAt: "2026-01-01T00:00:00.000Z", approvedBy: "u_tariq", approvedAt: "2026-01-01T00:00:00.000Z",
+          source: "manual", sourceRequestId: null, pendingChange: null, decisionNote: null, removedBy: null, removedAt: null, removalReason: null,
+          revision: 1, updatedAt: "2026-01-01T00:00:00.000Z",
         },
       },
     };

@@ -470,6 +470,37 @@ export interface BlacklistEntry {
   proposedAt: ISODate;
   approvedBy: ID | null;
   approvedAt: ISODate | null;
+  /** Where the entry came from (9.2): the list, a request, or a file upload. */
+  source: "manual" | "request" | "import";
+  sourceRequestId: ID | null;
+  /** A change to an active entry; the active version applies until a second person approves it (9.3). */
+  pendingChange: BlacklistChange | null;
+  /** Note from the approver when an entry or change was not approved. */
+  decisionNote: string | null;
+  removedBy: ID | null;
+  removedAt: ISODate | null;
+  removalReason: string | null;
+  revision: number;
+  updatedAt: ISODate;
+}
+
+export type BlacklistContent = Pick<BlacklistEntry, "identity" | "eventScope" | "reasonType" | "reasonDetail" | "evidence" | "startsOn" | "endsOn">;
+
+export interface BlacklistChange extends BlacklistContent {
+  proposedBy: ID;
+  proposedAt: ISODate;
+}
+
+export interface BlacklistHistoryEvent {
+  id: ID;
+  entryId: ID;
+  action: "proposed" | "edited" | "approved" | "not_approved" | "change_proposed" | "change_approved" | "change_rejected" | "removed";
+  actorId: ID;
+  at: ISODate;
+  note?: string;
+  /** Retro-screening result when an entry or change became active. */
+  matched?: number;
+  suspended?: number;
 }
 
 export interface WatchlistEntry {
@@ -555,6 +586,7 @@ export interface Database {
   infoRequests: Record<ID, InfoRequest>;
   comments: Record<ID, Comment>;
   blacklist: Record<ID, BlacklistEntry>;
+  blacklistHistory: Record<ID, BlacklistHistoryEvent>;
   watchlist: Record<ID, WatchlistEntry>;
   matches: Record<ID, ScreeningMatch>;
   allocations: Record<ID, CapacityAllocation>;

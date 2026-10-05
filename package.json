@@ -15,7 +15,9 @@
     "e2e:teams": "node scripts/e2e-teams.mjs",
     "screens:teams": "node scripts/shot-teams.mjs screens",
     "e2e:workflows": "node scripts/e2e-workflows.mjs",
-    "screens:workflows": "node scripts/shot-workflows.mjs screens"
+    "screens:workflows": "node scripts/shot-workflows.mjs screens",
+    "e2e:blacklist": "node scripts/e2e-blacklist.mjs",
+    "screens:blacklist": "node scripts/shot-blacklist.mjs screens"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.11",

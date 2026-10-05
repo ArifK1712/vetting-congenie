@@ -70,7 +70,7 @@ export class Tx {
   id(prefix: string) {
     return `${prefix}_${this.now.toString(36)}${(++this.seq).toString(36)}`;
   }
-  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory">(
+  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory">(
     key: K,
     record: Database[K][string],
   ) {

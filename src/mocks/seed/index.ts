@@ -4,6 +4,7 @@ import { nodeById, requestPath, type StageNode } from "@/domain/workflow";
 import type {
   Attendee,
   BlacklistEntry,
+  BlacklistHistoryEvent,
   BlacklistReason,
   Database,
   HistoryEvent,
@@ -24,7 +25,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -131,6 +132,7 @@ export function createSeed(now: number = Date.now()): Database {
     infoRequests: {},
     comments: {},
     blacklist: {},
+    blacklistHistory: {},
     watchlist: {},
     matches: {},
     allocations: {},
@@ -236,12 +238,34 @@ export function createSeed(now: number = Date.now()): Database {
       proposedAt: iso(proposedAt),
       approvedBy: null,
       approvedAt: iso(proposedAt + rng.int(2, 30) * HOUR),
+      source: "manual",
+      sourceRequestId: null,
+      pendingChange: null,
+      decisionNote: null,
+      removedBy: null,
+      removedAt: null,
+      removalReason: null,
+      revision: 1,
+      updatedAt: iso(proposedAt),
       ...extra,
     };
     entry.approvedBy = entry.status === "active" || entry.status === "removed" || entry.status === "expired"
       ? entry.proposedBy === "u_arif" ? "u_tariq" : "u_arif"
       : null;
     if (!entry.approvedBy) entry.approvedAt = null;
+    entry.updatedAt = entry.approvedAt ?? entry.proposedAt;
+    if (entry.status === "removed") {
+      Object.assign(entry, {
+        removedBy: entry.approvedBy,
+        removedAt: iso(Date.parse(entry.approvedAt!) + 12 * DAY),
+        removalReason: "Raised in error: the identity belongs to a different person.",
+      });
+      entry.updatedAt = entry.removedAt!;
+    }
+    if (entry.status === "not_approved") {
+      entry.approvedAt = null;
+      entry.decisionNote = "Not enough evidence. Attach the incident report and resubmit.";
+    }
     db.blacklist[entry.id] = entry;
     return entry;
   };
@@ -670,6 +694,36 @@ export function createSeed(now: number = Date.now()): Database {
     r.badgeStatus = "suspended";
     r.screening = "blacklist_hit";
     log({ requestId: r.id, action: "badge_suspended", actorId: "system", at: iso(at + 5000), remarks: entry.id });
+  }
+
+  // ─── 5. A proposed change waiting on an active entry, and list history ──
+  const changed = Object.values(db.blacklist).find((e) => e.status === "active" && e.reasonType !== "authority_instruction" && e.proposedBy === "u_arif");
+  if (changed) {
+    changed.pendingChange = {
+      identity: { ...changed.identity, aliases: [...changed.identity.aliases, spellVariant(changed.identity.fullName) + " Jr."].slice(0, 5) },
+      eventScope: changed.eventScope,
+      reasonType: changed.reasonType,
+      reasonDetail: `${changed.reasonDetail} Extended after a repeat attempt at the 2026 pre-event briefing.`,
+      evidence: changed.evidence,
+      startsOn: changed.startsOn,
+      endsOn: iso(now + 365 * DAY),
+      proposedBy: "u_tariq",
+      proposedAt: iso(now - 9 * HOUR),
+    };
+    changed.revision = 2;
+    changed.updatedAt = changed.pendingChange.proposedAt;
+  }
+  let h = 0;
+  const logList = (e: Omit<BlacklistHistoryEvent, "id">) => {
+    const event = { ...e, id: `blh_${(++h).toString(36)}` };
+    db.blacklistHistory[event.id] = event;
+  };
+  for (const e of Object.values(db.blacklist)) {
+    logList({ entryId: e.id, action: "proposed", actorId: e.proposedBy, at: e.proposedAt });
+    if (e.approvedBy && e.approvedAt) logList({ entryId: e.id, action: "approved", actorId: e.approvedBy, at: e.approvedAt });
+    if (e.status === "not_approved") logList({ entryId: e.id, action: "not_approved", actorId: e.proposedBy === "u_arif" ? "u_tariq" : "u_arif", at: iso(Date.parse(e.proposedAt) + DAY), note: e.decisionNote ?? undefined });
+    if (e.removedBy && e.removedAt) logList({ entryId: e.id, action: "removed", actorId: e.removedBy, at: e.removedAt, note: e.removalReason ?? undefined });
+    if (e.pendingChange) logList({ entryId: e.id, action: "change_proposed", actorId: e.pendingChange.proposedBy, at: e.pendingChange.proposedAt });
   }
 
   return db;

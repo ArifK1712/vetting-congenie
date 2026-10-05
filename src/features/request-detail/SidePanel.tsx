@@ -12,6 +12,7 @@ import { toast } from "@/components/ui/Toast";
 import { canReassign } from "@/domain/actions";
 import { FINAL_STATUSES } from "@/domain/status";
 import { useFormat } from "@/i18n/format";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { TextArea } from "@/components/ui/Field";
 import { requestService } from "@/services/requests";
@@ -45,6 +46,7 @@ export function DecisionPanel({
   const [dialog, setDialog] = useState<DialogKind>(null);
   const quick = useQuickAction();
   const soon = () => toast(t("comingNext"));
+  const router = useRouter();
   const ref = { requestId: request.id, actorId: viewer.id, expectedRevision: revision };
 
   const mine = request.claimedBy === viewer.id && request.status === "under_review" && !request.awaitingCapacity;
@@ -68,7 +70,7 @@ export function DecisionPanel({
     { key: "release", icon: Undo2, show: mine, onSelect: () => quick.run("release", () => requestService.release(ref), tt("released", { id: request.id })).then((ok) => ok && onActed()) },
     { key: "reassign", icon: UserRoundCog, show: reassignable, onSelect: () => setDialog("reassign") },
     { key: "addWatchlist", icon: Eye, show: viewer.can("watchlist.manage"), onSelect: soon },
-    { key: "addBlacklist", icon: ShieldBan, show: viewer.can("blacklist.propose"), onSelect: soon },
+    { key: "addBlacklist", icon: ShieldBan, show: viewer.can("blacklist.propose"), onSelect: () => router.push(`/screening/blacklist/new?fromRequest=${request.id}`) },
   ] as const;
   const visibleSecondary = secondary.filter((s) => s.show);
 

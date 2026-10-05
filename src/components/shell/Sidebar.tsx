@@ -91,7 +91,7 @@ function useNavCounts(): Partial<Record<NavKey, number>> {
     const held = Object.values(db.requests).filter(
       (r) => r.status === "screening_hold" && (eventScope === "all" || r.eventId === eventScope),
     );
-    const pendingEntries = Object.values(db.blacklist).filter((b) => b.status === "pending_approval");
+    const pendingEntries = Object.values(db.blacklist).filter((b) => b.status === "pending_approval" || !!b.pendingChange);
     return {
       queue: open.length,
       matchReview: held.length,
