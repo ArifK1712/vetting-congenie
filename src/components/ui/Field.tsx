@@ -1,10 +1,10 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useId, type KeyboardEvent, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes, type KeyboardEvent, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-export function Field({ label, hint, children, htmlFor }: { label: string; hint?: string; children: ReactNode; htmlFor?: string }) {
+export function Field({ label, hint, children, htmlFor }: { label: string; hint?: ReactNode; children: ReactNode; htmlFor?: string }) {
   return (
     <div>
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
@@ -15,6 +15,21 @@ export function Field({ label, hint, children, htmlFor }: { label: string; hint?
       </div>
       {children}
     </div>
+  );
+}
+
+export function TextInput({ className, invalid, ...props }: InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }) {
+  return (
+    <input
+      dir="auto"
+      aria-invalid={invalid || undefined}
+      className={cn(
+        "block h-9 w-full rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink shadow-xs outline-none placeholder:text-ink-3 focus:border-accent focus:ring-4 focus:ring-accent/10",
+        invalid && "border-rose-300 focus:border-rose-400 focus:ring-rose-500/10",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

@@ -569,5 +569,382 @@
       "confirmed": "Confirmed",
       "cleared": "Cleared"
     }
+  },
+  "teams": {
+    "title": "Teams",
+    "subtitle": "Groups of reviewers, what each group reviews, and which fields they can see.",
+    "create": "Create team",
+    "viewOnly": "View only",
+    "search": "Search teams",
+    "filters": {
+      "status": "Status",
+      "any": "Any status",
+      "badgeType": "Badge type",
+      "event": "Event",
+      "reset": "Reset filters"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "role": {
+      "lead": "Team lead",
+      "reviewer": "Reviewer"
+    },
+    "columns": {
+      "index": "#",
+      "team": "Team",
+      "badgeTypes": "Badge types",
+      "members": "Members",
+      "usedIn": "Used in stages",
+      "load": "Open requests",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "allBadgeTypes": "All badge types",
+    "allEvents": "All events",
+    "moreCount": "+{n}",
+    "memberCount": "{count, plural, one {{n} member} other {{n} members}}",
+    "noLead": "No lead",
+    "notUsed": "Not used yet",
+    "stageCount": "{count, plural, one {{n} stage} other {{n} stages}}",
+    "noOpen": "None",
+    "lateCount": "{n} late",
+    "rowActions": "Actions for {name}",
+    "actions": {
+      "view": "View team",
+      "edit": "Edit team",
+      "deactivate": "Deactivate",
+      "activate": "Activate"
+    },
+    "summary": {
+      "teams": "Active teams",
+      "teamsHint": "{total} teams in total",
+      "people": "People in teams",
+      "peopleHint": "{count, plural, one {{n} team lead} other {{n} team leads}}",
+      "open": "Open requests with teams",
+      "openHint": "{n} waiting to be claimed",
+      "late": "Late requests",
+      "lateHint": "{count, plural, one {Spread over {n} team} other {Spread over {n} teams}}",
+      "lateNone": "Every team is on time"
+    },
+    "showing": "{shown} of {total}",
+    "footnote": "Open a team to see its members, the stages that use it and its history.",
+    "empty": {
+      "title": "No teams match",
+      "body": "Try another search, or clear the filters.",
+      "noAccessTitle": "You can't see teams",
+      "noAccessBody": "Teams need the Teams View permission. Ask a vetting administrator."
+    },
+    "access": {
+      "alwaysVisible": "Name, badge type, photo and Request ID are always visible.",
+      "groups": {
+        "profile": "Profile",
+        "answers": "Registration answers",
+        "documents": "Documents",
+        "payment": "Payment",
+        "moreInfo": "More information"
+      },
+      "rows": {
+        "payment": "Payment status, amount and invoice",
+        "moreInfo": "Answers the attendee sent later"
+      },
+      "levels": {
+        "hidden": "Hidden",
+        "view": "View",
+        "edit": "View & edit",
+        "download": "View & download"
+      },
+      "visibleOf": "{visible} of {total} visible",
+      "setAll": "Set all:",
+      "add": "Add registration",
+      "empty": "No registrations yet. The team only gets requests from registrations added here.",
+      "newQuestionsHidden": "A question added to a form later starts Hidden for every team until you give access.",
+      "outOfScope": "Outside the team's events or badge types",
+      "giveViewToAll": "Give View to all",
+      "copyFrom": "Copy from team",
+      "copyNone": "No other team covers this registration",
+      "applyToAll": "{count, plural, one {Apply to the other registration} other {Apply to the other {n} registrations}}",
+      "remove": "Remove"
+    },
+    "conditions": {
+      "fields": {
+        "paymentStatus": "Payment status",
+        "watchlistLevel": "Watchlist level"
+      },
+      "sources": {
+        "profile": "Profile",
+        "answer": "Registration answers",
+        "payment": "Payment",
+        "screening": "Screening"
+      },
+      "operators": {
+        "is": "is",
+        "isNot": "is not",
+        "isAnyOf": "is any of",
+        "isNoneOf": "is none of",
+        "contains": "contains",
+        "isEmpty": "is empty",
+        "isNotEmpty": "is not empty"
+      },
+      "matchLabel": "Requests must match",
+      "matchAll": "All lines",
+      "matchAny": "Any line",
+      "empty": "No extra conditions. Every request in the team's scope can reach it.",
+      "if": "If",
+      "and": "And",
+      "or": "Or",
+      "field": "Field",
+      "chooseField": "Choose a field",
+      "operator": "Operator",
+      "value": "Value",
+      "chooseValue": "Choose a value",
+      "chooseValues": "Choose values",
+      "valuesSummary": "{first} and {n} more",
+      "typeValue": "Type a value",
+      "remove": "Remove condition",
+      "add": "Add condition",
+      "limit": "{n} of {max} lines",
+      "preview": "<b>{matched}</b> of <b>{inScope}</b> existing requests in scope pass these conditions.",
+      "previewHint": "Counted on today's requests. Routing happens when a request reaches a stage.",
+      "previewNone": "Add a registration to see how many requests would reach this team."
+    },
+    "assignment": {
+      "label": "Assignment",
+      "modes": {
+        "selfClaim": {
+          "label": "Reviewers pick requests",
+          "hint": "Members claim requests from the team queue themselves."
+        },
+        "leadAssigns": {
+          "label": "Lead gives out requests",
+          "hint": "The team lead assigns each request to a member."
+        },
+        "roundRobin": {
+          "label": "Shared in turn",
+          "hint": "New requests go to members one after another."
+        }
+      },
+      "maxClaims": "Max open requests per reviewer",
+      "maxClaimsDefault": "Default 10",
+      "maxClaimsHint": "A reviewer at the limit can't claim more until they finish one."
+    },
+    "history": {
+      "kinds": {
+        "created": "created the team",
+        "updated": "updated the team",
+        "activated": "activated the team",
+        "deactivated": "deactivated the team"
+      },
+      "changes": {
+        "name": "Changed the team name",
+        "description": "Changed the description",
+        "memberAdded": "Added {name} as {role}",
+        "memberRemoved": "Removed {name}",
+        "memberRole": "Made {name} {role}",
+        "events": "Changed the events",
+        "badgeTypes": "Changed the badge types",
+        "accessAdded": "Added {registration}",
+        "accessRemoved": "Removed {registration}",
+        "accessChanged": "{count, plural, one {Changed access to {n} field on {registration}} other {Changed access to {n} fields on {registration}}}",
+        "conditions": "{count, plural, =0 {Removed the extra conditions} one {Set {n} extra condition} other {Set {n} extra conditions}}",
+        "assignment": "Assignment: {mode}",
+        "maxClaims": "Max open requests per reviewer: {n}",
+        "claimsReleased": "{count, plural, one {{n} request claimed by {name} went back to the team} other {{n} requests claimed by {name} went back to the team}}"
+      }
+    },
+    "deactivate": {
+      "title": "Deactivate {name}?",
+      "body": "The team stops receiving requests and is left out of routing. Its history is kept, and you can activate it again later.",
+      "blockedBody": "This team still has work. Fix these first:",
+      "confirm": "Deactivate team",
+      "done": "{name} deactivated",
+      "activated": "{name} activated",
+      "openRequests": "{count, plural, one {{n} open request is still with the team} other {{n} open requests are still with the team}}",
+      "openQueue": "Open in queue",
+      "liveStage": "Used in {workflow} · {stage}",
+      "asFallback": "Fallback team in a live workflow",
+      "asPriority": "Team {n} on this stage in a live workflow"
+    },
+    "errors": {
+      "forbidden": "You don't have permission to change teams.",
+      "notFound": "This team no longer exists.",
+      "stale": "Someone else changed this team. Load the latest version and try again.",
+      "invalid": "Fix the highlighted items first.",
+      "inUse": "This team still has open requests or is used in a live workflow.",
+      "noChanges": "Nothing to save."
+    },
+    "detail": {
+      "notFound": "Team not found",
+      "backToTeams": "Teams",
+      "edit": "Edit team",
+      "more": "More actions",
+      "updated": "Updated {time}",
+      "facts": {
+        "events": "Events",
+        "badgeTypes": "Badge types",
+        "assignment": "Assignment",
+        "maxClaims": "Per reviewer",
+        "maxClaimsValue": "Up to {n} open requests"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "members": "Members",
+        "usedIn": "Used in stages",
+        "history": "History"
+      },
+      "access": {
+        "title": "Registration & field access",
+        "subtitle": "{count, plural, one {What members see on {n} registration} other {What members see on {n} registrations}}"
+      },
+      "load": {
+        "title": "Work right now",
+        "subtitle": "Requests with this team, and decisions in the last 7 days",
+        "openQueue": "Open in queue",
+        "open": "Open",
+        "late": "Late",
+        "unclaimed": "Unclaimed",
+        "decisions": "Decisions (7 days)"
+      },
+      "routing": {
+        "title": "Which requests it gets",
+        "subtitle": "A request comes to this team only when all four checks pass.",
+        "events": "Event is one of",
+        "badgeTypes": "Badge type is one of",
+        "registrations": "Registration is on the access list",
+        "registrationCount": "{count, plural, one {{n} registration} other {{n} registrations}}",
+        "conditions": "Extra conditions",
+        "matchAll": "all must be true",
+        "matchAny": "any one is enough",
+        "noConditions": "None"
+      },
+      "members": {
+        "title": "Members",
+        "subtitle": "Each reviewer can hold up to {n} open requests.",
+        "manage": "Manage members",
+        "columns": {
+          "member": "Member",
+          "companyRole": "Company role",
+          "teamRole": "Team role",
+          "claims": "Open claims",
+          "decisions": "Decisions (7 days)"
+        },
+        "noQueueAccess": "Their role has no Review Queue Access, so they can't see the Vetting menu.",
+        "claimsOf": "{n} / {max}"
+      },
+      "usedIn": {
+        "explainer": "Each stage sends a request to the first team that matches it. If none matches, the fallback team gets it.",
+        "emptyTitle": "Not used in any workflow yet",
+        "emptyBody": "Add this team to a stage in the workflow builder and it will start receiving requests.",
+        "source": {
+          "live": "Live",
+          "inactive": "Inactive workflow",
+          "draft": "Draft"
+        },
+        "asFallback": "Fallback team for this stage",
+        "asPriority": "Team {n} of {total} on this stage",
+        "order": "Team order on this stage",
+        "fallbackShort": "Fallback"
+      }
+    },
+    "editor": {
+      "noAccessTitle": "You can't edit teams",
+      "noAccessBody": "Changing teams needs the Teams Create / Edit permission.",
+      "createTitle": "Create team",
+      "createSubtitle": "Pick reviewers, choose what the team reviews, and decide which fields they can see.",
+      "editTitle": "Edit {name}",
+      "editSubtitle": "Changes are saved to the team history.",
+      "editCrumb": "Edit",
+      "stale": "Someone changed this team in another session. Load the latest version before you save.",
+      "loadLatest": "Load latest",
+      "checklist": {
+        "title": "Checklist",
+        "toFix": "{count, plural, one {{n} item to fix before saving} other {{n} items to fix before saving}}",
+        "ready": "Everything required is filled in.",
+        "done": "Done"
+      },
+      "save": "Save changes",
+      "create": "Create team",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "unsaved": "You have unsaved changes",
+      "noChanges": "No changes yet",
+      "toasts": {
+        "saved": "Team saved",
+        "created": "{name} created"
+      },
+      "basics": {
+        "title": "Basics",
+        "subtitle": "The team name and what the team checks.",
+        "nameEn": "Team name (English)",
+        "nameAr": "Team name (Arabic)",
+        "optional": "Optional",
+        "namePlaceholder": "e.g. VIP Security Team",
+        "nameArPlaceholder": "مثال: فريق أمن كبار الشخصيات",
+        "descriptionEn": "Description (English)",
+        "descriptionAr": "Description (Arabic)",
+        "descriptionPlaceholder": "What does this team check?",
+        "count": "{n} / {max}",
+        "status": "Status",
+        "statusActiveHint": "The team can receive requests.",
+        "statusInactiveHint": "The team receives no requests."
+      },
+      "members": {
+        "title": "Members",
+        "subtitle": "Existing users. Their company role comes from Admin Users and can't be changed here.",
+        "add": "Add member",
+        "search": "Search name or email",
+        "noPeople": "No more people to add",
+        "noQueueAccess": "No Review Queue Access",
+        "noQueueAccessShort": "No queue access",
+        "empty": "No members yet. Add at least one reviewer.",
+        "roleFor": "Team role for {name}",
+        "remove": "Remove {name}"
+      },
+      "scope": {
+        "title": "Events & badge types",
+        "subtitle": "The team only gets requests for these events and badge types.",
+        "events": "Events",
+        "allEvents": "All events",
+        "allEventsHint": "Includes events created later.",
+        "badgeTypes": "Badge types",
+        "allBadges": "All badge types",
+        "allBadgesHint": "Includes badge types created later.",
+        "selected": "Selected",
+        "selectedHint": "Only the ones ticked below.",
+        "newRequestsOnly": "Changing events or badge types affects new requests only. Requests already with the team stay with it."
+      },
+      "access": {
+        "title": "Registration & field access",
+        "subtitle": "Which registrations the team reviews, and which fields members can see on each."
+      },
+      "conditions": {
+        "title": "Extra conditions",
+        "subtitle": "Optional rules on applicant data, up to 10 lines."
+      },
+      "assignment": {
+        "title": "Assignment",
+        "subtitle": "How requests reach individual reviewers."
+      },
+      "issues": {
+        "nameRequired": "Enter a team name in English.",
+        "nameTooLong": "Team names can be up to 100 characters.",
+        "nameTaken": "An active team already has this name.",
+        "descriptionTooLong": "Descriptions can be up to 500 characters.",
+        "membersRequired": "Add at least one member.",
+        "memberNoQueueAccess": "{name}'s role has no Review Queue Access, so they won't see the Vetting menu.",
+        "memberInactive": "{name} is deactivated and won't receive requests.",
+        "eventsRequired": "Choose at least one event, or switch to All events.",
+        "badgesRequired": "Choose at least one badge type, or switch to All badge types.",
+        "accessRequired": "Add at least one registration.",
+        "accessOutOfScope": "{registration} is outside the team's events or badge types. Remove it or widen the scope.",
+        "conditionsMax": "Use up to 10 condition lines.",
+        "conditionIncomplete": "Complete or remove the unfinished condition.",
+        "leadRequired": "Make someone team lead, or choose another assignment option.",
+        "maxClaimsInvalid": "Enter a whole number from 1 to 50.",
+        "deactivateInUse": "This team can't be made inactive while it has open requests or is used in a live workflow.",
+        "lastReviewerInUse": "Keep at least one member with Review Queue Access while the team is in use."
+      }
+    }
   }
 }

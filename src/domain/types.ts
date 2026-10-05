@@ -156,7 +156,36 @@ export interface Team {
   conditionMatch: "all" | "any";
   assignmentMode: "selfClaim" | "leadAssigns" | "roundRobin";
   maxOpenClaims: number;
+  /** Bumped on every save; an edit based on an older revision is refused. */
+  revision: number;
   createdAt: ISODate;
+  updatedAt: ISODate;
+}
+
+/** One line in a team's history (5.5: every change to members, scope or access is kept). */
+export type TeamChange =
+  | { type: "name" }
+  | { type: "description" }
+  | { type: "memberAdded"; userId: ID; role: TeamMember["role"] }
+  | { type: "memberRemoved"; userId: ID }
+  | { type: "memberRole"; userId: ID; role: TeamMember["role"] }
+  | { type: "events" }
+  | { type: "badgeTypes" }
+  | { type: "accessAdded"; registrationId: ID }
+  | { type: "accessRemoved"; registrationId: ID }
+  | { type: "accessChanged"; registrationId: ID; fields: number }
+  | { type: "conditions"; count: number }
+  | { type: "assignment"; mode: Team["assignmentMode"] }
+  | { type: "maxClaims"; value: number }
+  | { type: "claimsReleased"; userId: ID; count: number };
+
+export interface TeamHistoryEvent {
+  id: ID;
+  teamId: ID;
+  kind: "created" | "updated" | "activated" | "deactivated";
+  actorId: ID;
+  at: ISODate;
+  changes: TeamChange[];
 }
 
 // ─── Workflows ───────────────────────────────────────────────────────────
@@ -510,6 +539,7 @@ export interface Database {
   registrations: Record<ID, Registration>;
   vettingSettings: Record<ID, RegistrationVettingSettings>;
   teams: Record<ID, Team>;
+  teamHistory: Record<ID, TeamHistoryEvent>;
   workflows: Record<ID, Workflow>;
   workflowVersions: Record<ID, WorkflowVersion>;
   allotments: Record<ID, WorkflowAllotment>;

@@ -35,6 +35,11 @@ export const roles: Role[] = [
     ],
   },
   {
+    id: "role_coordinator",
+    name: t("Event Coordinator", "منسق فعاليات"),
+    permissions: ["reports.view"],
+  },
+  {
     id: "role_ops",
     name: t("Operations Manager", "مدير العمليات"),
     permissions: [
@@ -72,6 +77,7 @@ export const users: User[] = [
   u("u_maya", "Maya Rahman", "maya.rahman@vetting.app", "role_reviewer", t("Security Reviewer", "مراجعة أمنية")),
   u("u_tariq", "Tariq Aziz", "tariq.aziz@vetting.app", "role_compliance", t("Compliance Manager", "مدير الامتثال")),
   u("u_reem", "Reem Al-Dosari", "reem.aldosari@vetting.app", "role_reviewer", t("Protocol Officer", "مسؤولة مراسم")),
+  u("u_salma", "Salma Idris", "salma.idris@vetting.app", "role_coordinator", t("Event Coordinator", "منسقة فعاليات")),
 ];
 
 /** Personas offered in the prototype switcher. */

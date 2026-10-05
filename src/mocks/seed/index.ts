@@ -21,10 +21,10 @@ import type {
 import { COMPANIES, MEDIA_OUTLETS, generatePerson, type GeneratedPerson } from "./people";
 import { badgeTypes, events, registrations, rejectReasons, roles, users } from "./reference";
 import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
-import { teams } from "./teams";
+import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -120,6 +120,7 @@ export function createSeed(now: number = Date.now()): Database {
       ]),
     ),
     teams: byId(teams),
+    teamHistory: byId(teamHistory),
     workflows: byId(workflows),
     workflowVersions: byId(workflowVersions),
     allotments: byId(allotments),

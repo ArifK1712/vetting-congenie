@@ -1,5 +1,5 @@
-import { Placeholder } from "@/components/shell/Placeholder";
+import { TeamsListPage } from "@/features/teams/TeamsListPage";
 
 export default function Page() {
-  return <Placeholder area="teams" />;
+  return <TeamsListPage />;
 }

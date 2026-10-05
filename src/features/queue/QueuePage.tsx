@@ -35,11 +35,13 @@ export function QueuePage() {
   const now = useNow();
 
   const [filters, setFilters] = useState<QueueFilters>(() => {
-    // Deep links: ?q= from header search, ?status= from the dashboard.
+    // Deep links: ?q= from header search, ?status= from the dashboard, ?team= from Teams.
     const status = params.get("status") as RequestStatus | null;
+    const team = params.get("team");
     return {
       ...EMPTY_FILTERS,
       search: params.get("q") ?? "",
+      teamIds: team ? [team] : EMPTY_FILTERS.teamIds,
       statuses: status && STATUS_ORDER.includes(status) ? [status] : EMPTY_FILTERS.statuses,
     };
   });

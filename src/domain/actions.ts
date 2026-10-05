@@ -53,7 +53,7 @@ interface Base {
 
 // ─── Copy-on-write transaction ──────────────────────────────────────────
 
-class Tx {
+export class Tx {
   db: Database;
   private copied = new Set<keyof Database>();
   private seq = 0;
@@ -70,7 +70,7 @@ class Tx {
   id(prefix: string) {
     return `${prefix}_${this.now.toString(36)}${(++this.seq).toString(36)}`;
   }
-  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches">(
+  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory">(
     key: K,
     record: Database[K][string],
   ) {
@@ -97,7 +97,7 @@ class Tx {
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
-function openExecution(db: Database, requestId: ID): StageExecution | undefined {
+export function openExecution(db: Database, requestId: ID): StageExecution | undefined {
   return Object.values(db.stageExecutions)
     .filter((e) => e.requestId === requestId && e.status !== "completed")
     .sort((a, b) => Date.parse(b.enteredAt) - Date.parse(a.enteredAt))[0];

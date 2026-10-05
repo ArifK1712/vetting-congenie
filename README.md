@@ -14,7 +14,9 @@ npm run dev          # http://localhost:3000 → /en/queue
 Other scripts: `npm test` (domain + seed tests), `npm run typecheck`,
 `npm run lint`, `npm run i18n:check` (every locale has every key),
 `npm run screens` (Playwright screenshots of key screens in all locales) and
-`npm run e2e` (two-tab action test: claim, live update, approve, reject, escalate). Both need the dev server running.
+`npm run e2e` (two-tab action test: claim, live update, approve, reject, escalate) and
+`npm run e2e:teams` (create, deactivate rules, field access reaching Request Detail,
+two-tab edit conflict, read-only lead). Screenshots and e2e need the dev server running.
 
 ## Using the prototype
 
@@ -25,6 +27,10 @@ Other scripts: `npm test` (domain + seed tests), `npm run typecheck`,
 - **Two people at once**: open the app in two tabs and pick a different persona in each
   (Omar and Maya share the General Security Team). Claims and decisions in one tab
   appear in the other within seconds; a stale tab locks its actions until you reload.
+- **Teams** (Sara edits; Lina and Daniel see them read-only): list, detail
+  (Overview, Members, Used in stages, History) and the create / edit form with the
+  field-access matrix. Saving field access changes what members see on Request
+  Detail straight away; a team with open requests or a live stage can't be deactivated.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 
