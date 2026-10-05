@@ -289,7 +289,8 @@
         "unpaid_dues": "Unpaid dues",
         "other": "Other"
       },
-      "found": "Found"
+      "found": "Found",
+      "decideInReview": "Decide in Match Review"
     },
     "progress": {
       "completed": "Approved",

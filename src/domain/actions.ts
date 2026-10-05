@@ -103,7 +103,7 @@ export function openExecution(db: Database, requestId: ID): StageExecution | und
     .sort((a, b) => Date.parse(b.enteredAt) - Date.parse(a.enteredAt))[0];
 }
 
-function graphOf(db: Database, r: VettingRequest): WorkflowGraph | null {
+export function graphOf(db: Database, r: VettingRequest): WorkflowGraph | null {
   return r.workflowVersionId ? (db.workflowVersions[r.workflowVersionId]?.graph ?? null) : null;
 }
 
@@ -193,7 +193,7 @@ export function resolveNext(db: Database, r: VettingRequest, graph: WorkflowGrap
   return undefined;
 }
 
-function enterStage(tx: Tx, r: VettingRequest, node: StageNode, status: RequestStatus, now: number) {
+export function enterStage(tx: Tx, r: VettingRequest, node: StageNode, status: RequestStatus, now: number) {
   const attendee = tx.db.attendees[r.attendeeId];
   const { teamId } = routeStage(tx.db, node.stage, r, attendee);
   tx.put("stageExecutions", {

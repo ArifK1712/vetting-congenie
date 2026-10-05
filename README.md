@@ -20,7 +20,8 @@ two-tab edit conflict, read-only lead) and `npm run e2e:workflows` (create, publ
 checks, publish, allot with a clash, versions, undo, unsaved-changes guard, edit conflict) and
 `npm run e2e:blacklist` (add from a request, second-person approval, badge suspension,
 not approving, removal, import) and `npm run e2e:watchlist` (add from a request, marks and
-emails, a lead clearing a match, move to blacklist, removal, import). Screenshots and e2e need the dev server running.
+emails, a lead clearing a match, move to blacklist, removal, import) and `npm run e2e:matches`
+(confirm, not the same person, suspended badge, link from Request Detail). Screenshots and e2e need the dev server running.
 
 ## Using the prototype
 
@@ -50,6 +51,10 @@ emails, a lead clearing a match, move to blacklist, removal, import). Screenshot
   entry detail with matches you can clear as "Not the same person"; move to blacklist;
   CSV import. Saving marks matching requests (never suspends badges). "Mark and add a review
   stage" inserts one extra stage before final approval. Sara and Arif manage; Lina views.
+- **Match Review** (English only): open blacklist matches, ID matches first, with a side-by-side
+  applicant / entry comparison. Confirm rejects the request as Blacklisted (or revokes a
+  suspended badge); Not the same person sends it back to its stage (or restores the badge) and
+  the pair never matches again. Arif and Sara decide.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 

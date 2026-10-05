@@ -9,6 +9,7 @@ import { PROFILE_FIELDS } from "@/domain/fieldAccess";
 import { maskId } from "@/domain/screening";
 import type { HistoryEvent } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { StageProgress } from "@/features/requests/parts";
 import type { RequestView } from "./useRequestView";
@@ -246,6 +247,12 @@ export function ScreeningTab({ view }: { view: RequestView }) {
                 {t(`stagePoint.${m.stagePoint}`)} · <span className="tabular">{fmt.full(m.foundAt)}</span>
               </Row>
             </dl>
+            {isBlacklist && m.status === "open" && view.seesBlacklist && (
+              <Link href={`/screening/matches?match=${m.id}`} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-text hover:underline">
+                <ShieldAlert className="size-4" />
+                {t("decideInReview")}
+              </Link>
+            )}
           </section>
         );
       })}

@@ -22,6 +22,7 @@ import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { reviewQueue } from "@/domain/matchReview";
 import { visibleRequestsFor } from "@/domain/queue";
 import { OPEN_STATUSES } from "@/domain/status";
 import type { Permission } from "@/domain/types";
@@ -88,9 +89,8 @@ function useNavCounts(): Partial<Record<NavKey, number>> {
   const eventScope = useSession((s) => s.eventScope);
   return useMemo(() => {
     const open = visibleRequestsFor(db, viewer.id, eventScope).filter((r) => OPEN_STATUSES.includes(r.status));
-    const held = Object.values(db.requests).filter(
-      (r) => r.status === "screening_hold" && (eventScope === "all" || r.eventId === eventScope),
-    );
+    // Decisions waiting in Match Review (open blacklist matches on live requests).
+    const held = reviewQueue(db, 0).filter((c) => eventScope === "all" || c.request.eventId === eventScope);
     const pendingEntries = Object.values(db.blacklist).filter((b) => b.status === "pending_approval" || !!b.pendingChange);
     return {
       queue: open.length,
