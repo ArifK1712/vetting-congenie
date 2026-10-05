@@ -2,6 +2,7 @@
 
 import * as RT from "@radix-ui/react-tooltip";
 import type { ReactNode } from "react";
+import { usePortalContainer } from "./portal";
 
 export const TooltipProvider = RT.Provider;
 
@@ -14,11 +15,12 @@ export function Tooltip({
   children: ReactNode;
   side?: "top" | "bottom" | "left" | "right";
 }) {
+  const container = usePortalContainer();
   if (!content) return <>{children}</>;
   return (
     <RT.Root>
       <RT.Trigger asChild>{children}</RT.Trigger>
-      <RT.Portal>
+      <RT.Portal container={container}>
         <RT.Content
           side={side}
           sideOffset={6}

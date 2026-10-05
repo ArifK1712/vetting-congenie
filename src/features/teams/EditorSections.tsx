@@ -610,7 +610,7 @@ export function AccessSection({
 let conditionSeq = 0;
 const newConditionId = () => `c_${Date.now().toString(36)}${(++conditionSeq).toString(36)}`;
 
-function useFieldOptions(db: Database, fields: ConditionField[]) {
+export function useFieldOptions(db: Database, fields: ConditionField[]) {
   const t = useTranslations("teams.conditions");
   const tf = useTranslations("requestDetail.fields");
   const tp = useTranslations("payment");

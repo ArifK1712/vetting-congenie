@@ -4,6 +4,7 @@ import * as DM from "@radix-ui/react-dropdown-menu";
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { usePortalContainer } from "./portal";
 
 export const Menu = DM.Root;
 export const MenuTrigger = DM.Trigger;
@@ -17,8 +18,9 @@ export function MenuContent({
   align?: "start" | "end" | "center";
   className?: string;
 }) {
+  const container = usePortalContainer();
   return (
-    <DM.Portal>
+    <DM.Portal container={container}>
       <DM.Content
         align={align}
         sideOffset={6}

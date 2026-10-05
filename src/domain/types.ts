@@ -239,7 +239,12 @@ export interface Workflow {
   status: "draft" | "active" | "inactive";
   currentVersionId: ID | null;
   draft: WorkflowGraph | null;
+  /** When the saved draft was last changed (null without a draft). */
+  draftSavedAt: ISODate | null;
+  /** Bumped on every change; an edit based on an older revision is refused. */
+  revision: number;
   createdAt: ISODate;
+  updatedAt: ISODate;
 }
 
 export interface WorkflowVersion {

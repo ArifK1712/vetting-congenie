@@ -16,7 +16,8 @@ Other scripts: `npm test` (domain + seed tests), `npm run typecheck`,
 `npm run screens` (Playwright screenshots of key screens in all locales) and
 `npm run e2e` (two-tab action test: claim, live update, approve, reject, escalate) and
 `npm run e2e:teams` (create, deactivate rules, field access reaching Request Detail,
-two-tab edit conflict, read-only lead). Screenshots and e2e need the dev server running.
+two-tab edit conflict, read-only lead) and `npm run e2e:workflows` (create, publish
+checks, publish, allot with a clash, versions, undo, unsaved-changes guard, edit conflict). Screenshots and e2e need the dev server running.
 
 ## Using the prototype
 
@@ -31,6 +32,11 @@ two-tab edit conflict, read-only lead). Screenshots and e2e need the dev server 
   (Overview, Members, Used in stages, History) and the create / edit form with the
   field-access matrix. Saving field access changes what members see on Request
   Detail straight away; a team with open requests or a live stage can't be deactivated.
+- **Workflows** (English only, by product decision; stays English and left-to-right
+  when the app is in Arabic): list with coverage check, and a builder with a block
+  palette, React Flow canvas, settings panel, publish checks, versions and allotment.
+  Sara edits and publishes; Daniel sees workflows read-only. Media has unpublished
+  draft changes and Contractor Night Access is an unfinished draft, for demoing.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 

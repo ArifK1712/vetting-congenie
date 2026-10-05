@@ -27,7 +27,7 @@ function ToastRow({ item }: { item: ToastItem }) {
   }, [item.id, dismiss]);
   return (
     <div role="status" className="anim-pop flex items-center gap-3 rounded-xl bg-surface py-2.5 ps-4 pe-1.5 text-sm font-medium text-ink shadow-pop ring-1 ring-line">
-      <span className="flex-1">{item.message}</span>
+      <span dir="auto" className="flex-1">{item.message}</span>
       <button
         type="button"
         onClick={() => dismiss(item.id)}

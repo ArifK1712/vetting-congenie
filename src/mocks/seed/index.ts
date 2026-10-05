@@ -24,7 +24,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;

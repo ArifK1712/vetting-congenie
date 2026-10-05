@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { FormEvent, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { Button, type ButtonProps } from "./Button";
+import { usePortalContainer } from "./portal";
 
 /**
  * Confirmation dialog for important actions (8.3). Owns the form submit,
@@ -38,6 +39,7 @@ export function ActionDialog({
   onConfirm: () => void;
   confirmDisabled?: boolean;
 }) {
+  const container = usePortalContainer();
   const t = useTranslations("actions.dialogs");
   const tc = useTranslations("common");
   const submit = (e: FormEvent) => {
@@ -47,7 +49,7 @@ export function ActionDialog({
 
   return (
     <RD.Root open={open} onOpenChange={(o) => !busy && onOpenChange(o)}>
-      <RD.Portal>
+      <RD.Portal container={container}>
         <RD.Overlay className="anim-fade fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-[2px]" />
         <RD.Content
           className="anim-pop fixed top-[12vh] left-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 rounded-2xl bg-surface shadow-pop ring-1 ring-line outline-none"

@@ -198,6 +198,25 @@
     letter-spacing: 0;
     text-transform: none;
   }
+  /*
+   * English-only areas (Workflows) keep Latin type and LTR even when the app
+   * is in Arabic. Mirrors the :root Latin values.
+   */
+  .locale-en {
+    --font-ui: var(--font-latin), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
+    --fs-2xs: 11px;
+    --fs-xs: 12px;
+    --fs-sm: 13px;
+    --fs-base: 14px;
+    --lh-tight: 1.3;
+    --lh-normal: 1.5;
+    font-family: var(--font-ui);
+    direction: ltr;
+  }
+  :root[dir="rtl"] .locale-en .eyebrow {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
 }
 
 @keyframes fade-in {

@@ -47,8 +47,9 @@ const e = (source: string, handle: string, target: string): WorkflowEdge => ({
 /** Linear workflow helper: start → stages… → final, every stage can reject. */
 function linear(prefix: string, stages: WorkflowNode[], extraNodes: WorkflowNode[] = [], extraEdges: WorkflowEdge[] = []): WorkflowGraph {
   const start: WorkflowNode = { id: `${prefix}_start`, type: "start", position: { x: 0, y: 0 } };
-  const final: WorkflowNode = { id: `${prefix}_final`, type: "final", position: { x: 0, y: 160 * (stages.length + 1) } };
-  const rejected: WorkflowNode = { id: `${prefix}_rejected`, type: "rejected", position: { x: 360, y: 160 * (stages.length + 1) } };
+  const bottom = Math.max(...[...stages, ...extraNodes].map((n) => n.position.y)) + 160;
+  const final: WorkflowNode = { id: `${prefix}_final`, type: "final", position: { x: 0, y: bottom } };
+  const rejected: WorkflowNode = { id: `${prefix}_rejected`, type: "rejected", position: { x: 360, y: bottom } };
   const edges: WorkflowEdge[] = [e(start.id, "next", stages[0].id)];
   stages.forEach((s, i) => {
     edges.push(e(s.id, "approve", stages[i + 1]?.id ?? final.id));
@@ -249,8 +250,57 @@ const wf = (
   status: "active",
   currentVersionId,
   draft: null,
+  draftSavedAt: null,
+  revision: 1,
   createdAt: "2026-08-10T09:00:00.000Z",
+  updatedAt: "2026-08-10T09:00:00.000Z",
 });
+
+// ─── Work in progress (not used by any request) ─────────────────────────
+
+/** Media v2 draft: adds a coverage-plan review between the two stages. */
+const mediaDraft: WorkflowGraph = linear("med", [
+  stage("med_cred", 0, 160, {
+    name: t("Credential Check", "التحقق من الاعتماد"),
+    teams: ["t_media"],
+    fallbackTeamId: "t_secreview",
+    timeLimitHours: 48,
+    allowedActions: ["approve", "reject", "moreInfo"],
+  }),
+  stage("med_plan", 0, 320, {
+    name: t("Coverage Plan Review", ""),
+    instructions: t("Check the coverage plan against restricted areas and session embargoes.", ""),
+    teams: ["t_media"],
+    fallbackTeamId: "t_secreview",
+    timeLimitHours: 24,
+    allowedActions: ["approve", "reject", "moreInfo"],
+  }),
+  stage("med_sec", 0, 480, {
+    name: t("Security Review", "المراجعة الأمنية"),
+    teams: ["t_gensec", "t_vipsec"],
+    fallbackTeamId: "t_secreview",
+    timeLimitHours: 24,
+    mandatory: true,
+    allowedActions: ["approve", "reject", "moreInfo"],
+  }),
+]);
+
+/** A new workflow still being drawn: its second stage has no team yet. */
+const nightDraft: WorkflowGraph = linear("night", [
+  stage("night_docs", 0, 160, {
+    name: t("Work Order Check", ""),
+    teams: ["t_docs"],
+    fallbackTeamId: "t_secreview",
+    timeLimitHours: 24,
+    allowedActions: ["approve", "reject", "moreInfo"],
+  }),
+  stage("night_site", 0, 320, {
+    name: t("Night Access Approval", ""),
+    teams: [],
+    fallbackTeamId: null,
+    mandatory: true,
+  }),
+]);
 
 export const workflows: Workflow[] = [
   wf("wf_vip", t("VIP Security Vetting", "تدقيق أمن كبار الشخصيات"), t("Enhanced VIP Vetting", "تدقيق كبار الشخصيات المعزز"), "bt_vip", "wfv_vip_2"),
@@ -259,13 +309,45 @@ export const workflows: Workflow[] = [
   wf("wf_media", t("Media Accreditation", "اعتماد الإعلاميين"), t("Media Accreditation", "اعتماد الإعلاميين"), "bt_media", "wfv_media_1"),
   wf("wf_contractor", t("Contractor Vetting", "تدقيق المقاولين"), t("Contractor Site Access", "دخول المقاولين للموقع"), "bt_contractor", "wfv_contractor_1"),
   wf("wf_exhibitor", t("Exhibitor Vetting", "تدقيق العارضين"), t("Exhibitor Document Check", "التحقق من مستندات العارضين"), "bt_exhibitor", "wfv_exhibitor_1"),
+  {
+    ...wf("wf_exhibitor_2025", t("Exhibitor Vetting 2025", ""), t("Exhibitor Check (2025)", ""), "bt_exhibitor", "wfv_exhibitor_2025_1"),
+    description: t("Last year's exhibitor process. Kept for reference; replaced by Exhibitor Vetting.", ""),
+    status: "inactive",
+    revision: 2,
+    createdAt: "2025-07-02T09:00:00.000Z",
+    updatedAt: "2026-08-14T11:35:00.000Z",
+  },
+  {
+    ...wf("wf_night", t("Contractor Night Access", ""), t("Night Works Access", ""), "bt_contractor", ""),
+    description: t("For contractors working inside the venue between 22:00 and 06:00.", ""),
+    status: "draft",
+    currentVersionId: null,
+    draft: spread(nightDraft),
+    draftSavedAt: "2026-10-03T14:10:00.000Z",
+    revision: 3,
+    createdAt: "2026-10-01T10:00:00.000Z",
+    updatedAt: "2026-10-03T14:10:00.000Z",
+  },
 ];
+
+// Media has unpublished changes on top of its live version.
+Object.assign(workflows.find((w) => w.id === "wf_media")!, {
+  draft: spread(mediaDraft),
+  draftSavedAt: "2026-10-02T09:25:00.000Z",
+  revision: 2,
+  updatedAt: "2026-10-02T09:25:00.000Z",
+});
+
+/** Canvas spacing for the builder's block sizes (the graphs above are drawn on a compact grid). */
+function spread(graph: WorkflowGraph): WorkflowGraph {
+  return { ...graph, nodes: graph.nodes.map((n) => ({ ...n, position: { x: Math.round(n.position.x * 1.3), y: Math.round(n.position.y * 1.75) } })) };
+}
 
 const ver = (id: string, workflowId: string, versionNo: number, graph: WorkflowGraph, publishedAt: string): WorkflowVersion => ({
   id,
   workflowId,
   versionNo,
-  graph,
+  graph: spread(graph),
   publishedBy: "u_sara",
   publishedAt,
 });
@@ -278,6 +360,9 @@ export const workflowVersions: WorkflowVersion[] = [
   ver("wfv_media_1", "wf_media", 1, mediaGraph, "2026-08-13T08:40:00.000Z"),
   ver("wfv_contractor_1", "wf_contractor", 1, contractorGraph, "2026-08-14T11:00:00.000Z"),
   ver("wfv_exhibitor_1", "wf_exhibitor", 1, exhibitorGraph, "2026-08-14T11:30:00.000Z"),
+  ver("wfv_exhibitor_2025_1", "wf_exhibitor_2025", 1, linear("exh25", [
+    stage("exh25_docs", 0, 160, { name: t("Document Check", ""), teams: ["t_docs"], fallbackTeamId: "t_secreview", allowedActions: ["approve", "reject"] }),
+  ]), "2025-07-05T09:00:00.000Z"),
 ];
 
 const allot = (workflowId: string, registrationId: string, badgeTypeId: string): WorkflowAllotment => ({

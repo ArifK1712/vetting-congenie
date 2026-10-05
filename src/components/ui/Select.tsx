@@ -5,6 +5,7 @@ import { Check, ChevronDown, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { usePortalContainer } from "./portal";
 
 export interface SelectOption {
   value: string;
@@ -93,8 +94,9 @@ function OptionRows({
 }
 
 function Content({ children, wide }: { children: ReactNode; wide?: boolean }) {
+  const container = usePortalContainer();
   return (
-    <Popover.Portal>
+    <Popover.Portal container={container}>
       <Popover.Content
         align="start"
         sideOffset={6}
