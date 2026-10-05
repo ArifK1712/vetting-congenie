@@ -345,7 +345,8 @@
         "withdrawn": "Withdrew the registration",
         "screening_review": "Screening review"
       },
-      "screenedDetail": "{blacklist, plural, =0 {No blacklist matches} one {1 blacklist match} other {{b} blacklist matches}}, {watchlist, plural, =0 {no watchlist matches} one {1 watchlist match} other {{w} watchlist matches}}"
+      "screenedDetail": "{blacklist, plural, =0 {No blacklist matches} one {1 blacklist match} other {{b} blacklist matches}}, {watchlist, plural, =0 {no watchlist matches} one {1 watchlist match} other {{w} watchlist matches}}",
+      "reassignedTo": "Assigned to {name}"
     },
     "actions": {
       "title": "Decision",
@@ -365,7 +366,12 @@
       "onHold": "On hold for a blacklist decision in Match Review.",
       "waitingAttendee": "Waiting for the attendee to answer.",
       "comingNext": "Decisions are wired up in the next build step.",
-      "more": "More actions"
+      "more": "More actions",
+      "release": "Release to team",
+      "retryFinal": "Try final approval again",
+      "commentPlaceholder": "Add an internal comment…",
+      "addComment": "Add comment",
+      "decideHint": "You claimed this request. Decide when ready."
     },
     "comments": {
       "title": "Internal comments",
@@ -380,5 +386,83 @@
   },
   "toast": {
     "dismiss": "Dismiss"
+  },
+  "actions": {
+    "errors": {
+      "notFound": "This request no longer exists.",
+      "stale": "Someone else changed this request. Reload to see the latest version.",
+      "forbidden": "You don't have permission for this action.",
+      "notClaimable": "This request can't be claimed right now.",
+      "claimedByOther": "Another reviewer has already claimed this request.",
+      "notClaimedByYou": "Claim the request before deciding it.",
+      "claimLimit": "You've reached your limit of open requests for this team.",
+      "sameReviewer": "You approved an earlier stage of this request, so another reviewer must decide this one.",
+      "actionNotAllowed": "This action isn't available at this stage.",
+      "reasonRequired": "Add a reason.",
+      "remarksRequired": "Add remarks for the next team.",
+      "invalidTarget": "Choose a stage to escalate to.",
+      "invalidAssignee": "Choose a different team member.",
+      "emptyComment": "Write a comment first."
+    },
+    "toasts": {
+      "claimed": "{id} claimed. It's yours to decide.",
+      "released": "{id} returned to the team queue.",
+      "approvedNext": "Approved. {id} moved to {stage}.",
+      "approvedFinal": "{id} approved and the badge was issued.",
+      "approvedNoBadge": "{id} approved. The badge waits for payment.",
+      "limitReached": "Registration limit reached. {id} stays under review.",
+      "screeningHold": "A new blacklist match stopped final approval. {id} is on hold.",
+      "rejected": "{id} rejected.",
+      "escalated": "{id} escalated to {stage}.",
+      "reassigned": "{id} assigned to {name}.",
+      "commented": "Comment added."
+    },
+    "dialogs": {
+      "cancel": "Cancel",
+      "working": "Saving…",
+      "approve": {
+        "title": "Approve {stage}",
+        "comment": "Comment",
+        "optional": "Optional",
+        "commentPlaceholder": "Visible to reviewers only",
+        "nextStage": "Moves to {stage}",
+        "nextTeam": "Routed to {team}",
+        "finalTitle": "This is the last stage",
+        "final": "Final approval checks the blacklist and watchlist again and uses one place: {used} of {limit} are used.",
+        "finalFull": "The registration limit is full ({used} of {limit}). The request will stay under review until a place is free.",
+        "confirm": "Approve"
+      },
+      "reject": {
+        "title": "Reject request",
+        "reason": "Reason",
+        "comment": "Comment",
+        "note": "The attendee receives the registration's rejection email. The reason stays internal.",
+        "confirm": "Reject request"
+      },
+      "escalate": {
+        "title": "Escalate request",
+        "target": "Send to",
+        "remarks": "Remarks",
+        "remarksPlaceholder": "What should the next team look at?",
+        "mandatory": "Mandatory stage",
+        "confirm": "Escalate"
+      },
+      "reassign": {
+        "title": "Assign request",
+        "assignee": "Team member",
+        "openCount": "{n} open",
+        "lead": "Lead",
+        "current": "Current",
+        "blocked": "Approved an earlier stage",
+        "reason": "Reason",
+        "reasonPlaceholder": "Why are you reassigning it?",
+        "confirm": "Assign"
+      }
+    },
+    "live": {
+      "changedBy": "{name} updated this request {time}.",
+      "changed": "This request was updated {time}.",
+      "reload": "Reload"
+    }
   }
 }

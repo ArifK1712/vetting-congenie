@@ -7,7 +7,7 @@ import { canClaim, isLate, requestTimeLimit, visibleRequestsFor } from "@/domain
 import { visibleStatus } from "@/domain/status";
 import type { HistoryEvent, ID } from "@/domain/types";
 import { stageOf } from "@/domain/workflow";
-import { useAppStore, useDb } from "@/store/app";
+import { useDb, useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 
 const SCREENING_ACTIONS = new Set(["screening_hold", "match_cleared", "match_confirmed"]);
@@ -20,7 +20,7 @@ const SCREENING_ACTIONS = new Set(["screening_hold", "match_cleared", "match_con
 export function useRequestView(id: ID, now: number) {
   const db = useDb();
   const viewer = useViewer();
-  const eventScope = useAppStore((s) => s.eventScope);
+  const eventScope = useSession((s) => s.eventScope);
 
   return useMemo(() => {
     const request = db.requests[id];

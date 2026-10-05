@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { STORE_KEY, useAppStore } from "./app";
+import { STORE_KEY, useAppStore, useSession } from "./app";
 
 /**
  * The prototype database lives in localStorage, so it only exists on the
@@ -10,6 +10,7 @@ import { STORE_KEY, useAppStore } from "./app";
  */
 export function useStoreHydration() {
   useEffect(() => {
+    void useSession.persist.rehydrate();
     void useAppStore.persist.rehydrate();
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORE_KEY) void useAppStore.persist.rehydrate();

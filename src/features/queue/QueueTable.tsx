@@ -1,14 +1,13 @@
 "use client";
 
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { BadgeTypeChip, StatusLabel } from "@/components/ui/Status";
-import { toast } from "@/components/ui/Toast";
 import { canClaim, type QueueRow } from "@/domain/queue";
 import { OPEN_STATUSES } from "@/domain/status";
 import type { Database, ID } from "@/domain/types";
@@ -45,6 +44,8 @@ export function QueueTable({
   selectedId,
   onSelect,
   onOpen,
+  onClaim,
+  claimingId,
 }: {
   db: Database;
   rows: QueueRow[];
@@ -53,9 +54,10 @@ export function QueueTable({
   selectedId: ID | null;
   onSelect: (id: ID) => void;
   onOpen: (id: ID) => void;
+  onClaim: (id: ID) => void;
+  claimingId: ID | null;
 }) {
   const t = useTranslations("queue");
-  const tr = useTranslations("requestDetail.actions");
   const fmt = useFormat();
 
   const columns = useMemo(
@@ -155,11 +157,13 @@ export function QueueTable({
             canClaim(db, viewerId, db.requests[r.id]) ? (
               <Button
                 size="sm"
+                disabled={claimingId !== null}
                 onClick={(e) => {
                   e.stopPropagation();
-                  toast(tr("comingNext"));
+                  onClaim(r.id);
                 }}
               >
+                {claimingId === r.id && <Loader2 className="size-3.5 animate-spin" />}
                 {t("claim")}
               </Button>
             ) : (
@@ -174,7 +178,7 @@ export function QueueTable({
             ),
         }),
       ]),
-    [t, tr, fmt, db, viewerId, now],
+    [t, fmt, db, viewerId, now, onClaim, claimingId],
   );
 
   const table = useTable({ features, columns, data: rows });

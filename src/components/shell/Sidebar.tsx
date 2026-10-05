@@ -27,7 +27,7 @@ import { OPEN_STATUSES } from "@/domain/status";
 import type { Permission } from "@/domain/types";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { useAppStore, useDb } from "@/store/app";
+import { useDb, useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 
 type NavKey =
@@ -85,7 +85,7 @@ const GROUPS: { key: "operate" | "screening" | "configure" | "insights" | "proto
 function useNavCounts(): Partial<Record<NavKey, number>> {
   const db = useDb();
   const viewer = useViewer();
-  const eventScope = useAppStore((s) => s.eventScope);
+  const eventScope = useSession((s) => s.eventScope);
   return useMemo(() => {
     const open = visibleRequestsFor(db, viewer.id, eventScope).filter((r) => OPEN_STATUSES.includes(r.status));
     const held = Object.values(db.requests).filter(
@@ -105,8 +105,8 @@ export function Sidebar() {
   const tApp = useTranslations("app");
   const pathname = usePathname();
   const viewer = useViewer();
-  const collapsed = useAppStore((s) => s.sidebarCollapsed);
-  const toggle = useAppStore((s) => s.toggleSidebar);
+  const collapsed = useSession((s) => s.sidebarCollapsed);
+  const toggle = useSession((s) => s.toggleSidebar);
   const counts = useNavCounts();
 
   const countTone: Partial<Record<NavKey, string>> = {

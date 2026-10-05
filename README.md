@@ -13,7 +13,8 @@ npm run dev          # http://localhost:3000 → /en/queue
 
 Other scripts: `npm test` (domain + seed tests), `npm run typecheck`,
 `npm run lint`, `npm run i18n:check` (every locale has every key),
-`npm run screens` (Playwright screenshots of key screens in all locales; dev server must be running).
+`npm run screens` (Playwright screenshots of key screens in all locales) and
+`npm run e2e` (two-tab action test: claim, live update, approve, reject, escalate). Both need the dev server running.
 
 ## Using the prototype
 
@@ -21,6 +22,9 @@ Other scripts: `npm test` (domain + seed tests), `npm run typecheck`,
   Team Lead, Compliance Officer, Operations Manager or Administrator.
   Permissions, visible data and navigation change with the persona.
 - **Language**: English / العربية in the header. Arabic is a full RTL layout.
+- **Two people at once**: open the app in two tabs and pick a different persona in each
+  (Omar and Maya share the General Security Team). Claims and decisions in one tab
+  appear in the other within seconds; a stale tab locks its actions until you reload.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 

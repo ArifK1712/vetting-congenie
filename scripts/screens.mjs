@@ -11,10 +11,10 @@ page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
 
 async function persona(id) {
   await page.evaluate((id) => {
-    const raw = localStorage.getItem("vetting-prototype");
-    const data = JSON.parse(raw);
+    const raw = localStorage.getItem("vetting-prototype-session");
+    const data = raw ? JSON.parse(raw) : { state: {}, version: 0 };
     data.state.personaId = id;
-    localStorage.setItem("vetting-prototype", JSON.stringify(data));
+    localStorage.setItem("vetting-prototype-session", JSON.stringify(data));
   }, id);
 }
 

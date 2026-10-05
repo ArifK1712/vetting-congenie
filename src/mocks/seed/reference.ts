@@ -75,7 +75,7 @@ export const users: User[] = [
 ];
 
 /** Personas offered in the prototype switcher. */
-export const PERSONA_IDS = ["u_sara", "u_omar", "u_lina", "u_arif", "u_daniel"] as const;
+export const PERSONA_IDS = ["u_sara", "u_omar", "u_maya", "u_lina", "u_arif", "u_daniel"] as const;
 
 export const events: Event[] = [
   {

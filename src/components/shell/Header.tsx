@@ -13,7 +13,7 @@ import { localeConfig } from "@/i18n/locales";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { PERSONA_IDS } from "@/mocks/seed/reference";
-import { useAppStore, useDb } from "@/store/app";
+import { useAppStore, useDb, useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 
 export function Header() {
@@ -46,8 +46,8 @@ function EventScope() {
   const t = useTranslations("header");
   const db = useDb();
   const fmt = useFormat();
-  const scope = useAppStore((s) => s.eventScope);
-  const setScope = useAppStore((s) => s.setEventScope);
+  const scope = useSession((s) => s.eventScope);
+  const setScope = useSession((s) => s.setEventScope);
   const events = Object.values(db.events);
   const current = scope === "all" ? null : db.events[scope];
   return (
@@ -172,7 +172,7 @@ function PersonaMenu() {
   const db = useDb();
   const fmt = useFormat();
   const viewer = useViewer();
-  const setPersona = useAppStore((s) => s.setPersona);
+  const setPersona = useSession((s) => s.setPersona);
   const resetDemo = useAppStore((s) => s.resetDemo);
 
   return (

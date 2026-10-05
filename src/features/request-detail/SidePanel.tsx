@@ -1,18 +1,22 @@
 "use client";
 
-import { ArrowUpRight, Ellipsis, Eye, Info, MessageSquare, ShieldBan, UserRoundCog } from "lucide-react";
+import { ArrowUpRight, Ellipsis, Eye, Info, Loader2, ShieldBan, Undo2, UserRoundCog } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/Menu";
 import { BadgeStatusLabel } from "@/components/ui/Status";
 import { toast } from "@/components/ui/Toast";
-import { isTeamLead } from "@/domain/permissions";
+import { canReassign } from "@/domain/actions";
 import { FINAL_STATUSES } from "@/domain/status";
 import { useFormat } from "@/i18n/format";
 import { cn } from "@/lib/cn";
+import { TextArea } from "@/components/ui/Field";
+import { requestService } from "@/services/requests";
+import { useQuickAction, useRequestAction } from "@/features/requests/useRequestAction";
+import { ApproveDialog, EscalateDialog, ReassignDialog, RejectDialog, type DialogKind } from "./ActionDialogs";
 import type { RequestView } from "./useRequestView";
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -24,95 +28,149 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function DecisionPanel({ view }: { view: RequestView }) {
+export function DecisionPanel({
+  view,
+  revision,
+  stale,
+  onActed,
+}: {
+  view: RequestView;
+  revision: number;
+  stale: boolean;
+  onActed: () => void;
+}) {
   const t = useTranslations("requestDetail.actions");
+  const tt = useTranslations("actions.toasts");
   const { request, viewer, stage, db } = view;
+  const [dialog, setDialog] = useState<DialogKind>(null);
+  const quick = useQuickAction();
   const soon = () => toast(t("comingNext"));
+  const ref = { requestId: request.id, actorId: viewer.id, expectedRevision: revision };
 
   const mine = request.claimedBy === viewer.id && request.status === "under_review" && !request.awaitingCapacity;
   const byOther = !!request.claimedBy && request.claimedBy !== viewer.id && !FINAL_STATUSES.includes(request.status);
-  const lead = request.currentTeamId ? isTeamLead(db, viewer.id, request.currentTeamId) : false;
   const allowed = stage?.allowedActions ?? [];
+  const canRetryFinal = request.awaitingCapacity && (request.claimedBy === viewer.id || viewer.can("queue.reviewAll"));
+  const reassignable = canReassign(db, viewer.id, request);
+  const disabled = stale || quick.busyId !== null;
 
   let message: string | null = null;
   if (FINAL_STATUSES.includes(request.status)) message = t("finished");
   else if (view.status === "screening_hold") message = t("onHold");
   else if (request.status === "more_info_required") message = t("waitingAttendee");
+  else if (request.awaitingCapacity) message = null;
   else if (byOther) message = t("claimedByOther", { name: view.claimer?.name ?? "" });
   else if (view.canClaim) message = t("claimFirst");
-  else if (!mine) message = t("readOnly");
+  else if (mine) message = t("decideHint");
+  else message = t("readOnly");
 
   const secondary = [
-    { key: "reassign", icon: UserRoundCog, show: viewer.can("queue.assign") || lead },
-    { key: "comment", icon: MessageSquare, show: viewer.can("queue.access") },
-    { key: "addWatchlist", icon: Eye, show: viewer.can("watchlist.manage") },
-    { key: "addBlacklist", icon: ShieldBan, show: viewer.can("blacklist.propose") },
+    { key: "release", icon: Undo2, show: mine, onSelect: () => quick.run("release", () => requestService.release(ref), tt("released", { id: request.id })).then((ok) => ok && onActed()) },
+    { key: "reassign", icon: UserRoundCog, show: reassignable, onSelect: () => setDialog("reassign") },
+    { key: "addWatchlist", icon: Eye, show: viewer.can("watchlist.manage"), onSelect: soon },
+    { key: "addBlacklist", icon: ShieldBan, show: viewer.can("blacklist.propose"), onSelect: soon },
   ] as const;
   const visibleSecondary = secondary.filter((s) => s.show);
+
+  const dialogProps = {
+    view,
+    revision,
+    onClose: () => setDialog(null),
+    onDone: () => {
+      setDialog(null);
+      onActed();
+    },
+  };
 
   return (
     <section className="overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
       <div aria-hidden className="h-1 bg-accent" />
       <div className="p-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-ink">{t("title")}</h2>
-        {visibleSecondary.length > 0 && (
-          <Menu>
-            <MenuTrigger asChild>
-              <Button variant="ghost" size="sm" iconOnly aria-label={t("more")}>
-                <Ellipsis className="size-4" />
-              </Button>
-            </MenuTrigger>
-            <MenuContent align="end">
-              {visibleSecondary.map((s) => (
-                <MenuItem key={s.key} onSelect={soon}>
-                  <s.icon className="size-4 text-ink-3" />
-                  {t(s.key)}
-                </MenuItem>
-              ))}
-            </MenuContent>
-          </Menu>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-ink">{t("title")}</h2>
+          {visibleSecondary.length > 0 && (
+            <Menu>
+              <MenuTrigger asChild>
+                <Button variant="ghost" size="sm" iconOnly aria-label={t("more")} disabled={disabled}>
+                  <Ellipsis className="size-4" />
+                </Button>
+              </MenuTrigger>
+              <MenuContent align="end">
+                {visibleSecondary.map((s) => (
+                  <MenuItem key={s.key} onSelect={s.onSelect}>
+                    <s.icon className="size-4 text-ink-3" />
+                    {t(s.key)}
+                  </MenuItem>
+                ))}
+              </MenuContent>
+            </Menu>
+          )}
+        </div>
+
+        {message && (
+          <p className="mt-3 flex gap-2.5 rounded-lg bg-subtle p-3 text-sm text-ink-2 ring-1 ring-line">
+            <Info className="mt-0.5 size-4 shrink-0 text-indigo-500" />
+            {message}
+          </p>
         )}
+
+        <div className="mt-4 space-y-2">
+          {view.canClaim && (
+            <Button
+              variant="primary"
+              className="w-full"
+              disabled={disabled}
+              onClick={() => quick.run("claim", () => requestService.claim(ref), tt("claimed", { id: request.id })).then((ok) => ok && onActed())}
+            >
+              {quick.busyId === "claim" ? <Loader2 className="size-4 animate-spin" /> : null}
+              {t("claim")}
+            </Button>
+          )}
+          {canRetryFinal && (
+            <Button
+              variant="primary"
+              className="w-full"
+              disabled={disabled}
+              onClick={() =>
+                quick
+                  .run("retry", () => requestService.retryFinal(ref), tt("approvedFinal", { id: request.id }))
+                  .then((ok) => ok && onActed())
+              }
+            >
+              {quick.busyId === "retry" ? <Loader2 className="size-4 animate-spin" /> : null}
+              {t("retryFinal")}
+            </Button>
+          )}
+          {(mine || byOther) && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="success" disabled={byOther || disabled} onClick={() => setDialog("approve")}>
+                  {t("approve")}
+                </Button>
+                <Button variant="danger" disabled={byOther || disabled} onClick={() => setDialog("reject")}>
+                  {t("reject")}
+                </Button>
+              </div>
+              {allowed.includes("moreInfo") && (
+                <Button className="w-full" disabled={byOther || disabled} onClick={soon}>
+                  {t("moreInfo")}
+                </Button>
+              )}
+              {allowed.includes("escalate") && (stage?.escalateTo.length ?? 0) > 0 && (
+                <Button className="w-full" disabled={byOther || disabled} onClick={() => setDialog("escalate")}>
+                  <DirIcon icon={ArrowUpRight} className="size-3.5" />
+                  {t("escalate")}
+                </Button>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      {message && (
-        <p className="mt-3 flex gap-2.5 rounded-lg bg-subtle p-3 text-sm text-ink-2 ring-1 ring-line">
-          <Info className="mt-0.5 size-4 shrink-0 text-indigo-500" />
-          {message}
-        </p>
-      )}
-
-      <div className="mt-4 space-y-2">
-        {view.canClaim && (
-          <Button variant="primary" className="w-full" onClick={soon}>
-            {t("claim")}
-          </Button>
-        )}
-        {(mine || byOther) && (
-          <>
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="success" disabled={byOther} onClick={soon}>
-                {t("approve")}
-              </Button>
-              <Button variant="danger" disabled={byOther} onClick={soon}>
-                {t("reject")}
-              </Button>
-            </div>
-            {allowed.includes("moreInfo") && (
-              <Button className="w-full" disabled={byOther} onClick={soon}>
-                {t("moreInfo")}
-              </Button>
-            )}
-            {allowed.includes("escalate") && (stage?.escalateTo.length ?? 0) > 0 && (
-              <Button className="w-full" disabled={byOther} onClick={soon}>
-                <DirIcon icon={ArrowUpRight} className="size-3.5" />
-                {t("escalate")}
-              </Button>
-            )}
-          </>
-        )}
-      </div>
-      </div>
+      {dialog === "approve" && <ApproveDialog {...dialogProps} />}
+      {dialog === "reject" && <RejectDialog {...dialogProps} />}
+      {dialog === "escalate" && <EscalateDialog {...dialogProps} />}
+      {dialog === "reassign" && <ReassignDialog {...dialogProps} />}
     </section>
   );
 }
@@ -179,8 +237,9 @@ export function CommentsPanel({ view }: { view: RequestView }) {
         <h2 className="text-sm font-bold text-ink">{t("title")}</h2>
         <span className="text-2xs text-ink-3">{t("internal")}</span>
       </div>
+      {view.viewer.can("queue.access") && <CommentComposer view={view} />}
       {view.comments.length === 0 ? (
-        <p className="mt-2 text-sm text-ink-3">{t("empty")}</p>
+        <p className="mt-3 text-sm text-ink-3">{t("empty")}</p>
       ) : (
         <ul className="mt-3 space-y-3">
           {view.comments.map((c) => {
@@ -202,5 +261,38 @@ export function CommentsPanel({ view }: { view: RequestView }) {
         </ul>
       )}
     </section>
+  );
+}
+
+function CommentComposer({ view }: { view: RequestView }) {
+  const t = useTranslations("requestDetail.actions");
+  const tt = useTranslations("actions.toasts");
+  const [body, setBody] = useState("");
+  const { busy, error, run } = useRequestAction();
+  const submit = () =>
+    run(
+      () => requestService.comment({ requestId: view.request.id, actorId: view.viewer.id, body }),
+      () => tt("commented"),
+      () => setBody(""),
+    );
+  return (
+    <div className="mt-3">
+      <TextArea
+        rows={2}
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder={t("commentPlaceholder")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
+        }}
+      />
+      {error && <p className="mt-1.5 text-xs text-rose-600">{error}</p>}
+      <div className="mt-2 flex justify-end">
+        <Button size="sm" variant="secondary" disabled={busy || !body.trim()} onClick={submit}>
+          {busy ? <Loader2 className="size-3.5 animate-spin" /> : null}
+          {t("addComment")}
+        </Button>
+      </div>
+    </div>
   );
 }

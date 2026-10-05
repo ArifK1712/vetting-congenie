@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronRight, ClipboardList, CornerDownLeft, Eye, Gauge, Layers, SearchX, ShieldAlert, UsersRound, Workflow, type LucideIcon } from "lucide-react";
+import { ChevronRight, ClipboardList, CornerDownLeft, Eye, Gauge, Layers, RefreshCw, SearchX, ShieldAlert, UsersRound, Workflow, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -14,6 +15,8 @@ import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/useNow";
+import { wroteLocally } from "@/services/requests";
+import { useAppStore } from "@/store/app";
 import { RequestFlags } from "@/features/requests/parts";
 import { CommentsPanel, DecisionPanel, FactsPanel } from "./SidePanel";
 import { AnswersTab, ApplicantTab, DocumentsTab, HistoryTab, MoreInfoTab, ProgressTab, ScreeningTab } from "./tabs";
@@ -72,6 +75,16 @@ export function RequestDetailPage({ id }: { id: ID }) {
   const fmt = useFormat();
   const now = useNow();
   const view = useRequestView(id, now);
+
+  // The revision this viewer has acknowledged. If someone else acts (another
+  // tab, another persona), the stored revision moves ahead: actions lock and a
+  // banner offers a reload, as in spec 13.1 / 8.3.
+  const currentRevision = view?.request.revision ?? 0;
+  const [seen, setSeen] = useState({ id, revision: currentRevision });
+  if (seen.id !== id) setSeen({ id, revision: currentRevision });
+  const stale = !!view && seen.id === id && currentRevision !== seen.revision && !wroteLocally(id, currentRevision);
+  const acknowledge = () =>
+    setSeen({ id, revision: useAppStore.getState().db?.requests[id]?.revision ?? currentRevision });
 
   if (!view) {
     return (
@@ -135,6 +148,8 @@ export function RequestDetailPage({ id }: { id: ID }) {
         </dl>
       </header>
 
+      {stale && <ChangedBanner view={view} now={now} onReload={acknowledge} />}
+
       <div className="mt-4">
         <Bars view={view} />
       </div>
@@ -172,7 +187,7 @@ export function RequestDetailPage({ id }: { id: ID }) {
         </Tabs>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <DecisionPanel view={view} />
+          <DecisionPanel view={view} revision={stale ? seen.revision : currentRevision} stale={stale} onActed={acknowledge} />
           <FactsPanel view={view} now={now} />
           <CommentsPanel view={view} />
         </aside>
@@ -206,6 +221,23 @@ function HeaderFact({
           {hint && <span className="ms-1.5 font-normal text-ink-3">{hint}</span>}
         </dd>
       </div>
+    </div>
+  );
+}
+
+function ChangedBanner({ view, now, onReload }: { view: RequestView; now: number; onReload: () => void }) {
+  const t = useTranslations("actions.live");
+  const fmt = useFormat();
+  const latest = view.history.find((h) => h.actorId !== view.viewer.id);
+  const actor = latest && latest.actorId !== "system" && latest.actorId !== "attendee" ? view.db.users[latest.actorId] : null;
+  const time = latest ? fmt.ago(latest.at, now) : "";
+  return (
+    <div role="status" className="anim-pop mt-4 flex items-center gap-3 rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-800 ring-1 ring-indigo-200 ring-inset">
+      <RefreshCw className="size-4 shrink-0" />
+      <span className="flex-1">{actor ? t("changedBy", { name: actor.name, time }) : t("changed", { time })}</span>
+      <Button size="sm" onClick={onReload}>
+        {t("reload")}
+      </Button>
     </div>
   );
 }

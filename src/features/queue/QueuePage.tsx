@@ -12,7 +12,9 @@ import type { ID } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { useRouter } from "@/i18n/navigation";
 import { useNow } from "@/lib/useNow";
-import { useAppStore, useDb } from "@/store/app";
+import { requestService } from "@/services/requests";
+import { useQuickAction } from "@/features/requests/useRequestAction";
+import { useDb, useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 import { FilterBar, hasActiveFilters } from "./FilterBar";
 import { PreviewPane } from "./PreviewPane";
@@ -26,7 +28,7 @@ export function QueuePage() {
   const fmt = useFormat();
   const db = useDb();
   const viewer = useViewer();
-  const eventScope = useAppStore((s) => s.eventScope);
+  const eventScope = useSession((s) => s.eventScope);
   const router = useRouter();
   const params = useSearchParams();
   const now = useNow();
@@ -53,6 +55,13 @@ export function QueuePage() {
     setPage(0);
     setSelectedId(null);
   }
+
+  const quick = useQuickAction();
+  const tt = useTranslations("actions.toasts");
+  const claimRequest = (id: ID) => {
+    const r = db.requests[id];
+    void quick.run(id, () => requestService.claim({ requestId: id, actorId: viewer.id, expectedRevision: r.revision }), tt("claimed", { id }));
+  };
 
   const allRows = useMemo(() => buildQueueRows(db, viewer.id, eventScope, now), [db, viewer.id, eventScope, now]);
   const { rows, counts, late } = useMemo(() => applyQueueFilters(allRows, filters, viewer.id, now), [allRows, filters, viewer.id, now]);
@@ -124,6 +133,8 @@ export function QueuePage() {
                 selectedId={selectedId}
                 onSelect={(id) => setSelectedId((cur) => (cur === id ? null : id))}
                 onOpen={(id) => router.push(`/requests/${id}`)}
+                onClaim={claimRequest}
+                claimingId={quick.busyId}
               />
             ) : (
               <EmptyState
@@ -158,7 +169,17 @@ export function QueuePage() {
         </section>
       </div>
 
-      {selected && <PreviewPane db={db} row={selected} viewerId={viewer.id} now={now} onClose={() => setSelectedId(null)} />}
+      {selected && (
+        <PreviewPane
+          db={db}
+          row={selected}
+          viewerId={viewer.id}
+          now={now}
+          onClose={() => setSelectedId(null)}
+          onClaim={() => claimRequest(selected.id)}
+          claiming={quick.busyId !== null}
+        />
+      )}
     </div>
   );
 }

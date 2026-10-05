@@ -7,7 +7,6 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { BadgeTypeChip, StatusPill } from "@/components/ui/Status";
-import { toast } from "@/components/ui/Toast";
 import { buildProgress } from "@/domain/progress";
 import { canClaim, type QueueRow } from "@/domain/queue";
 import type { Database, ID } from "@/domain/types";
@@ -30,17 +29,20 @@ export function PreviewPane({
   viewerId,
   now,
   onClose,
+  onClaim,
+  claiming,
 }: {
   db: Database;
   row: QueueRow;
   viewerId: ID;
   now: number;
   onClose: () => void;
+  onClaim: () => void;
+  claiming: boolean;
 }) {
   const t = useTranslations("queue.preview");
   const tq = useTranslations("queue");
   const tm = useTranslations("requestDetail.meta");
-  const ta = useTranslations("requestDetail.actions");
   const tc = useTranslations("common");
   const td = useTranslations("duration");
   const fmt = useFormat();
@@ -131,7 +133,11 @@ export function PreviewPane({
             <DirIcon icon={ArrowUpRight} className="size-3.5" />
           </Button>
         </Link>
-        {canClaim(db, viewerId, request) && <Button onClick={() => toast(ta("comingNext"))}>{tq("claim")}</Button>}
+        {canClaim(db, viewerId, request) && (
+          <Button disabled={claiming} onClick={onClaim}>
+            {tq("claim")}
+          </Button>
+        )}
       </div>
       <p className="bg-subtle px-5 pb-3 text-2xs text-ink-3">{t("hint")}</p>
     </aside>

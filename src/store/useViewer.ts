@@ -3,12 +3,12 @@
 import { useMemo } from "react";
 import { permissionsOf } from "@/domain/permissions";
 import type { Permission } from "@/domain/types";
-import { useAppStore, useDb } from "./app";
+import { useDb, useSession } from "./app";
 
 /** The current persona and its permissions. */
 export function useViewer() {
   const db = useDb();
-  const personaId = useAppStore((s) => s.personaId);
+  const personaId = useSession((s) => s.personaId);
   return useMemo(() => {
     const perms = permissionsOf(db, personaId);
     return {

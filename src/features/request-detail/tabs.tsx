@@ -355,7 +355,9 @@ export function HistoryTab({ view }: { view: RequestView }) {
               })
             : h.action === "rejected" && h.meta?.reasonId
               ? fmt.text(db.rejectReasons[String(h.meta.reasonId)]?.label)
-              : null;
+              : h.action === "reassigned" && h.meta?.to
+                ? t("reassignedTo", { name: db.users[String(h.meta.to)]?.name ?? "" })
+                : null;
         return (
           <li key={h.id} className="flex gap-3 border-b border-line py-3 last:border-b-0">
             {actor ? (
