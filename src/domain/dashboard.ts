@@ -2,6 +2,7 @@ import { isLate, visibleRequestsFor } from "./queue";
 import { can, teamsOfUser } from "./permissions";
 import { OPEN_STATUSES, STATUS_ORDER, visibleStatus } from "./status";
 import type { Database, ID, LocalizedText, RequestStatus } from "./types";
+import { resolvePath } from "./workflow";
 
 /**
  * Dashboard metrics (spec 14.1). Built from the same visibility rules as the
@@ -105,6 +106,29 @@ export function buildDashboard(db: Database, viewerId: ID, eventScope: ID | "all
   }
   const perStage = [...stageMap.values()].sort((a, b) => b.claimed + b.unclaimed - (a.claimed + a.unclaimed)).slice(0, 8);
 
+  // ─── Pipeline: open requests along each workflow's stage sequence ───
+  const pipeline = Object.values(db.workflows)
+    .filter((w) => w.currentVersionId && inList(f.workflowIds, w.id))
+    .map((w) => {
+      const graph = db.workflowVersions[w.currentVersionId!].graph;
+      const path = resolvePath(graph);
+      const extra = graph.nodes.filter((n) => n.type === "stage" && !path.some((p) => p.id === n.id));
+      const stages = [...path, ...extra].map((n) => {
+        const here = open.filter((r) => r.workflowId === w.id && r.currentStageNodeId === n.id);
+        return {
+          nodeId: n.id,
+          name: n.type === "stage" ? n.stage.name : { en: "", ar: "" },
+          offPath: !path.some((p) => p.id === n.id),
+          claimed: here.filter((r) => r.claimedBy).length,
+          unclaimed: here.filter((r) => !r.claimedBy).length,
+          late: here.filter((r) => isLate(db, r, now)).length,
+        };
+      });
+      return { workflowId: w.id, label: w.label, badgeTypeId: w.badgeTypeId, stages, total: stages.reduce((s, x) => s + x.claimed + x.unclaimed, 0) };
+    })
+    .filter((w) => w.total > 0)
+    .sort((a, b) => b.total - a.total);
+
   // ─── Time in stage (median hours of completed visits in range) ─────
   const stageTimes = new Map<string, { key: string; name: LocalizedText; hours: number[] }>();
   for (const e of Object.values(db.stageExecutions)) {
@@ -121,7 +145,7 @@ export function buildDashboard(db: Database, viewerId: ID, eventScope: ID | "all
   const lateTeams = new Map<ID, number>();
   for (const r of late) if (r.currentTeamId) lateTeams.set(r.currentTeamId, (lateTeams.get(r.currentTeamId) ?? 0) + 1);
   const lateByTeam = [...lateTeams.entries()]
-    .map(([teamId, count]) => ({ teamId, name: db.teams[teamId].name, count }))
+    .map(([teamId, count]) => ({ teamId, name: db.teams[teamId].name, count, open: open.filter((r) => r.currentTeamId === teamId).length }))
     .sort((a, b) => b.count - a.count);
 
   // ─── Results by badge type ──────────────────────────────────────────
@@ -197,6 +221,7 @@ export function buildDashboard(db: Database, viewerId: ID, eventScope: ID | "all
     statusCounts,
     daily: days,
     perStage,
+    pipeline,
     timePerStage,
     lateByTeam,
     byBadgeType,

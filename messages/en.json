@@ -491,7 +491,10 @@
       "approvalHint": "{a} approved of {n} decided",
       "median": "Median time to decide",
       "medianHint": "From submission to decision",
-      "noData": "—"
+      "noData": "—",
+      "slowest": "Slowest: {stage}",
+      "trend": "Decisions per day",
+      "breakdown": "Open work by status"
     },
     "overTime": {
       "title": "Registrations over time",
@@ -506,14 +509,19 @@
     },
     "status": {
       "title": "Requests by status",
-      "subtitle": "Select a status to open it in the Review Queue"
+      "subtitle": "Select a status to open it in the Review Queue",
+      "share": "{p}%",
+      "total": "{n} requests in scope"
     },
     "perStage": {
       "title": "Waiting at each stage",
       "subtitle": "Open requests, claimed and unclaimed",
       "claimed": "Claimed",
       "unclaimed": "Unclaimed",
-      "empty": "Nothing is waiting."
+      "empty": "Nothing is waiting.",
+      "late": "{n} late",
+      "escalation": "Escalation",
+      "waiting": "waiting"
     },
     "timePerStage": {
       "title": "Time in stage",
@@ -524,14 +532,17 @@
     "late": {
       "title": "Late requests by team",
       "subtitle": "Past their stage time limit",
-      "empty": "No late requests."
+      "empty": "No late requests.",
+      "ofOpen": "of {n} open"
     },
     "badge": {
       "title": "Results by badge type",
       "subtitle": "All requests in scope",
       "approved": "Approved",
       "rejected": "Rejected",
-      "open": "Open"
+      "open": "Open",
+      "approvedShare": "{p}% approved",
+      "total": "{n} total"
     },
     "places": {
       "title": "Places used",
@@ -546,7 +557,8 @@
       "reviewer": "Reviewer",
       "open": "Open",
       "decisions": "Decisions",
-      "empty": "No reviewer activity this week."
+      "empty": "No reviewer activity this week.",
+      "activity": "Activity"
     },
     "lists": {
       "title": "List matches",

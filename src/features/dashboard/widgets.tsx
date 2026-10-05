@@ -40,6 +40,8 @@ export function StatTile({
   value,
   hint,
   hintTone = "muted",
+  visual,
+  footer,
 }: {
   icon: LucideIcon;
   tone: Tone;
@@ -47,16 +49,22 @@ export function StatTile({
   value: string;
   hint: string;
   hintTone?: "muted" | "attention" | "positive";
+  /** Mini visual shown at the end side of the value. */
+  visual?: ReactNode;
+  footer?: ReactNode;
 }) {
   return (
-    <div className="rounded-xl bg-surface p-5 shadow-card ring-1 ring-line">
+    <div className="flex flex-col rounded-xl bg-surface p-5 shadow-card ring-1 ring-line">
       <div className="flex items-center gap-2.5">
         <span className={cn("inline-flex size-8 items-center justify-center rounded-lg", TONE[tone].chip)}>
           <Icon className="size-4" strokeWidth={2.25} />
         </span>
         <span className="text-xs font-semibold text-ink-2">{label}</span>
       </div>
-      <p className="mt-3 text-[30px] leading-none font-bold tracking-tight text-ink">{value}</p>
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <p className="text-[30px] leading-none font-bold tracking-tight text-ink">{value}</p>
+        {visual}
+      </div>
       <p
         className={cn(
           "mt-2 text-xs font-medium",
@@ -67,6 +75,7 @@ export function StatTile({
       >
         {hint}
       </p>
+      {footer && <div className="mt-auto pt-3">{footer}</div>}
     </div>
   );
 }
