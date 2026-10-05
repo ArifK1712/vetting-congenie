@@ -171,16 +171,18 @@ export function SingleFilter({
   value,
   defaultValue,
   onChange,
-}: BaseProps & { value: string; defaultValue: string; onChange: (v: string) => void }) {
+  alwaysShowValue,
+}: BaseProps & { value: string; defaultValue: string; onChange: (v: string) => void; alwaysShowValue?: boolean }) {
   const [open, setOpen] = useState(false);
   const active = value !== defaultValue;
+  const summary = active || alwaysShowValue ? options.find((o) => o.value === value)?.label : undefined;
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Trigger
         label={label}
-        summary={active ? options.find((o) => o.value === value)?.label : undefined}
+        summary={summary}
         active={active}
-        onClear={() => onChange(defaultValue)}
+        onClear={active ? () => onChange(defaultValue) : undefined}
       />
       <Panel>
         <OptionList

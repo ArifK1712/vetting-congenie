@@ -1,5 +1,5 @@
-import { Placeholder } from "@/components/shell/Placeholder";
+import { DashboardPage } from "@/features/dashboard/DashboardPage";
 
 export default function Page() {
-  return <Placeholder area="dashboard" />;
+  return <DashboardPage />;
 }

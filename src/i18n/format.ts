@@ -62,6 +62,9 @@ export function useFormat() {
       /** Calendar date given as YYYY-MM-DD (no time zone shift). */
       day: (ymd: string) =>
         new Intl.DateTimeFormat(intl, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${ymd}T00:00:00Z`)),
+      /** Day and short month only, e.g. "5 Oct" / "5 أكتوبر" (chart axes). */
+      dayMonth: (ymd: string) =>
+        new Intl.DateTimeFormat(intl, { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${ymd}T00:00:00Z`)),
       number: (n: number) => numberFmt.format(n),
       duration,
       ago: (iso: string, now: number) => {

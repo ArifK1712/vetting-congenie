@@ -464,5 +464,98 @@
       "changed": "This request was updated {time}.",
       "reload": "Reload"
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "A live picture of vetting across your events and teams.",
+    "noAccessTitle": "You can't open the dashboard",
+    "noAccessBody": "Your role does not include Reports View.",
+    "updated": "Live · updated {time}",
+    "filters": {
+      "registration": "Registration",
+      "badgeType": "Badge type",
+      "workflow": "Workflow",
+      "team": "Team",
+      "range": "Period",
+      "range7": "Last 7 days",
+      "range30": "Last 30 days",
+      "range90": "Last 90 days"
+    },
+    "tiles": {
+      "open": "Open requests",
+      "openLate": "{n} late",
+      "openOnTrack": "All on track",
+      "decided": "Decided",
+      "decidedHint": "In the last {d} days",
+      "approvalRate": "Approval rate",
+      "approvalHint": "{a} approved of {n} decided",
+      "median": "Median time to decide",
+      "medianHint": "From submission to decision",
+      "noData": "—"
+    },
+    "overTime": {
+      "title": "Registrations over time",
+      "subtitle": "Submitted, approved and rejected per day",
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "table": "Table",
+      "chart": "Chart",
+      "day": "Day",
+      "total": "Total"
+    },
+    "status": {
+      "title": "Requests by status",
+      "subtitle": "Select a status to open it in the Review Queue"
+    },
+    "perStage": {
+      "title": "Waiting at each stage",
+      "subtitle": "Open requests, claimed and unclaimed",
+      "claimed": "Claimed",
+      "unclaimed": "Unclaimed",
+      "empty": "Nothing is waiting."
+    },
+    "timePerStage": {
+      "title": "Time in stage",
+      "subtitle": "Median time per completed stage visit",
+      "visits": "{n} completed",
+      "empty": "No completed stages in this period."
+    },
+    "late": {
+      "title": "Late requests by team",
+      "subtitle": "Past their stage time limit",
+      "empty": "No late requests."
+    },
+    "badge": {
+      "title": "Results by badge type",
+      "subtitle": "All requests in scope",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "open": "Open"
+    },
+    "places": {
+      "title": "Places used",
+      "subtitle": "Against each registration's limit",
+      "of": "{used} of {limit}",
+      "waiting": "{n} waiting for a place",
+      "full": "Full"
+    },
+    "workload": {
+      "title": "Team workload",
+      "subtitle": "Open claims and decisions this week",
+      "reviewer": "Reviewer",
+      "open": "Open",
+      "decisions": "Decisions",
+      "empty": "No reviewer activity this week."
+    },
+    "lists": {
+      "title": "List matches",
+      "subtitle": "Found in the selected period",
+      "blacklist": "Blacklist",
+      "watchlist": "Watchlist",
+      "open": "Awaiting decision",
+      "confirmed": "Confirmed",
+      "cleared": "Cleared"
+    }
   }
 }

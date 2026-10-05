@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { applyQueueFilters, buildQueueRows, EMPTY_FILTERS, type QueueFilters } from "@/domain/queue";
-import type { ID } from "@/domain/types";
+import { STATUS_ORDER } from "@/domain/status";
+import type { ID, RequestStatus } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { useRouter } from "@/i18n/navigation";
 import { useNow } from "@/lib/useNow";
@@ -33,7 +34,15 @@ export function QueuePage() {
   const params = useSearchParams();
   const now = useNow();
 
-  const [filters, setFilters] = useState<QueueFilters>(() => ({ ...EMPTY_FILTERS, search: params.get("q") ?? "" }));
+  const [filters, setFilters] = useState<QueueFilters>(() => {
+    // Deep links: ?q= from header search, ?status= from the dashboard.
+    const status = params.get("status") as RequestStatus | null;
+    return {
+      ...EMPTY_FILTERS,
+      search: params.get("q") ?? "",
+      statuses: status && STATUS_ORDER.includes(status) ? [status] : EMPTY_FILTERS.statuses,
+    };
+  });
   const [page, setPage] = useState(0);
   const [selectedId, setSelectedId] = useState<ID | null>(null);
 
