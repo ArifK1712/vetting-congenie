@@ -47,4 +47,8 @@ export const requestService = {
   escalate: (ref: Ref & { targetNodeId: ID; remarks: string }) => run((db, now) => actions.escalate(db, { ...ref, now }), ref.requestId),
   reassign: (ref: Ref & { toUserId: ID; reason: string }) => run((db, now) => actions.reassign(db, { ...ref, now }), ref.requestId),
   comment: (ref: Omit<Ref, "expectedRevision"> & { body: string }) => run((db, now) => actions.addComment(db, { ...ref, now }), ref.requestId),
+  correct: (ref: Ref & { field: string; value: string | string[]; reason?: string }) => run((db, now) => actions.correctField(db, { ...ref, now }), ref.requestId),
+  reopen: (ref: Ref & { reason: string }) => run((db, now) => actions.reopenRequest(db, { ...ref, now }), ref.requestId),
+  /** Logs a download in the request history (the file itself is simulated). */
+  download: (ref: Omit<Ref, "expectedRevision"> & { documentId: ID }) => run((db, now) => actions.logDownload(db, { ...ref, now })),
 };

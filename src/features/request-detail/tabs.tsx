@@ -12,6 +12,8 @@ import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { StageProgress } from "@/features/requests/parts";
+import { requestService } from "@/services/requests";
+import { useFieldLabel } from "./CorrectDialog";
 import type { RequestView } from "./useRequestView";
 
 const LTR_FIELDS = new Set(["email", "mobile", "nationalId", "passportNo"]);
@@ -39,7 +41,44 @@ function HiddenNote({ count }: { count: number }) {
   );
 }
 
-export function ApplicantTab({ view }: { view: RequestView }) {
+/** "Correct" button for a field the viewer's team can edit (5.6). */
+function CorrectButton({ onClick }: { onClick?: () => void }) {
+  const t = useTranslations("requestDetail");
+  if (!onClick)
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1 text-xs text-ink-3">
+        <PenLine className="size-3" />
+        {t("editable")}
+      </span>
+    );
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-semibold text-accent-text ring-1 ring-indigo-200 ring-inset hover:bg-accent-soft"
+    >
+      <PenLine className="size-3.5" />
+      {t("correct.button")}
+    </button>
+  );
+}
+
+/** Registration photo. The prototype has no real photos, so a neutral portrait stands in. */
+function Photo({ name }: { name: string }) {
+  const t = useTranslations("requestDetail.photo");
+  return (
+    <div className="flex items-end gap-3">
+      <svg viewBox="0 0 72 88" className="h-[88px] w-[72px] rounded-lg ring-1 ring-line" role="img" aria-label={`${t("label")}: ${name}`}>
+        <rect width="72" height="88" fill="#eef0f7" />
+        <circle cx="36" cy="34" r="15" fill="#c9cfe0" />
+        <path d="M8 88c2-17 13-27 28-27s26 10 28 27z" fill="#c9cfe0" />
+      </svg>
+      <span className="text-xs text-ink-3">{t("sample")}</span>
+    </div>
+  );
+}
+
+export function ApplicantTab({ view, onCorrect }: { view: RequestView; onCorrect?: (field: string) => void }) {
   const t = useTranslations("requestDetail");
   const fmt = useFormat();
   const { applicant } = view;
@@ -53,6 +92,9 @@ export function ApplicantTab({ view }: { view: RequestView }) {
   return (
     <div>
       <dl>
+        <Row label={t("photo.label")}>
+          <Photo name={applicant.fullName} />
+        </Row>
         <Row label={t("fields.fullName")}>
           <bdi>{applicant.fullName}</bdi>
         </Row>
@@ -65,14 +107,7 @@ export function ApplicantTab({ view }: { view: RequestView }) {
           <Row
             key={f}
             label={t(`fields.${f}`)}
-            hint={
-              applicant.editable.has(f) ? (
-                <span className="inline-flex shrink-0 items-center gap-1 text-xs text-ink-3">
-                  <PenLine className="size-3" />
-                  {t("editable")}
-                </span>
-              ) : undefined
-            }
+            hint={applicant.editable.has(f) ? <CorrectButton onClick={onCorrect && (() => onCorrect(`profile.${f}`))} /> : undefined}
           >
             <span className={cn(LTR_FIELDS.has(f) && "ltr-data", (f === "nationalId" || f === "passportNo") && "font-mono text-[0.95em]")}>
               {display(f, applicant.profile[f]!)}
@@ -89,7 +124,7 @@ export function ApplicantTab({ view }: { view: RequestView }) {
   );
 }
 
-export function AnswersTab({ view }: { view: RequestView }) {
+export function AnswersTab({ view, onCorrect }: { view: RequestView; onCorrect?: (field: string) => void }) {
   const t = useTranslations("requestDetail");
   const fmt = useFormat();
   const questions = view.registration.questions.filter((q) => q.type !== "upload");
@@ -106,14 +141,7 @@ export function AnswersTab({ view }: { view: RequestView }) {
           <Row
             key={q.id}
             label={fmt.text(q.label)}
-            hint={
-              answer.editable ? (
-                <span className="inline-flex shrink-0 items-center gap-1 text-xs text-ink-3">
-                  <PenLine className="size-3" />
-                  {t("editable")}
-                </span>
-              ) : undefined
-            }
+            hint={answer.editable ? <CorrectButton onClick={onCorrect && (() => onCorrect(`answer.${q.id}`))} /> : undefined}
           >
             <span dir="auto" className={cn(q.type === "longText" && "whitespace-pre-line")}>
               {labels.join(", ")}
@@ -127,6 +155,8 @@ export function AnswersTab({ view }: { view: RequestView }) {
 
 export function DocumentsTab({ view }: { view: RequestView }) {
   const t = useTranslations("requestDetail.documents");
+  const tt = useTranslations("actions.toasts");
+  const te = useTranslations("actions.errors");
   const tc = useTranslations("common");
   const fmt = useFormat();
   const docs = view.applicant.documents;
@@ -158,7 +188,10 @@ export function DocumentsTab({ view }: { view: RequestView }) {
             {d.downloadable ? (
               <button
                 type="button"
-                onClick={() => toast(t("downloadSimulated", { file: d.fileName }))}
+                onClick={async () => {
+                  const r = await requestService.download({ requestId: view.request.id, actorId: view.viewer.id, documentId: d.id });
+                  toast(r.ok ? tt("downloaded", { file: d.fileName }) : te(r.error));
+                }}
                 className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-line-strong px-2.5 text-xs text-ink hover:bg-hover"
               >
                 <Download className="size-3.5" />
@@ -329,6 +362,12 @@ export function MoreInfoTab({ view, now }: { view: RequestView; now: number }) {
 export function HistoryTab({ view }: { view: RequestView }) {
   const t = useTranslations("requestDetail.history");
   const tw = useTranslations("screening.level");
+  const fieldLabel = useFieldLabel(view);
+  /** Old and new values only when the viewer may see the field. */
+  const canSee = (key: string) => {
+    const [source, k] = key.split(".");
+    return source === "profile" ? k in view.applicant.profile : view.applicant.answers.some((a) => a.questionId === k);
+  };
   const fmt = useFormat();
   const { db } = view;
 
@@ -342,6 +381,8 @@ export function HistoryTab({ view }: { view: RequestView }) {
         return t("actions.routed", { team: h.teamId ? fmt.text(db.teams[h.teamId]?.name) : "" });
       case "approved_stage":
         return t("actions.approved_stage", { stage: stageName(h.stageNodeId) });
+      case "field_corrected":
+        return t("actions.field_corrected", { field: fieldLabel(String(h.meta?.field ?? "")) });
       case "watchlist_marked":
         return t("actions.watchlist_marked", { level: tw(String(h.meta?.level ?? "low") as "low") });
       case "final_approved":
@@ -367,7 +408,11 @@ export function HistoryTab({ view }: { view: RequestView }) {
               ? fmt.text(db.rejectReasons[String(h.meta.reasonId)]?.label)
               : h.action === "reassigned" && h.meta?.to
                 ? t("reassignedTo", { name: db.users[String(h.meta.to)]?.name ?? "" })
-                : null;
+                : h.action === "field_corrected" && h.meta?.field && canSee(String(h.meta.field))
+                  ? t("changedFrom", { from: String(h.meta.from ?? "—") || "—", to: String(h.meta.to ?? "") })
+                  : h.action === "document_downloaded" && h.meta?.file
+                    ? t("file", { file: String(h.meta.file) })
+                    : null;
         return (
           <li key={h.id} className="flex gap-3 border-b border-line py-3 last:border-b-0">
             {actor ? (

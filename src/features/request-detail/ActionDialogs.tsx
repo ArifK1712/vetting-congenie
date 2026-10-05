@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, BadgeCheck, CircleX, Layers, UserRoundCog } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, CircleX, Layers, RotateCcw, UserRoundCog } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
@@ -13,7 +13,7 @@ import { requestService } from "@/services/requests";
 import { useRequestAction } from "@/features/requests/useRequestAction";
 import type { RequestView } from "./useRequestView";
 
-export type DialogKind = "approve" | "reject" | "escalate" | "reassign" | null;
+export type DialogKind = "approve" | "reject" | "escalate" | "reassign" | "reopen" | null;
 
 interface Props {
   view: RequestView;
@@ -92,6 +92,33 @@ export function ApproveDialog({ view, revision, onClose, onDone }: Props) {
       )}
       <Field label={t("comment")} hint={t("optional")} htmlFor="approve-comment">
         <TextArea id="approve-comment" value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t("commentPlaceholder")} />
+      </Field>
+    </ActionDialog>
+  );
+}
+
+/** Status rules (17): Review All users reopen a rejected request, with a logged reason. */
+export function ReopenDialog({ view, revision, onClose, onDone }: Props) {
+  const t = useTranslations("requestDetail.reopen");
+  const tt = useTranslations("actions.toasts");
+  const fmt = useFormat();
+  const [reason, setReason] = useState("");
+  const { busy, error, run } = useRequestAction();
+  return (
+    <ActionDialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={t("title", { id: view.request.id })}
+      description={t("description", { stage: view.stage ? fmt.text(view.stage.name) : "—" })}
+      icon={<DialogIcon className="bg-indigo-50 text-indigo-600"><RotateCcw className="size-5" /></DialogIcon>}
+      confirmLabel={t("confirm")}
+      busy={busy}
+      error={error}
+      confirmDisabled={!reason.trim()}
+      onConfirm={() => run(() => requestService.reopen({ ...ref(view, revision), reason }), () => tt("reopened", { id: view.request.id }), onDone)}
+    >
+      <Field label={t("reason")} htmlFor="reopen-reason">
+        <TextArea id="reopen-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("reasonPlaceholder")} />
       </Field>
     </ActionDialog>
   );

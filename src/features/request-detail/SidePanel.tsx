@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Ellipsis, Eye, Info, Loader2, ShieldBan, Undo2, UserRoundCog } from "lucide-react";
+import { ArrowUpRight, Ellipsis, Eye, Info, Loader2, RotateCcw, ShieldBan, Undo2, UserRoundCog } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
@@ -17,7 +17,7 @@ import { cn } from "@/lib/cn";
 import { TextArea } from "@/components/ui/Field";
 import { requestService } from "@/services/requests";
 import { useQuickAction, useRequestAction } from "@/features/requests/useRequestAction";
-import { ApproveDialog, EscalateDialog, ReassignDialog, RejectDialog, type DialogKind } from "./ActionDialogs";
+import { ApproveDialog, EscalateDialog, ReassignDialog, RejectDialog, ReopenDialog, type DialogKind } from "./ActionDialogs";
 import type { RequestView } from "./useRequestView";
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -41,6 +41,7 @@ export function DecisionPanel({
   onActed: () => void;
 }) {
   const t = useTranslations("requestDetail.actions");
+  const t2 = useTranslations("requestDetail.reopen");
   const tt = useTranslations("actions.toasts");
   const { request, viewer, stage, db } = view;
   const [dialog, setDialog] = useState<DialogKind>(null);
@@ -117,6 +118,15 @@ export function DecisionPanel({
         )}
 
         <div className="mt-4 space-y-2">
+          {request.status === "rejected" && viewer.can("queue.reviewAll") && (
+            <>
+              <Button className="w-full" disabled={disabled} onClick={() => setDialog("reopen")}>
+                <RotateCcw className="size-4" />
+                {t2("button")}
+              </Button>
+              <p className="text-xs text-ink-3">{t2("hint")}</p>
+            </>
+          )}
           {view.canClaim && (
             <Button
               variant="primary"
@@ -173,6 +183,7 @@ export function DecisionPanel({
       {dialog === "reject" && <RejectDialog {...dialogProps} />}
       {dialog === "escalate" && <EscalateDialog {...dialogProps} />}
       {dialog === "reassign" && <ReassignDialog {...dialogProps} />}
+      {dialog === "reopen" && <ReopenDialog {...dialogProps} />}
     </section>
   );
 }

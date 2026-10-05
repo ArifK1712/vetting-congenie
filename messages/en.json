@@ -345,10 +345,14 @@
         "document_downloaded": "Downloaded a document",
         "withdrawn": "Withdrew the registration",
         "screening_review": "Screening review",
-        "watchlist_marked": "Marked by the watchlist ({level})"
+        "watchlist_marked": "Marked by the watchlist ({level})",
+        "field_corrected": "Corrected {field}",
+        "reopened": "Reopened the request"
       },
       "screenedDetail": "{blacklist, plural, =0 {No blacklist matches} one {1 blacklist match} other {{b} blacklist matches}}, {watchlist, plural, =0 {no watchlist matches} one {1 watchlist match} other {{w} watchlist matches}}",
-      "reassignedTo": "Assigned to {name}"
+      "reassignedTo": "Assigned to {name}",
+      "changedFrom": "{from} → {to}",
+      "file": "File: {file}"
     },
     "actions": {
       "title": "Decision",
@@ -379,6 +383,32 @@
       "title": "Internal comments",
       "empty": "No comments yet.",
       "internal": "Never shown to the attendee"
+    },
+    "correct": {
+      "button": "Correct",
+      "title": "Correct {field}",
+      "description": "Your team can view and edit this field. The registration is updated and the change is logged.",
+      "current": "Current value",
+      "value": "New value",
+      "reason": "Reason",
+      "optional": "Optional",
+      "reasonPlaceholder": "e.g. Typo in the passport number, checked against the scan",
+      "rescreen": "This field is used for list screening. The blacklist and watchlist check runs again after you save.",
+      "confirm": "Save correction",
+      "choose": "Choose a value"
+    },
+    "photo": {
+      "label": "Photo",
+      "sample": "Sample photo (prototype)"
+    },
+    "reopen": {
+      "button": "Reopen request",
+      "title": "Reopen {id}?",
+      "description": "It goes back to {stage} as Pending Review, and the rejection is cleared. This is logged.",
+      "reason": "Reason",
+      "reasonPlaceholder": "Why is the request being reopened?",
+      "confirm": "Reopen",
+      "hint": "Only people with Review All can reopen a rejected request."
     }
   },
   "placeholder": {
@@ -404,7 +434,9 @@
       "remarksRequired": "Add remarks for the next team.",
       "invalidTarget": "Choose a stage to escalate to.",
       "invalidAssignee": "Choose a different team member.",
-      "emptyComment": "Write a comment first."
+      "emptyComment": "Write a comment first.",
+      "invalidValue": "Enter a valid new value that differs from the current one.",
+      "blacklistConfirmed": "This request was rejected because of a confirmed blacklist match, so it can't be reopened."
     },
     "toasts": {
       "claimed": "{id} claimed. It's yours to decide.",
@@ -417,7 +449,11 @@
       "rejected": "{id} rejected.",
       "escalated": "{id} escalated to {stage}.",
       "reassigned": "{id} assigned to {name}.",
-      "commented": "Comment added."
+      "commented": "Comment added.",
+      "corrected": "{field} corrected and logged.",
+      "correctedHold": "{field} corrected. The new value matched the blacklist, so {id} is on hold.",
+      "downloaded": "{file}: download logged in the request history. (Files are simulated in the prototype.)",
+      "reopened": "{id} reopened and back with its team."
     },
     "dialogs": {
       "cancel": "Cancel",

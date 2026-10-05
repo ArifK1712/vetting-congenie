@@ -28,7 +28,7 @@ function accessFor(reg: Registration, p: AccessPreset): Record<string, FieldAcce
 }
 
 const PRESETS = {
-  documents: { profile: "view", ids: "view", answers: "view", documents: "download", payment: "hidden", moreInfo: "view" },
+  documents: { profile: "edit", ids: "edit", answers: "view", documents: "download", payment: "hidden", moreInfo: "view" },
   security: { profile: "view", ids: "view", answers: "view", documents: "view", payment: "hidden", moreInfo: "view" },
   senior: { profile: "edit", ids: "edit", answers: "view", documents: "download", payment: "view", moreInfo: "view" },
   protocol: { profile: "view", ids: "hidden", answers: "view", documents: "hidden", payment: "view", moreInfo: "view" },

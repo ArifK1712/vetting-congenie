@@ -387,7 +387,9 @@ export type HistoryAction =
   | "badge_suspended"
   | "document_downloaded"
   | "withdrawn"
-  | "watchlist_marked";
+  | "watchlist_marked"
+  | "field_corrected"
+  | "reopened";
 
 export interface HistoryEvent {
   id: ID;

@@ -3,7 +3,8 @@ import { can, isTeamLead } from "./permissions";
 import { canClaim } from "./queue";
 import { routeStage } from "./routing";
 import { screenProfile } from "./screening";
-import { canTransition } from "./status";
+import { canTransition, FINAL_STATUSES } from "./status";
+import { resolveAccess } from "./fieldAccess";
 import type {
   Database,
   HistoryEvent,
@@ -13,7 +14,7 @@ import type {
   VettingRequest,
   WorkflowGraph,
 } from "./types";
-import { isWatchlistStage, nodeById, pendingWatchlistStage, stageOf, target, type StageNode } from "./workflow";
+import { isWatchlistStage, nodeById, pendingWatchlistStage, resolvePath, stageOf, target, type StageNode } from "./workflow";
 
 /**
  * Request actions (spec 8.3, 11). Each is a pure function: it validates
@@ -22,6 +23,8 @@ import { isWatchlistStage, nodeById, pendingWatchlistStage, stageOf, target, typ
  */
 
 export type ActionError =
+  | "invalidValue"
+  | "blacklistConfirmed"
   | "notFound"
   | "stale"
   | "forbidden"
@@ -70,7 +73,7 @@ export class Tx {
   id(prefix: string) {
     return `${prefix}_${this.now.toString(36)}${(++this.seq).toString(36)}`;
   }
-  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory">(
+  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory" | "attendees">(
     key: K,
     record: Database[K][string],
   ) {
@@ -452,5 +455,104 @@ export function addComment(db: Database, a: Omit<Base, "expectedRevision"> & { b
   const tx = new Tx(db, a.now);
   tx.put("comments", { id: tx.id("c"), requestId: r.id, authorId: a.actorId, body: a.body.trim(), at: iso(a.now) });
   tx.log({ requestId: r.id, action: "commented", actorId: a.actorId });
+  return { ok: true, db: tx.db };
+}
+
+// ─── Reviewer corrections, downloads, reopening ─────────────────────────
+
+const SCREENED_PROFILE_FIELDS = new Set(["email", "mobile", "nationalId", "passportNo", "nationality", "dob", "company"]);
+const LEVEL_RANK = { low: 1, medium: 2, high: 3 } as const;
+
+/**
+ * 5.6 / 15.2: a reviewer whose team has View & Edit corrects a field. The
+ * registration is updated and the change logged; a field used for list
+ * screening re-runs the blacklist and watchlist check (new matches only).
+ */
+export function correctField(db: Database, a: Base & { field: string; value: string | string[]; reason?: string }): ActionResult {
+  const g = guard(db, a);
+  if ("error" in g) return { ok: false, error: g.error };
+  const { r } = g;
+  if (FINAL_STATUSES.includes(r.status)) return { ok: false, error: "actionNotAllowed" };
+  if (resolveAccess(db, a.actorId, r).resolve(a.field) !== "edit") return { ok: false, error: "forbidden" };
+  const [source, key] = a.field.split(".");
+  const value = Array.isArray(a.value) ? a.value.map((v) => v.trim()).filter(Boolean) : a.value.trim();
+  if (!value.length) return { ok: false, error: "invalidValue" };
+  if (key === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value as string)) return { ok: false, error: "invalidValue" };
+  if (key === "dob" && (!/^\d{4}-\d{2}-\d{2}$/.test(value as string) || Date.parse(value as string) > a.now)) return { ok: false, error: "invalidValue" };
+
+  const attendee = db.attendees[r.attendeeId];
+  const before = source === "profile" ? (attendee.profile as unknown as Record<string, string | undefined>)[key] : attendee.answers[key];
+  if (JSON.stringify(before ?? "") === JSON.stringify(value)) return { ok: false, error: "invalidValue" };
+  const next = source === "profile" ? { ...attendee, profile: { ...attendee.profile, [key]: value } } : { ...attendee, answers: { ...attendee.answers, [key]: value } };
+
+  const tx = new Tx(db, a.now);
+  tx.put("attendees", next);
+  const show = (v: unknown) => (Array.isArray(v) ? v.join(", ") : String(v ?? ""));
+  tx.log({ requestId: r.id, action: "field_corrected", actorId: a.actorId, remarks: a.reason?.trim() || undefined, meta: { field: a.field, from: show(before), to: show(value) } });
+  let current = tx.updateRequest(r, {});
+
+  if (source === "profile" && SCREENED_PROFILE_FIELDS.has(key)) {
+    const known = new Set(Object.values(db.matches).filter((m) => m.requestId === r.id).map((m) => m.entryId));
+    const hits = screenProfile(next.profile, r.eventId, Object.values(db.blacklist), Object.values(db.watchlist), known);
+    for (const [listType, list] of [["blacklist", hits.blacklist], ["watchlist", hits.watchlist]] as const) {
+      for (const m of list) {
+        tx.put("matches", {
+          id: tx.id("m"), requestId: r.id, listType, entryId: m.entryId, matchType: m.matchType, matchedField: m.matchedField,
+          score: m.score, strength: m.strength, stagePoint: "resubmission", status: "open", foundAt: iso(a.now),
+          decidedBy: null, decidedAt: null, decisionNote: null,
+        });
+      }
+    }
+    tx.log({ requestId: r.id, action: "screened", actorId: "system", meta: { blacklist: hits.blacklist.length, watchlist: hits.watchlist.length } });
+    if (hits.blacklist.length && canTransition(current.status, "screening_hold")) {
+      const exec = openExecution(tx.db, r.id);
+      if (exec) tx.put("stageExecutions", { ...exec, status: "open", assignedUserId: null, claimedAt: null });
+      tx.log({ requestId: r.id, action: "screening_hold", actorId: "system", fromStatus: current.status, toStatus: "screening_hold" });
+      current = tx.updateRequest(current, { status: "screening_hold", screening: "blacklist_hit", claimedBy: null, stageEnteredAt: iso(a.now) });
+      return { ok: true, db: tx.db, outcome: "screeningHold" };
+    }
+    if (hits.watchlist.length && current.screening !== "blacklist_hit") {
+      const levels = [...hits.watchlist.map((m) => db.watchlist[m.entryId].level), ...(current.watchlistLevel ? [current.watchlistLevel] : [])];
+      tx.updateRequest(current, { screening: "watchlist_hit", watchlistLevel: levels.sort((x, y) => LEVEL_RANK[y] - LEVEL_RANK[x])[0] });
+    }
+  }
+  return { ok: true, db: tx.db };
+}
+
+/** 8.2 / 15.3: every download is logged. Only teams with View & Download may download. */
+export function logDownload(db: Database, a: { requestId: ID; actorId: ID; documentId: ID; now: number }): ActionResult {
+  const r = db.requests[a.requestId];
+  if (!r) return { ok: false, error: "notFound" };
+  const doc = db.attendees[r.attendeeId].documents.find((d) => d.id === a.documentId);
+  if (!doc) return { ok: false, error: "notFound" };
+  if (resolveAccess(db, a.actorId, r).resolve(`document.${doc.questionId}`) !== "download") return { ok: false, error: "forbidden" };
+  const tx = new Tx(db, a.now);
+  tx.log({ requestId: r.id, action: "document_downloaded", actorId: a.actorId, meta: { file: doc.fileName } });
+  return { ok: true, db: tx.db };
+}
+
+/**
+ * Status rules (17): a rejected request can be reopened only by a Review All
+ * user, with a reason that is logged. It goes back to the stage where it was
+ * rejected as Pending Review. A confirmed blacklist rejection stays closed.
+ */
+export function reopenRequest(db: Database, a: Base & { reason: string }): ActionResult {
+  const g = guard(db, a);
+  if ("error" in g) return { ok: false, error: g.error };
+  const { r } = g;
+  if (!can(db, a.actorId, "queue.reviewAll")) return { ok: false, error: "forbidden" };
+  if (r.status !== "rejected") return { ok: false, error: "actionNotAllowed" };
+  if (!a.reason.trim()) return { ok: false, error: "reasonRequired" };
+  if (Object.values(db.matches).some((m) => m.requestId === r.id && m.listType === "blacklist" && m.status === "confirmed")) {
+    return { ok: false, error: "blacklistConfirmed" };
+  }
+  const graph = graphOf(db, r);
+  if (!graph) return { ok: false, error: "actionNotAllowed" };
+  const node = (nodeById(graph, r.currentStageNodeId) ?? resolvePath(graph)[0]) as StageNode | undefined;
+  if (node?.type !== "stage") return { ok: false, error: "actionNotAllowed" };
+  const tx = new Tx(db, a.now);
+  tx.log({ requestId: r.id, action: "reopened", actorId: a.actorId, fromStatus: "rejected", toStatus: "pending_review", remarks: a.reason.trim() });
+  const cleared = tx.updateRequest(r, { rejectReasonId: null, decidedAt: null });
+  enterStage(tx, cleared, node, "pending_review", a.now);
   return { ok: true, db: tx.db };
 }

@@ -18,6 +18,8 @@ import { useNow } from "@/lib/useNow";
 import { wroteLocally } from "@/services/requests";
 import { useAppStore } from "@/store/app";
 import { RequestFlags } from "@/features/requests/parts";
+import { FINAL_STATUSES } from "@/domain/status";
+import { CorrectDialog } from "./CorrectDialog";
 import { CommentsPanel, DecisionPanel, FactsPanel } from "./SidePanel";
 import { AnswersTab, ApplicantTab, DocumentsTab, HistoryTab, MoreInfoTab, ProgressTab, ScreeningTab } from "./tabs";
 import { useRequestView, type RequestView } from "./useRequestView";
@@ -81,6 +83,7 @@ export function RequestDetailPage({ id }: { id: ID }) {
   // banner offers a reload, as in spec 13.1 / 8.3.
   const currentRevision = view?.request.revision ?? 0;
   const [seen, setSeen] = useState({ id, revision: currentRevision });
+  const [correcting, setCorrecting] = useState<string | null>(null);
   if (seen.id !== id) setSeen({ id, revision: currentRevision });
   const stale = !!view && seen.id === id && currentRevision !== seen.revision && !wroteLocally(id, currentRevision);
   const acknowledge = () =>
@@ -101,6 +104,8 @@ export function RequestDetailPage({ id }: { id: ID }) {
   }
 
   const { request, applicant } = view;
+  // Corrections only on an open request the viewer is up to date with.
+  const canCorrect = !stale && !FINAL_STATUSES.includes(request.status);
   const stageName = view.stage ? fmt.text(view.stage.name) : null;
 
   return (
@@ -176,8 +181,8 @@ export function RequestDetailPage({ id }: { id: ID }) {
             <TabsTrigger value="history">{t("tabs.history")}</TabsTrigger>
           </TabsList>
           <div className="pt-2">
-            <TabsContent value="applicant"><ApplicantTab view={view} /></TabsContent>
-            <TabsContent value="answers"><AnswersTab view={view} /></TabsContent>
+            <TabsContent value="applicant"><ApplicantTab view={view} onCorrect={canCorrect ? setCorrecting : undefined} /></TabsContent>
+            <TabsContent value="answers"><AnswersTab view={view} onCorrect={canCorrect ? setCorrecting : undefined} /></TabsContent>
             <TabsContent value="documents"><DocumentsTab view={view} /></TabsContent>
             <TabsContent value="screening"><ScreeningTab view={view} /></TabsContent>
             <TabsContent value="progress"><ProgressTab view={view} now={now} /></TabsContent>
@@ -192,6 +197,18 @@ export function RequestDetailPage({ id }: { id: ID }) {
           <CommentsPanel view={view} />
         </aside>
       </div>
+      {correcting && (
+        <CorrectDialog
+          view={view}
+          revision={currentRevision}
+          field={correcting}
+          onClose={() => setCorrecting(null)}
+          onDone={() => {
+            setCorrecting(null);
+            acknowledge();
+          }}
+        />
+      )}
     </div>
   );
 }
