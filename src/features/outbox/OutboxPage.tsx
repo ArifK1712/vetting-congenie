@@ -60,7 +60,7 @@ export function OutboxPage() {
   const name = (m: EmailOutboxItem) => (known(m.template) ? t(`templates.${m.template}.name`) : m.template);
 
   return (
-    <div className="mx-auto max-w-[96rem] px-7 pt-7 pb-12">
+    <div className="mx-auto max-w-[96rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-12">
       <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>
       <p className="mt-1.5 text-sm text-ink-2">{t("subtitle")}</p>
 

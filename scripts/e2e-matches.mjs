@@ -71,7 +71,7 @@ await open("/en/screening/matches", "text=You can't see Match Review");
 check("lead without Blacklist View can't open it", true);
 await setPersona("u_arif");
 await open("/ar/screening/matches");
-check("Arabic app keeps Match Review in English", (await page.locator("main h1").innerText()).trim() === "Match Review");
+check("Match Review is in Arabic", /[؀-ۿ]/.test(await page.locator("main h1").innerText()));
 
 console.log(results.join("\n"));
 console.log(errors.length ? `Page errors:\n${[...new Set(errors)].join("\n")}` : "No page errors");

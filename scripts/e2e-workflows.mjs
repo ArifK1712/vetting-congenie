@@ -106,7 +106,7 @@ await setPersona(a, "u_daniel");
 await open(a, "/en/workflows/wf_vip", ".react-flow__node");
 check("view-only: no Edit button", (await a.getByRole("button", { name: "Edit workflow" }).count()) === 0);
 await open(a, "/ar/workflows");
-check("Arabic app keeps Workflows in English", (await a.locator("main h1").innerText()).trim() === "Workflows");
+check("Workflows is in Arabic", /[؀-ۿ]/.test(await a.locator("main h1").innerText()));
 check("Workflows area is left-to-right", (await a.locator(".locale-en").first().getAttribute("dir")) === "ltr");
 
 console.log(results.join("\n"));

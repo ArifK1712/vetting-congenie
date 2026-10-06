@@ -71,9 +71,9 @@ function Photo({ name }: { name: string }) {
   return (
     <div className="flex items-end gap-3">
       <svg viewBox="0 0 72 88" className="h-[88px] w-[72px] rounded-lg ring-1 ring-line" role="img" aria-label={`${t("label")}: ${name}`}>
-        <rect width="72" height="88" fill="#eef0f7" />
-        <circle cx="36" cy="34" r="15" fill="#c9cfe0" />
-        <path d="M8 88c2-17 13-27 28-27s26 10 28 27z" fill="#c9cfe0" />
+        <rect width="72" height="88" className="fill-active" />
+        <circle cx="36" cy="34" r="15" className="fill-line-strong" />
+        <path d="M8 88c2-17 13-27 28-27s26 10 28 27z" className="fill-line-strong" />
       </svg>
       <span className="text-xs text-ink-3">{t("sample")}</span>
     </div>

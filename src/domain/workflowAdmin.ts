@@ -26,8 +26,21 @@ export type WorkflowMeta = Pick<Workflow, "name" | "label" | "description" | "ba
 
 export const NAME_MAX = 100;
 
-/** Text edited in the English-only builder; the Arabic copy is cleared so screens fall back to English. */
+/** English-only text; screens in other languages fall back to the English copy. */
 export const englishText = (en: string): LocalizedText => ({ en, ar: "" });
+
+/**
+ * Text typed into one language's field of the builder. The other language is
+ * kept. Typing Arabic also fills English when English is empty or is still a
+ * copy of the Arabic, so English never shows blank and the name checks
+ * (which compare English) still apply. Typing English never touches Arabic;
+ * an empty Arabic copy falls back to English on screen.
+ */
+export function editText(prev: LocalizedText, locale: keyof LocalizedText, value: string): LocalizedText {
+  if (locale === "en") return { ...prev, en: value };
+  const mirrored = !prev.en.trim() || prev.en === prev.ar;
+  return { en: mirrored ? value : prev.en, ar: value };
+}
 
 // ─── Building blocks ────────────────────────────────────────────────────
 
@@ -38,9 +51,9 @@ export function newId(prefix: string, graph: WorkflowGraph) {
   return `${prefix}_${i}`;
 }
 
-export function newStageConfig(name = "New stage"): StageConfig {
+export function newStageConfig(name: LocalizedText = englishText("New stage")): StageConfig {
   return {
-    name: englishText(name),
+    name,
     instructions: englishText(""),
     teams: [],
     fallbackTeamId: null,
@@ -79,7 +92,7 @@ export function newNode(type: WorkflowNode["type"], graph: WorkflowGraph, positi
 /** A new workflow starts as Start → one stage → Final approval, with Rejected beside it. */
 export function starterGraph(): WorkflowGraph {
   const start: WorkflowNode = { id: "start", type: "start", position: { x: 0, y: 0 } };
-  const review: WorkflowNode = { id: "stage_1", type: "stage", position: { x: -40, y: 150 }, stage: newStageConfig("Security Review") };
+  const review: WorkflowNode = { id: "stage_1", type: "stage", position: { x: -40, y: 150 }, stage: newStageConfig({ en: "Security Review", ar: "المراجعة الأمنية" }) };
   const final: WorkflowNode = { id: "final", type: "final", position: { x: -20, y: 470 } };
   const rejected: WorkflowNode = { id: "rejected", type: "rejected", position: { x: 380, y: 470 } };
   return {
@@ -449,8 +462,9 @@ export function duplicateWorkflow(db: Database, a: Actor & { workflowId: ID }): 
   if (!src) return { ok: false, error: "notFound" };
   const graph = src.draft ?? (src.currentVersionId ? db.workflowVersions[src.currentVersionId]?.graph : null) ?? starterGraph();
   const names = new Set(Object.values(db.workflows).map((w) => norm(w.name.en)));
-  let name = `Copy of ${src.name.en}`;
-  for (let i = 2; names.has(norm(name)); i++) name = `Copy of ${src.name.en} (${i})`;
+  const copyName = (suffix: string): LocalizedText => ({ en: `Copy of ${src.name.en}${suffix}`, ar: `نسخة من ${src.name.ar || src.name.en}${suffix}` });
+  let name = copyName("");
+  for (let i = 2; names.has(norm(name.en)); i++) name = copyName(` (${i})`);
   const tx = new Tx(db, a.now);
   const id = tx.id("wf");
   const at = new Date(a.now).toISOString();
@@ -458,7 +472,7 @@ export function duplicateWorkflow(db: Database, a: Actor & { workflowId: ID }): 
     ...db.workflows,
     [id]: {
       id,
-      name: englishText(name),
+      name,
       label: { ...src.label },
       description: { ...src.description },
       badgeTypeId: src.badgeTypeId,

@@ -1,14 +1,16 @@
 "use client";
 
 import { Share2, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ActionDialog, DialogIcon } from "@/components/ui/Dialog";
 import { toast } from "@/components/ui/Toast";
 import { allotmentOptions } from "@/domain/workflowAdmin";
 import type { Database, ID, Workflow } from "@/domain/types";
+import { useFormat } from "@/i18n/format";
 import { cn } from "@/lib/cn";
-import { WORKFLOW_ERRORS, workflowService } from "@/services/workflows";
+import { workflowService } from "@/services/workflows";
 import { useViewer } from "@/store/useViewer";
 
 /**
@@ -18,13 +20,15 @@ import { useViewer } from "@/store/useViewer";
  */
 export function AllotDialog({ db, wf, onClose }: { db: Database; wf: Workflow; onClose: () => void }) {
   const viewer = useViewer();
+  const t = useTranslations("workflows");
+  const fmt = useFormat();
   const options = allotmentOptions(db, wf);
   const [chosen, setChosen] = useState<ID[]>(options.filter((o) => o.mine).map((o) => o.registration.id));
   const [replace, setReplace] = useState<ID[]>([]);
   const [asking, setAsking] = useState<ID | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const badge = db.badgeTypes[wf.badgeTypeId]?.name.en ?? "";
+  const badge = fmt.text(db.badgeTypes[wf.badgeTypeId]?.name);
 
   const toggle = (id: ID) => {
     const o = options.find((x) => x.registration.id === id)!;
@@ -41,8 +45,8 @@ export function AllotDialog({ db, wf, onClose }: { db: Database; wf: Workflow; o
     setBusy(true);
     const r = await workflowService.allot({ workflowId: wf.id, registrationIds: chosen, replace, actorId: viewer.id });
     setBusy(false);
-    if (!r.ok) return setError(WORKFLOW_ERRORS[r.error]);
-    toast(`Allotment saved for ${wf.name.en}`);
+    if (!r.ok) return setError(t(`errors.${r.error}`));
+    toast(t("allot.saved", { name: fmt.text(wf.name) }));
     onClose();
   };
 
@@ -50,14 +54,14 @@ export function AllotDialog({ db, wf, onClose }: { db: Database; wf: Workflow; o
     <ActionDialog
       open
       onOpenChange={(o) => !o && onClose()}
-      title="Allot to registrations"
-      description={`Registrations that have the ${badge} badge type. Each registration uses one workflow per badge type.`}
+      title={t("allot.title")}
+      description={t("allot.description", { badge })}
       icon={
         <DialogIcon className="bg-violet-50 text-violet-600">
           <Share2 className="size-5" />
         </DialogIcon>
       }
-      confirmLabel="Save allotment"
+      confirmLabel={t("allot.confirm")}
       busy={busy}
       error={error}
       confirmDisabled={asking !== null}
@@ -74,10 +78,16 @@ export function AllotDialog({ db, wf, onClose }: { db: Database; wf: Workflow; o
                 <input type="checkbox" className="size-4 accent-indigo-600" checked={on} onChange={() => toggle(id)} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-ink">
-                    {o.registration.name.en} <span className="font-mono text-xs text-ink-3">· {db.events[o.registration.eventId]?.code}</span>
+                    {fmt.text(o.registration.name)} <span className="font-mono text-xs text-ink-3">· {db.events[o.registration.eventId]?.code}</span>
                   </span>
                   <span className="block truncate text-xs text-ink-3">
-                    {o.mine ? "Uses this workflow" : other ? (replace.includes(id) ? `Will replace ${other.name.en}` : `Uses ${other.name.en}`) : "No workflow yet"}
+                    {o.mine
+                      ? t("allot.usesThis")
+                      : other
+                        ? replace.includes(id)
+                          ? t("allot.willReplace", { name: fmt.text(other.name) })
+                          : t("allot.uses", { name: fmt.text(other.name) })
+                        : t("allot.none")}
                   </span>
                 </span>
               </label>
@@ -85,10 +95,10 @@ export function AllotDialog({ db, wf, onClose }: { db: Database; wf: Workflow; o
                 <div className="mt-2.5 flex flex-wrap items-center gap-2 ps-7">
                   <p className="flex min-w-0 flex-1 items-start gap-1.5 text-xs text-amber-900">
                     <TriangleAlert className="mt-px size-3.5 shrink-0" />
-                    {o.registration.name.en} already uses {other.name.en} for {badge}. Replace it?
+                    {t("allot.clash", { registration: fmt.text(o.registration.name), workflow: fmt.text(other.name), badge })}
                   </p>
                   <Button size="sm" variant="ghost" onClick={() => setAsking(null)}>
-                    Cancel
+                    {t("allot.cancel")}
                   </Button>
                   <Button
                     size="sm"
@@ -99,7 +109,7 @@ export function AllotDialog({ db, wf, onClose }: { db: Database; wf: Workflow; o
                       setAsking(null);
                     }}
                   >
-                    Replace
+                    {t("allot.replace")}
                   </Button>
                 </div>
               )}
@@ -107,7 +117,7 @@ export function AllotDialog({ db, wf, onClose }: { db: Database; wf: Workflow; o
           );
         })}
       </ul>
-      <p className="text-xs text-ink-3">Removing or replacing an allotment affects new requests only. Requests already submitted keep their workflow.</p>
+      <p className="text-xs text-ink-3">{t("allot.note")}</p>
     </ActionDialog>
   );
 }

@@ -88,6 +88,9 @@ interface SessionState {
   setPersona: (id: ID) => void;
   setEventScope: (id: ID | "all") => void;
   toggleSidebar: () => void;
+  /** Phones: the navigation drawer. Not persisted. */
+  navOpen: boolean;
+  setNavOpen: (open: boolean) => void;
 }
 
 export const useSession = create<SessionState>()(
@@ -99,6 +102,8 @@ export const useSession = create<SessionState>()(
       setPersona: (personaId) => set({ personaId }),
       setEventScope: (eventScope) => set({ eventScope }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      navOpen: false,
+      setNavOpen: (navOpen) => set({ navOpen }),
     }),
     {
       name: SESSION_KEY,

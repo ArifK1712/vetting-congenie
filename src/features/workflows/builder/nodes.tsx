@@ -5,8 +5,9 @@ import { BadgeCheck, CircleAlert, Clock, GitBranch, Lock, MessageCircleQuestion,
 import type { CSSProperties, ReactNode } from "react";
 import type { WorkflowIssue } from "@/domain/workflowAdmin";
 import type { Database, WorkflowNode } from "@/domain/types";
+import { useFormat } from "@/i18n/format";
 import { cn } from "@/lib/cn";
-import { handleLabel } from "../text";
+import { useWorkflowText } from "../text";
 
 export interface BlockData extends Record<string, unknown> {
   block: WorkflowNode;
@@ -47,7 +48,7 @@ function IssueBadge({ issues }: { issues: WorkflowIssue[] }) {
   return (
     <span
       className={cn(
-        "absolute -top-2 -right-2 inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full px-1 text-[10px] font-bold text-white ring-2 ring-white",
+        "absolute -top-2 -right-2 inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full px-1 text-[10px] font-bold text-white ring-2 ring-surface",
         errors ? "bg-rose-500" : "bg-amber-500",
       )}
     >
@@ -68,12 +69,14 @@ function Shell({
   className?: string;
   children: ReactNode;
 }) {
+  const { dir } = useFormat();
   const error = issues.some((i) => i.severity === "error");
   const warn = !error && issues.length > 0;
   return (
     <div
+      dir={dir}
       className={cn(
-        "relative bg-white shadow-[0_1px_2px_rgb(16_24_40/0.06),0_4px_12px_-4px_rgb(16_24_40/0.1)] transition-shadow",
+        "relative bg-surface shadow-[0_1px_2px_rgb(16_24_40/0.06),0_4px_12px_-4px_rgb(16_24_40/0.1)] transition-shadow",
         selected ? "ring-2 ring-indigo-500" : error ? "ring-2 ring-rose-300" : warn ? "ring-2 ring-amber-300" : "ring-1 ring-slate-200",
         className,
       )}
@@ -86,6 +89,7 @@ function Shell({
 
 /** Labelled outgoing handles along the bottom edge, evenly spaced. */
 function OutHandles({ handles, block }: { handles: string[]; block: WorkflowNode }) {
+  const { handleLabel } = useWorkflowText();
   return (
     <div className="relative mt-3 flex h-6 items-end border-t border-slate-100">
       {handles.map((h, i) => {
@@ -94,6 +98,7 @@ function OutHandles({ handles, block }: { handles: string[]; block: WorkflowNode
         return (
           <span key={h}>
             <span
+              dir="auto"
               className="absolute bottom-2 max-w-[45%] -translate-x-1/2 truncate text-[10px] font-semibold"
               style={{ left, color }}
             >
@@ -108,14 +113,15 @@ function OutHandles({ handles, block }: { handles: string[]; block: WorkflowNode
 }
 
 export function StartBlock({ data, selected }: NodeProps<BlockNode>) {
+  const { t, nodeLabel } = useWorkflowText();
   return (
     <Shell selected={!!selected} issues={data.issues} className="rounded-full">
       <div className="flex items-center gap-2 py-2 ps-2 pe-4">
         <span className="inline-flex size-7 items-center justify-center rounded-full bg-indigo-500 text-white">
           <Play className="size-3.5 fill-current" />
         </span>
-        <span className="text-sm font-bold text-slate-900">Start</span>
-        <span className="text-[11px] text-slate-500">Request submitted</span>
+        <span className="text-sm font-bold text-slate-900">{nodeLabel("start")}</span>
+        <span className="text-[11px] text-slate-500">{t("blocks.requestSubmitted")}</span>
       </div>
       <Handle type="source" position={Position.Bottom} id="next" style={handleStyle(HANDLE_COLOR.next)} />
     </Shell>
@@ -123,11 +129,14 @@ export function StartBlock({ data, selected }: NodeProps<BlockNode>) {
 }
 
 export function StageBlock({ data, selected }: NodeProps<BlockNode>) {
+  const { t, nodeLabel } = useWorkflowText();
+  const fmt = useFormat();
   const block = data.block;
   if (block.type !== "stage") return null;
   const s = block.stage;
-  const teams = s.teams.map((id) => data.db.teams[id]?.name.en ?? "Unknown team");
-  const fallback = s.fallbackTeamId ? data.db.teams[s.fallbackTeamId]?.name.en : null;
+  const teams = s.teams.map((id) => (data.db.teams[id] ? fmt.text(data.db.teams[id].name) : t("names.unknownTeam")));
+  const fallbackTeam = s.fallbackTeamId ? data.db.teams[s.fallbackTeamId] : undefined;
+  const fallback = fallbackTeam ? fmt.text(fallbackTeam.name) : null;
   const handles = ["approve", ...(s.allowedActions.includes("escalate") ? ["escalate"] : []), "reject"];
   return (
     <Shell selected={!!selected} issues={data.issues} className="w-[270px] rounded-xl">
@@ -137,40 +146,42 @@ export function StageBlock({ data, selected }: NodeProps<BlockNode>) {
           <span className="inline-flex size-6 items-center justify-center rounded-md bg-indigo-50 text-indigo-600">
             <Users className="size-3.5" />
           </span>
-          <span className="text-[10px] font-semibold tracking-[0.06em] text-slate-400 uppercase">Review stage</span>
+          <span className="text-[10px] font-semibold tracking-[0.06em] text-slate-400 uppercase">{nodeLabel("stage")}</span>
           <span className="ms-auto flex items-center gap-1">
             {s.timeLimitHours !== null && (
               <span className="inline-flex h-5 items-center gap-1 rounded-md bg-sky-50 px-1.5 text-[10px] font-semibold text-sky-700">
                 <Clock className="size-2.5" />
-                {s.timeLimitHours}h
+                {t("blocks.hours", { n: fmt.number(s.timeLimitHours) })}
               </span>
             )}
             {s.mandatory && (
-              <span title="Mandatory" className="inline-flex h-5 items-center gap-1 rounded-md bg-violet-50 px-1.5 text-[10px] font-semibold text-violet-700">
+              <span title={t("blocks.mandatory")} className="inline-flex h-5 items-center gap-1 rounded-md bg-violet-50 px-1.5 text-[10px] font-semibold text-violet-700">
                 <Lock className="size-2.5" />
-                Mandatory
+                {t("blocks.mandatory")}
               </span>
             )}
           </span>
         </div>
-        <p className="mt-2 truncate text-sm font-bold text-slate-900">{s.name.en || "Untitled stage"}</p>
+        <p dir="auto" className="mt-2 truncate text-sm font-bold text-slate-900">{fmt.text(s.name) || t("names.untitledStage")}</p>
         <div className="mt-1.5 space-y-0.5 text-[11px] leading-snug">
           {teams.length ? (
             teams.map((name, i) => (
               <p key={i} className="flex items-center gap-1.5 truncate text-slate-600">
                 <span className="tabular inline-flex size-3.5 shrink-0 items-center justify-center rounded bg-slate-100 text-[9px] font-bold text-slate-500">{i + 1}</span>
-                <span className="truncate">{name}</span>
+                <span dir="auto" className="truncate">{name}</span>
               </p>
             ))
           ) : (
-            <p className="font-medium text-rose-600">No team yet</p>
+            <p className="font-medium text-rose-600">{t("blocks.noTeam")}</p>
           )}
-          <p className="truncate text-slate-400">Fallback · {fallback ?? <span className="text-rose-600">none</span>}</p>
+          <p className="truncate text-slate-400">
+            {t("blocks.fallback")} · {fallback ?? <span className="text-rose-600">{t("blocks.none")}</span>}
+          </p>
         </div>
         {s.allowedActions.includes("moreInfo") && (
           <p className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
             <MessageCircleQuestion className="size-3" />
-            More info returns to {s.afterMoreInfoReturnTo === "same" ? "this stage" : "another stage"}
+            {t("blocks.moreInfoReturns", { target: s.afterMoreInfoReturnTo === "same" ? "same" : "other" })}
           </p>
         )}
       </div>
@@ -180,6 +191,8 @@ export function StageBlock({ data, selected }: NodeProps<BlockNode>) {
 }
 
 export function ConditionBlock({ data, selected }: NodeProps<BlockNode>) {
+  const { t, nodeLabel } = useWorkflowText();
+  const fmt = useFormat();
   const block = data.block;
   if (block.type !== "condition") return null;
   const c = block.condition;
@@ -191,17 +204,17 @@ export function ConditionBlock({ data, selected }: NodeProps<BlockNode>) {
           <span className="inline-flex size-6 items-center justify-center rounded-md bg-amber-50 text-amber-600">
             <GitBranch className="size-3.5" />
           </span>
-          <span className="text-[10px] font-semibold tracking-[0.06em] text-slate-400 uppercase">Condition</span>
+          <span className="text-[10px] font-semibold tracking-[0.06em] text-slate-400 uppercase">{nodeLabel("condition")}</span>
         </div>
-        <p className="mt-2 truncate text-sm font-bold text-slate-900">{c.label.en || "Condition"}</p>
+        <p dir="auto" className="mt-2 truncate text-sm font-bold text-slate-900">{fmt.text(c.label) || t("names.condition")}</p>
         <ul className="mt-1.5 space-y-0.5 text-[11px] text-slate-600">
           {c.branches.map((b) => (
-            <li key={b.id} className="truncate">
-              <span className="font-semibold text-indigo-600">{b.label.en || "Branch"}:</span>{" "}
-              {b.condition.field ? data.conditionText(b.condition.field, b.condition.operator, b.condition.value) : <span className="text-rose-600">rule not set</span>}
+            <li key={b.id} dir="auto" className="truncate">
+              <span className="font-semibold text-indigo-600">{fmt.text(b.label) || t("handles.branch")}:</span>{" "}
+              {b.condition.field ? data.conditionText(b.condition.field, b.condition.operator, b.condition.value) : <span className="text-rose-600">{t("blocks.ruleNotSet")}</span>}
             </li>
           ))}
-          <li className="text-slate-400">Otherwise: everything else</li>
+          <li className="text-slate-400">{t("blocks.otherwiseAll")}</li>
         </ul>
       </div>
       <OutHandles handles={[...c.branches.map((b) => b.id), "otherwise"]} block={block} />
@@ -210,6 +223,7 @@ export function ConditionBlock({ data, selected }: NodeProps<BlockNode>) {
 }
 
 export function FinalBlock({ data, selected }: NodeProps<BlockNode>) {
+  const { t, nodeLabel } = useWorkflowText();
   return (
     <Shell selected={!!selected} issues={data.issues} className="w-[230px] rounded-xl bg-emerald-50/60">
       <InHandle />
@@ -218,8 +232,8 @@ export function FinalBlock({ data, selected }: NodeProps<BlockNode>) {
           <BadgeCheck className="size-4" />
         </span>
         <div>
-          <p className="text-sm font-bold text-emerald-900">Final approval</p>
-          <p className="text-[11px] leading-snug text-emerald-800/80">Re-checks the lists, takes a place from the limit, issues the badge.</p>
+          <p className="text-sm font-bold text-emerald-900">{nodeLabel("final")}</p>
+          <p className="text-[11px] leading-snug text-emerald-800/80">{t("blocks.finalHint")}</p>
         </div>
       </div>
     </Shell>
@@ -227,8 +241,10 @@ export function FinalBlock({ data, selected }: NodeProps<BlockNode>) {
 }
 
 export function RejectedBlock({ data, selected }: NodeProps<BlockNode>) {
+  const { t, nodeLabel } = useWorkflowText();
+  const fmt = useFormat();
   const block = data.block;
-  const reason = block.type === "rejected" && block.defaultReasonId ? data.db.rejectReasons[block.defaultReasonId]?.label.en : null;
+  const reason = block.type === "rejected" && block.defaultReasonId ? fmt.text(data.db.rejectReasons[block.defaultReasonId]?.label) : null;
   return (
     <Shell selected={!!selected} issues={data.issues} className="w-[230px] rounded-xl bg-rose-50/60">
       <InHandle />
@@ -237,8 +253,8 @@ export function RejectedBlock({ data, selected }: NodeProps<BlockNode>) {
           <XCircle className="size-4" />
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-rose-900">Rejected</p>
-          <p className="truncate text-[11px] text-rose-800/80">{reason ? `Default reason: ${reason}` : "Sends the rejection email"}</p>
+          <p className="text-sm font-bold text-rose-900">{nodeLabel("rejected")}</p>
+          <p className="truncate text-[11px] text-rose-800/80">{reason ? t("blocks.defaultReason", { reason }) : t("blocks.rejectionEmail")}</p>
         </div>
       </div>
     </Shell>

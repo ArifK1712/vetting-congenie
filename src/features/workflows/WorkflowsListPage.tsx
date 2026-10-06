@@ -2,6 +2,7 @@
 
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
 import { CircleCheck, Copy, Eye, Lock, MoreHorizontal, Pencil, Plus, Power, Rocket, Search, SearchX, Share2, TriangleAlert, Workflow as WorkflowIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ActionDialog, DialogIcon } from "@/components/ui/Dialog";
@@ -13,20 +14,21 @@ import { Select } from "@/components/ui/Select";
 import { BadgeTypeChip, Pill } from "@/components/ui/Status";
 import { toast } from "@/components/ui/Toast";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { allotmentsOf, coverageGaps, englishText, errorsOf, stagesOf, validateMeta, type WorkflowIssue } from "@/domain/workflowAdmin";
+import { allotmentsOf, coverageGaps, errorsOf, stagesOf, validateMeta, type WorkflowIssue } from "@/domain/workflowAdmin";
 import type { Database, Workflow } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { WORKFLOW_ERRORS, workflowService } from "@/services/workflows";
+import { workflowService } from "@/services/workflows";
 import { useDb } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
-import { STATUS_LABEL } from "./text";
+import { useWorkflowText } from "./text";
 
 const STATUS_TONE = { draft: "amber", active: "emerald", inactive: "gray" } as const;
 
 export function WorkflowStatusPill({ status }: { status: Workflow["status"] }) {
-  return <Pill tone={STATUS_TONE[status]}>{STATUS_LABEL[status]}</Pill>;
+  const { statusLabel } = useWorkflowText();
+  return <Pill tone={STATUS_TONE[status]}>{statusLabel(status)}</Pill>;
 }
 
 interface Row {
@@ -55,6 +57,9 @@ const COLUMN_CLASS: Record<string, string> = {
 function CreateWorkflowDialog({ db, open, onOpenChange }: { db: Database; open: boolean; onOpenChange: (o: boolean) => void }) {
   const viewer = useViewer();
   const router = useRouter();
+  const t = useTranslations("workflows");
+  const fmt = useFormat();
+  const { newText } = useWorkflowText();
   const [name, setName] = useState("");
   const [label, setLabel] = useState("");
   const [badgeTypeId, setBadgeTypeId] = useState<string | null>(null);
@@ -63,7 +68,7 @@ function CreateWorkflowDialog({ db, open, onOpenChange }: { db: Database; open: 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const meta = { name: englishText(name), label: englishText(label), description: englishText(description), badgeTypeId: badgeTypeId ?? "" };
+  const meta = { name: newText(name), label: newText(label), description: newText(description), badgeTypeId: badgeTypeId ?? "" };
   const issues = validateMeta(db, meta, null);
   const has = (code: WorkflowIssue["code"]) => tried && issues.some((i) => i.code === code);
   const taken = Object.values(db.workflows).filter((w) => w.badgeTypeId === badgeTypeId);
@@ -74,8 +79,8 @@ function CreateWorkflowDialog({ db, open, onOpenChange }: { db: Database; open: 
     setBusy(true);
     const r = await workflowService.create({ meta, actorId: viewer.id });
     setBusy(false);
-    if (!r.ok) return setError(WORKFLOW_ERRORS[r.error]);
-    toast(`${name.trim()} created as a draft`);
+    if (!r.ok) return setError(t(`errors.${r.error}`));
+    toast(t("create.created", { name: name.trim() }));
     onOpenChange(false);
     router.push(`/workflows/${r.workflowId}`);
   };
@@ -84,41 +89,39 @@ function CreateWorkflowDialog({ db, open, onOpenChange }: { db: Database; open: 
     <ActionDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Create workflow"
-      description="A workflow is the review path for exactly one badge type. You'll draw its stages next."
+      title={t("create.title")}
+      description={t("create.description")}
       icon={
         <DialogIcon className="bg-violet-50 text-violet-600">
           <WorkflowIcon className="size-5" />
         </DialogIcon>
       }
-      confirmLabel="Create and open builder"
+      confirmLabel={t("create.confirm")}
       busy={busy}
       error={error}
       onConfirm={create}
     >
-      <Field label="Workflow name" htmlFor="wf-name" hint="Unique in the company">
-        <TextInput id="wf-name" value={name} maxLength={100} invalid={has("nameRequired") || has("nameTaken")} placeholder="e.g. VIP Security Vetting" onChange={(e) => setName(e.target.value)} />
-        {has("nameTaken") && <p className="mt-1.5 text-xs text-rose-600">Another workflow already has this name.</p>}
+      <Field label={t("create.name")} htmlFor="wf-name" hint={t("create.nameHint")}>
+        <TextInput id="wf-name" value={name} maxLength={100} invalid={has("nameRequired") || has("nameTaken")} placeholder={t("create.namePlaceholder")} onChange={(e) => setName(e.target.value)} />
+        {has("nameTaken") && <p className="mt-1.5 text-xs text-rose-600">{t("issues.nameTaken")}</p>}
       </Field>
-      <Field label="Label" htmlFor="wf-label" hint="Shown on each request">
-        <TextInput id="wf-label" value={label} maxLength={100} invalid={has("labelRequired")} placeholder="e.g. Standard Security Vetting" onChange={(e) => setLabel(e.target.value)} />
+      <Field label={t("create.label")} htmlFor="wf-label" hint={t("create.labelHint")}>
+        <TextInput id="wf-label" value={label} maxLength={100} invalid={has("labelRequired")} placeholder={t("create.labelPlaceholder")} onChange={(e) => setLabel(e.target.value)} />
       </Field>
-      <Field label="Badge type">
+      <Field label={t("create.badgeType")}>
         <Select
-          label="Badge type"
-          placeholder="Choose one badge type"
+          label={t("create.badgeType")}
+          placeholder={t("create.badgeTypePlaceholder")}
           invalid={has("badgeTypeRequired")}
           value={badgeTypeId}
           onChange={setBadgeTypeId}
-          options={Object.values(db.badgeTypes).map((b) => ({ value: b.id, label: b.name.en }))}
+          options={Object.values(db.badgeTypes).map((b) => ({ value: b.id, label: fmt.text(b.name) }))}
         />
         {badgeTypeId && taken.length > 0 && (
-          <p className="mt-1.5 text-xs text-ink-3">
-            Already used by {taken.map((w) => w.name.en).join(", ")}. Each registration can still use only one workflow per badge type.
-          </p>
+          <p className="mt-1.5 text-xs text-ink-3">{t("create.alreadyUsed", { names: taken.map((w) => fmt.text(w.name)).join(t("separator")) })}</p>
         )}
       </Field>
-      <Field label="Description" htmlFor="wf-desc" hint="Optional">
+      <Field label={t("create.descriptionLabel")} htmlFor="wf-desc" hint={t("create.optional")}>
         <TextArea id="wf-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
     </ActionDialog>
@@ -130,6 +133,9 @@ function CreateWorkflowDialog({ db, open, onOpenChange }: { db: Database; open: 
 function DeactivateDialog({ wf, onClose }: { wf: Workflow; onClose: () => void }) {
   const viewer = useViewer();
   const db = useDb();
+  const t = useTranslations("workflows");
+  const fmt = useFormat();
+  const name = fmt.text(wf.name);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const allotted = allotmentsOf(db, wf.id).length;
@@ -137,22 +143,22 @@ function DeactivateDialog({ wf, onClose }: { wf: Workflow; onClose: () => void }
     setBusy(true);
     const r = await workflowService.setStatus({ workflowId: wf.id, expectedRevision: wf.revision, status: "inactive", actorId: viewer.id });
     setBusy(false);
-    if (!r.ok) return setError(WORKFLOW_ERRORS[r.error]);
-    toast(`${wf.name.en} deactivated`);
+    if (!r.ok) return setError(t(`errors.${r.error}`));
+    toast(t("deactivate.done", { name }));
     onClose();
   };
   return (
     <ActionDialog
       open
       onOpenChange={(o) => !o && onClose()}
-      title={`Deactivate ${wf.name.en}?`}
-      description="No new requests will start on this workflow. Requests already in progress continue on their version."
+      title={t("deactivate.title", { name })}
+      description={t("deactivate.description")}
       icon={
         <DialogIcon className="bg-rose-50 text-rose-600">
           <Power className="size-5" />
         </DialogIcon>
       }
-      confirmLabel="Deactivate workflow"
+      confirmLabel={t("deactivate.confirm")}
       confirmVariant="danger"
       busy={busy}
       error={error}
@@ -161,7 +167,7 @@ function DeactivateDialog({ wf, onClose }: { wf: Workflow; onClose: () => void }
       {allotted > 0 && (
         <p className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-sm text-amber-800 ring-1 ring-amber-600/20 ring-inset">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-          {allotted} registration{allotted === 1 ? "" : "s"} use{allotted === 1 ? "s" : ""} this workflow. New submissions there will be flagged until you allot another workflow.
+          {t("deactivate.allotted", { count: allotted, n: fmt.number(allotted) })}
         </p>
       )}
     </ActionDialog>
@@ -175,6 +181,7 @@ export function WorkflowsListPage() {
   const viewer = useViewer();
   const router = useRouter();
   const fmt = useFormat();
+  const t = useTranslations("workflows");
   const canEdit = viewer.can("workflows.edit");
   const canPublish = viewer.can("workflows.publish");
   const [search, setSearch] = useState("");
@@ -194,27 +201,27 @@ export function WorkflowsListPage() {
             versionNo: current?.versionNo ?? null,
             allotted: allotmentsOf(db, wf.id).map((a) => {
               const reg = db.registrations[a.registrationId];
-              return { name: reg?.name.en ?? "", code: db.events[reg?.eventId ?? ""]?.code ?? "" };
+              return { name: reg ? fmt.text(reg.name) : "", code: db.events[reg?.eventId ?? ""]?.code ?? "" };
             }),
           };
         }),
-    [db],
+    [db, fmt],
   );
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return all.filter((r) => (status === "all" || r.wf.status === status) && (!q || `${r.wf.name.en} ${r.wf.label.en}`.toLowerCase().includes(q)));
+    return all.filter((r) => (status === "all" || r.wf.status === status) && (!q || `${r.wf.name.en} ${r.wf.name.ar} ${r.wf.label.en} ${r.wf.label.ar}`.toLowerCase().includes(q)));
   }, [all, search, status]);
   const gaps = useMemo(() => coverageGaps(db), [db]);
 
   const duplicate = async (wf: Workflow) => {
     const r = await workflowService.duplicate({ workflowId: wf.id, actorId: viewer.id });
-    if (!r.ok) return toast(WORKFLOW_ERRORS[r.error]);
-    toast(`Copy of ${wf.name.en} created`);
+    if (!r.ok) return toast(t(`errors.${r.error}`));
+    toast(t("list.toasts.duplicated", { name: fmt.text(wf.name) }));
     router.push(`/workflows/${r.workflowId}`);
   };
   const activate = async (wf: Workflow) => {
     const r = await workflowService.setStatus({ workflowId: wf.id, expectedRevision: wf.revision, status: "active", actorId: viewer.id });
-    toast(r.ok ? `${wf.name.en} activated` : WORKFLOW_ERRORS[r.error]);
+    toast(r.ok ? t("list.toasts.activated", { name: fmt.text(wf.name) }) : t(`errors.${r.error}`));
   };
 
   const columns = useMemo(
@@ -222,7 +229,7 @@ export function WorkflowsListPage() {
       helper.columns([
         helper.display({
           id: "name",
-          header: () => "Workflow",
+          header: () => t("list.columns.name"),
           cell: ({ row: { original: r } }) => (
             <div className="flex min-w-0 items-center gap-3">
               <span className={cn("inline-flex size-9 shrink-0 items-center justify-center rounded-lg", r.wf.status === "inactive" ? "bg-gray-100 text-gray-500" : "bg-violet-100 text-violet-600")}>
@@ -230,90 +237,90 @@ export function WorkflowsListPage() {
               </span>
               <div className="min-w-0">
                 <Link href={`/workflows/${r.wf.id}`} onClick={(e) => e.stopPropagation()} className="block truncate font-semibold text-ink hover:text-accent-text">
-                  {r.wf.name.en}
+                  {fmt.text(r.wf.name)}
                 </Link>
-                <span className="block truncate text-xs text-ink-3">{r.wf.description.en || r.wf.label.en}</span>
+                <span className="block truncate text-xs text-ink-3">{fmt.text(r.wf.description) || fmt.text(r.wf.label)}</span>
               </div>
             </div>
           ),
         }),
-        helper.display({ id: "label", header: () => "Label", cell: ({ row: { original: r } }) => <span className="truncate text-ink-2">{r.wf.label.en}</span> }),
+        helper.display({ id: "label", header: () => t("list.columns.label"), cell: ({ row: { original: r } }) => <span className="truncate text-ink-2">{fmt.text(r.wf.label)}</span> }),
         helper.display({
           id: "badge",
-          header: () => "Badge type",
-          cell: ({ row: { original: r } }) => <BadgeTypeChip id={r.wf.badgeTypeId} label={db.badgeTypes[r.wf.badgeTypeId]?.name.en ?? ""} />,
+          header: () => t("list.columns.badge"),
+          cell: ({ row: { original: r } }) => <BadgeTypeChip id={r.wf.badgeTypeId} label={fmt.text(db.badgeTypes[r.wf.badgeTypeId]?.name)} />,
         }),
         helper.display({
           id: "stages",
-          header: () => "Stages",
+          header: () => t("list.columns.stages"),
           cell: ({ row: { original: r } }) => <span className="tabular font-semibold text-ink">{r.stages}</span>,
         }),
         helper.display({
           id: "allotted",
-          header: () => "Allotted registrations",
+          header: () => t("list.columns.allotted"),
           cell: ({ row: { original: r } }) =>
             r.allotted.length ? (
-              <Tooltip content={r.allotted.map((a) => `${a.name} · ${a.code}`).join(", ")}>
+              <Tooltip content={r.allotted.map((a) => `${a.name} · ${a.code}`).join(t("separator"))}>
                 <span className="block min-w-0 text-xs">
-                  <span className="tabular block font-semibold text-ink">{r.allotted.length} registration{r.allotted.length === 1 ? "" : "s"}</span>
-                  <span className="block truncate text-ink-3">{r.allotted.map((a) => `${a.name.replace(" Registration", "")} · ${a.code}`).join(", ")}</span>
+                  <span className="tabular block font-semibold text-ink">{t("registrations", { count: r.allotted.length, n: fmt.number(r.allotted.length) })}</span>
+                  <span className="block truncate text-ink-3">{r.allotted.map((a) => `${a.name.replace(" Registration", "")} · ${a.code}`).join(t("separator"))}</span>
                 </span>
               </Tooltip>
             ) : (
-              <span className="text-xs text-ink-3">{r.wf.currentVersionId ? "Not allotted" : "Publish first"}</span>
+              <span className="text-xs text-ink-3">{r.wf.currentVersionId ? t("list.notAllotted") : t("list.publishFirst")}</span>
             ),
         }),
         helper.display({
           id: "version",
-          header: () => "Version",
+          header: () => t("list.columns.version"),
           cell: ({ row: { original: r } }) => (
             <div className="flex flex-wrap items-center gap-1.5">
               {r.versionNo ? (
-                <span className="tabular inline-flex h-5 items-center rounded-md bg-hover px-1.5 font-mono text-2xs font-semibold text-ink-2">v{r.versionNo}</span>
+                <span className="tabular inline-flex h-5 items-center rounded-md bg-hover px-1.5 font-mono text-2xs font-semibold text-ink-2">{t("version", { n: r.versionNo })}</span>
               ) : (
-                <span className="text-xs text-ink-3">Not published</span>
+                <span className="text-xs text-ink-3">{t("list.notPublished")}</span>
               )}
               {r.wf.draft && r.versionNo !== null && (
-                <Tooltip content={r.wf.draftSavedAt ? `Draft saved ${fmt.dateTime(r.wf.draftSavedAt)}` : ""}>
+                <Tooltip content={r.wf.draftSavedAt ? t("list.draftSavedAt", { date: fmt.dateTime(r.wf.draftSavedAt) }) : ""}>
                   <span className="inline-flex h-5 items-center gap-1 rounded-md bg-amber-50 px-1.5 text-2xs font-semibold text-amber-800 ring-1 ring-amber-600/20 ring-inset">
                     <Pencil className="size-2.5" />
-                    Draft changes
+                    {t("list.draftChanges")}
                   </span>
                 </Tooltip>
               )}
             </div>
           ),
         }),
-        helper.display({ id: "status", header: () => "Status", cell: ({ row: { original: r } }) => <WorkflowStatusPill status={r.wf.status} /> }),
+        helper.display({ id: "status", header: () => t("list.columns.status"), cell: ({ row: { original: r } }) => <WorkflowStatusPill status={r.wf.status} /> }),
         helper.display({
           id: "actions",
-          header: () => <span className="sr-only">Actions</span>,
+          header: () => <span className="sr-only">{t("list.columns.actions")}</span>,
           cell: ({ row: { original: r } }) => (
             <Menu>
               <MenuTrigger asChild>
-                <Button size="sm" variant="ghost" iconOnly aria-label={`Actions for ${r.wf.name.en}`} onClick={(e) => e.stopPropagation()}>
+                <Button size="sm" variant="ghost" iconOnly aria-label={t("list.menu.actionsFor", { name: fmt.text(r.wf.name) })} onClick={(e) => e.stopPropagation()}>
                   <MoreHorizontal className="size-4" />
                 </Button>
               </MenuTrigger>
               <MenuContent align="end">
                 <MenuItem onSelect={() => router.push(`/workflows/${r.wf.id}`)}>
                   <Eye className="size-4 text-ink-3" />
-                  View
+                  {t("list.menu.view")}
                 </MenuItem>
                 {canEdit && (
                   <>
                     <MenuItem onSelect={() => router.push(`/workflows/${r.wf.id}?edit=1`)}>
                       <Pencil className="size-4 text-ink-3" />
-                      Edit
+                      {t("list.menu.edit")}
                     </MenuItem>
                     <MenuItem onSelect={() => void duplicate(r.wf)}>
                       <Copy className="size-4 text-ink-3" />
-                      Duplicate
+                      {t("list.menu.duplicate")}
                     </MenuItem>
                     {r.wf.currentVersionId && r.wf.status === "active" && (
                       <MenuItem onSelect={() => router.push(`/workflows/${r.wf.id}?allot=1`)}>
                         <Share2 className="size-4 text-ink-3" />
-                        Allot registrations
+                        {t("list.menu.allot")}
                       </MenuItem>
                     )}
                   </>
@@ -323,20 +330,20 @@ export function WorkflowsListPage() {
                     {r.wf.draft && (
                       <MenuItem onSelect={() => router.push(`/workflows/${r.wf.id}?publish=1`)}>
                         <Rocket className="size-4 text-ink-3" />
-                        Publish
+                        {t("list.menu.publish")}
                       </MenuItem>
                     )}
                     {r.wf.currentVersionId && <MenuSeparator />}
                     {r.wf.currentVersionId && r.wf.status === "active" && (
                       <MenuItem onSelect={() => setDeactivating(r.wf)}>
                         <Power className="size-4 text-rose-500" />
-                        <span className="text-rose-700">Deactivate</span>
+                        <span className="text-rose-700">{t("list.menu.deactivate")}</span>
                       </MenuItem>
                     )}
                     {r.wf.currentVersionId && r.wf.status === "inactive" && (
                       <MenuItem onSelect={() => void activate(r.wf)}>
                         <Power className="size-4 text-emerald-600" />
-                        Activate
+                        {t("list.menu.activate")}
                       </MenuItem>
                     )}
                   </>
@@ -346,30 +353,30 @@ export function WorkflowsListPage() {
           ),
         }),
       ]),
-    [db, fmt, canEdit, canPublish, router], // eslint-disable-line react-hooks/exhaustive-deps
+    [db, fmt, t, canEdit, canPublish, router], // eslint-disable-line react-hooks/exhaustive-deps
   );
   const table = useTable({ features, columns, data: rows });
 
   if (!viewer.can("workflows.view") && !canEdit) {
-    return <EmptyState icon={Lock} title="You can't see workflows" body="Workflows need the Workflows View permission. Ask a vetting administrator." />;
+    return <EmptyState icon={Lock} title={t("noAccess.title")} body={t("noAccess.body")} />;
   }
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-7 pb-12">
+    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-12">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-ink">Workflows</h1>
-          <p className="mt-1.5 text-sm text-ink-2">The review path for each badge type: stages, teams, conditions and where every decision leads.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-ink">{t("list.title")}</h1>
+          <p className="mt-1.5 text-sm text-ink-2">{t("list.subtitle")}</p>
         </div>
         {canEdit ? (
           <Button variant="primary" onClick={() => setCreating(true)}>
             <Plus className="size-4" strokeWidth={2.5} />
-            Create workflow
+            {t("list.create")}
           </Button>
         ) : (
           <Pill tone="slate" dot={false}>
             <Eye className="size-3.5" />
-            View only
+            {t("list.viewOnly")}
           </Pill>
         )}
       </div>
@@ -378,15 +385,15 @@ export function WorkflowsListPage() {
         <div className="mt-6 rounded-xl bg-amber-50 px-5 py-4 ring-1 ring-amber-600/20">
           <p className="flex items-center gap-2 text-sm font-semibold text-amber-900">
             <TriangleAlert className="size-4" />
-            {gaps.length} badge type{gaps.length === 1 ? "" : "s"} with vetting on {gaps.length === 1 ? "has" : "have"} no active workflow
+            {t("list.gaps", { count: gaps.length, n: fmt.number(gaps.length) })}
           </p>
           <ul className="mt-2 flex flex-wrap gap-2">
             {gaps.map((g) => {
               const reg = db.registrations[g.registrationId];
               return (
                 <li key={`${g.registrationId}:${g.badgeTypeId}`} className="inline-flex items-center gap-1.5 rounded-lg bg-surface px-2.5 py-1 text-xs text-ink ring-1 ring-amber-600/20">
-                  {reg.name.en} · <span className="font-mono text-ink-3">{db.events[reg.eventId]?.code}</span>
-                  <BadgeTypeChip id={g.badgeTypeId} label={db.badgeTypes[g.badgeTypeId]?.name.en ?? ""} />
+                  {fmt.text(reg.name)} · <span className="font-mono text-ink-3">{db.events[reg.eventId]?.code}</span>
+                  <BadgeTypeChip id={g.badgeTypeId} label={fmt.text(db.badgeTypes[g.badgeTypeId]?.name)} />
                 </li>
               );
             })}
@@ -395,36 +402,36 @@ export function WorkflowsListPage() {
       ) : (
         <p className="mt-6 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 ring-1 ring-emerald-600/15">
           <CircleCheck className="size-4 shrink-0" />
-          Every badge type on a registration with vetting on has an active workflow.
+          {t("list.noGaps")}
         </p>
       )}
 
       <section className="mt-5 overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
         <div className="flex flex-wrap items-center gap-2 px-5 py-3.5">
           <label className="relative me-1 w-full max-w-72">
-            <span className="sr-only">Search workflows</span>
+            <span className="sr-only">{t("list.search")}</span>
             <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name or label"
+              placeholder={t("list.searchPlaceholder")}
               className="h-8 w-full rounded-lg border border-line-strong bg-surface ps-8 pe-3 text-sm outline-none placeholder:text-ink-3 focus:border-accent focus:ring-4 focus:ring-accent/10"
             />
           </label>
           <SingleFilter
-            label="Status"
+            label={t("list.statusFilter")}
             value={status}
             defaultValue="all"
             onChange={setStatus}
             options={[
-              { value: "all", label: "Any status" },
-              { value: "draft", label: "Draft" },
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
+              { value: "all", label: t("list.anyStatus") },
+              { value: "draft", label: t("status.draft") },
+              { value: "active", label: t("status.active") },
+              { value: "inactive", label: t("status.inactive") },
             ]}
           />
           <span className="tabular ms-auto text-xs text-ink-3">
-            {rows.length} of {all.length}
+            {t("list.count", { shown: fmt.number(rows.length), total: fmt.number(all.length) })}
           </span>
         </div>
         <div className="@container overflow-x-auto border-t border-line">
@@ -461,7 +468,7 @@ export function WorkflowsListPage() {
               </tbody>
             </table>
           ) : (
-            <EmptyState icon={SearchX} title="No workflows match" body="Try another search, or clear the status filter." />
+            <EmptyState icon={SearchX} title={t("list.emptyTitle")} body={t("list.emptyBody")} />
           )}
         </div>
       </section>

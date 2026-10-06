@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CHART_AXIS_TEXT, CHART_GRID, SERIES } from "@/design/chart";
+import { CHART_AXIS_TEXT, CHART_CURSOR, CHART_GRID, CHART_SURFACE, SERIES } from "@/design/chart";
 import type { Dashboard } from "@/domain/dashboard";
 import { useFormat } from "@/i18n/format";
 import { cn } from "@/lib/cn";
@@ -63,7 +63,7 @@ export function OverTimeChart({ data }: { data: Dashboard["daily"] }) {
               />
               <YAxis allowDecimals={false} tick={{ fill: CHART_AXIS_TEXT, fontSize: 11 }} tickLine={false} axisLine={false} width={44} />
               <Tooltip
-                cursor={{ stroke: "#d4d8e3", strokeWidth: 1 }}
+                cursor={{ stroke: CHART_CURSOR, strokeWidth: 1 }}
                 content={({ active, payload, label: day }) =>
                   active && payload?.length ? (
                     <div className="rounded-lg bg-surface px-3 py-2 text-xs shadow-pop ring-1 ring-line" dir={fmt.dir}>
@@ -94,7 +94,7 @@ export function OverTimeChart({ data }: { data: Dashboard["daily"] }) {
                   fill={COLOR[k]}
                   fillOpacity={k === "submitted" ? 0.08 : 0.05}
                   dot={false}
-                  activeDot={{ r: 4, stroke: "#ffffff", strokeWidth: 2 }}
+                  activeDot={{ r: 4, stroke: CHART_SURFACE, strokeWidth: 2 }}
                   isAnimationActive={false}
                 />
               ))}

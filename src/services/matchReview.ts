@@ -1,11 +1,14 @@
 "use client";
 
 import * as mr from "@/domain/matchReview";
-import type { ReviewError, ReviewResult } from "@/domain/matchReview";
+import type { ReviewResult } from "@/domain/matchReview";
 import type { Database, ID } from "@/domain/types";
 import { useAppStore } from "@/store/app";
 
-/** Mock API for Match Review; re-reads shared state so a decision in another tab is detected. */
+/**
+ * Mock API for Match Review; re-reads shared state so a decision in another tab is detected.
+ * Failures are ReviewError codes; the UI turns them into text (matchReview.errors).
+ */
 
 const LATENCY_MS = 320;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -25,12 +28,4 @@ type Ref = { matchId: ID; expectedRevision: number; actorId: ID; note: string };
 export const matchReviewService = {
   confirm: (a: Ref) => run((db, now) => mr.confirmMatch(db, { ...a, now })),
   clear: (a: Ref) => run((db, now) => mr.clearMatch(db, { ...a, now })),
-};
-
-export const REVIEW_ERRORS: Record<ReviewError, string> = {
-  forbidden: "Deciding matches needs the Blacklist Approve permission.",
-  notFound: "This match no longer exists.",
-  notOpen: "Someone already decided this match.",
-  noteRequired: "Say why it isn't the same person.",
-  stale: "The request changed while you were looking. Check it again before deciding.",
 };

@@ -1,9 +1,11 @@
 "use client";
 
 import { Building2, ChevronRight, CircleAlert, CircleCheck, FileText, Info, Loader2, Lock, Paperclip, Plus, SearchX, ShieldBan, TriangleAlert, UserRound, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useDeferredValue, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Button } from "@/components/ui/Button";
+import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Field, TextArea, TextInput } from "@/components/ui/Field";
 import { Segmented } from "@/components/ui/Segmented";
@@ -29,17 +31,17 @@ import { useFormat } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/useNow";
-import { BLACKLIST_ERRORS, blacklistService } from "@/services/blacklist";
+import { blacklistService } from "@/services/blacklist";
 import { watchlistService } from "@/services/watchlist";
 import { blacklistDraftFromWatch } from "@/domain/watchlist";
 import { useDb } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 import { Section } from "@/features/teams/EditorSections";
-import { ISSUE_TEXT, REASON_LABEL } from "./parts";
+import { useBlacklistError, useIssueText, useReasonLabel } from "./parts";
 
 const SECTIONS = ["who", "identifiers", "events", "reason", "validity"] as const;
 type SectionKey = (typeof SECTIONS)[number];
-const SECTION_TITLE: Record<SectionKey, string> = { who: "Who", identifiers: "Identifiers", events: "Events", reason: "Reason and evidence", validity: "Validity" };
+
 const ISSUE_SECTION: Record<EntryIssue["code"], SectionKey> = {
   nameRequired: "who",
   tooManyAliases: "who",
@@ -61,6 +63,7 @@ const ISSUE_SECTION: Record<EntryIssue["code"], SectionKey> = {
 };
 
 function Issues({ issues, show }: { issues: EntryIssue[]; show: boolean }) {
+  const issueText = useIssueText();
   const shown = issues.filter((i) => i.severity === "warning" || show);
   if (!shown.length) return null;
   return (
@@ -69,7 +72,7 @@ function Issues({ issues, show }: { issues: EntryIssue[]; show: boolean }) {
         <li key={n} className={cn("flex items-start gap-2 rounded-lg px-3 py-2 text-sm ring-1 ring-inset", i.severity === "error" ? "bg-rose-50 text-rose-700 ring-rose-600/15" : "bg-amber-50 text-amber-800 ring-amber-600/20")}>
           {i.severity === "error" ? <CircleAlert className="mt-0.5 size-4 shrink-0" /> : <TriangleAlert className="mt-0.5 size-4 shrink-0" />}
           <span>
-            {ISSUE_TEXT[i.code]}
+            {issueText(i.code)}
             {i.code === "possibleDuplicate" && i.ref && (
               <>
                 {" "}
@@ -78,7 +81,12 @@ function Issues({ issues, show }: { issues: EntryIssue[]; show: boolean }) {
                 </Link>
               </>
             )}
-            {(i.code === "fileTooLarge" || i.code === "fileType") && i.ref && <span className="text-xs"> ({i.ref})</span>}
+            {(i.code === "fileTooLarge" || i.code === "fileType") && i.ref && (
+              <span className="text-xs">
+                {" "}
+                (<bdi>{i.ref}</bdi>)
+              </span>
+            )}
           </span>
         </li>
       ))}
@@ -88,6 +96,7 @@ function Issues({ issues, show }: { issues: EntryIssue[]; show: boolean }) {
 
 /** Up to five other spellings; Enter or comma adds one. */
 export function AliasInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const t = useTranslations("blacklist.form");
   const [text, setText] = useState("");
   const add = () => {
     const v = text.trim();
@@ -95,7 +104,7 @@ export function AliasInput({ value, onChange }: { value: string[]; onChange: (v:
     setText("");
   };
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
+    if (e.key === "Enter" || e.key === "," || e.key === "،") {
       e.preventDefault();
       add();
     } else if (e.key === "Backspace" && !text && value.length) onChange(value.slice(0, -1));
@@ -105,7 +114,7 @@ export function AliasInput({ value, onChange }: { value: string[]; onChange: (v:
       {value.map((a) => (
         <span key={a} dir="auto" className="inline-flex h-6 items-center gap-1 rounded-md bg-accent-soft ps-2 pe-1 text-xs font-medium text-accent-text">
           {a}
-          <button type="button" aria-label={`Remove ${a}`} onClick={() => onChange(value.filter((x) => x !== a))} className="rounded p-0.5 hover:bg-indigo-100">
+          <button type="button" aria-label={t("removeAlias", { alias: a })} onClick={() => onChange(value.filter((x) => x !== a))} className="rounded p-0.5 hover:bg-indigo-100">
             <X className="size-3" />
           </button>
         </span>
@@ -113,12 +122,12 @@ export function AliasInput({ value, onChange }: { value: string[]; onChange: (v:
       {value.length < MAX_ALIASES && (
         <input
           dir="auto"
-          aria-label="Add another spelling"
+          aria-label={t("addAlias")}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={onKey}
           onBlur={add}
-          placeholder={value.length ? "Add another…" : "Type a spelling and press Enter, e.g. the Arabic name"}
+          placeholder={value.length ? t("addAnother") : t("aliasPlaceholder")}
           className="h-6 min-w-40 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-ink-3"
         />
       )}
@@ -127,6 +136,10 @@ export function AliasInput({ value, onChange }: { value: string[]; onChange: (v:
 }
 
 export function EntryFormPage({ id }: { id: ID | null }) {
+  const t = useTranslations("blacklist");
+  const tf = useTranslations("blacklist.form");
+  const reasonLabel = useReasonLabel();
+  const errorText = useBlacklistError();
   const db = useDb();
   const viewer = useViewer();
   const router = useRouter();
@@ -161,19 +174,19 @@ export function EntryFormPage({ id }: { id: ID | null }) {
   }, [db, fmt]);
 
   if (!viewer.can("blacklist.propose")) {
-    return <EmptyState icon={Lock} title="You can't add or edit entries" body="This needs the Blacklist Propose permission." />;
+    return <EmptyState icon={Lock} title={tf("noAccessTitle")} body={tf("noAccessBody")} />;
   }
   if (id && !entry) {
-    return <EmptyState icon={SearchX} title="Entry not found" action={<Link href="/screening/blacklist" className="text-sm text-accent-text hover:underline">Back to the blacklist</Link>} />;
+    return <EmptyState icon={SearchX} title={t("entryNotFound")} action={<Link href="/screening/blacklist" className="text-sm text-accent-text hover:underline">{t("backToList")}</Link>} />;
   }
   const status = entry ? effectiveStatus(entry, now) : null;
   if (status === "removed" || status === "expired") {
-    return <EmptyState icon={Lock} title="This entry can't be edited" body="Removed and expired entries are kept for the record. Add a new entry instead." />;
+    return <EmptyState icon={Lock} title={tf("notEditableTitle")} body={tf("notEditableBody")} />;
   }
 
   const setIdentity = (patch: Partial<ListIdentity>) => setDraft((d) => ({ ...d, identity: { ...d.identity, ...patch } }));
   const bySection = (s: SectionKey) => issues.filter((i) => ISSUE_SECTION[i.code] === s);
-  const sectionProps = (s: SectionKey, index: number, subtitle: string) => ({ id: s, index, title: SECTION_TITLE[s], subtitle, issues: bySection(s).map((i) => ({ ...i, code: "nameRequired" as const, section: "basics" as const })), showErrors });
+  const sectionProps = (s: SectionKey, index: number, subtitle: string) => ({ id: s, index, title: tf(`section.${s}`), subtitle, issues: bySection(s).map((i) => ({ ...i, code: "nameRequired" as const, section: "basics" as const })), showErrors });
   const invalid = (code: EntryIssue["code"]) => showErrors && issues.some((i) => i.code === code && i.severity === "error");
   const person = draft.identity.subjectType === "person";
 
@@ -195,41 +208,44 @@ export function EntryFormPage({ id }: { id: ID | null }) {
       ? await blacklistService.edit({ entryId: entry.id, expectedRevision: revision, draft, actorId: viewer.id })
       : await blacklistService.propose({ draft, source: sourceRequest ? "request" : "manual", sourceRequestId: sourceRequest?.id ?? null, actorId: viewer.id });
     setBusy(false);
-    if (!r.ok) return setError(BLACKLIST_ERRORS[r.error]);
+    if (!r.ok) return setError(errorText(r.error));
     if (sourceWatch) await watchlistService.movedToBlacklist({ entryId: sourceWatch.id, blacklistId: r.entryId, actorId: viewer.id });
-    toast(entry && status === "active" ? "Change sent for approval. The current version keeps working." : `${r.entryId} sent for approval`);
+    toast(entry && status === "active" ? tf("toastChangeSent") : tf("toastSent", { id: r.entryId }));
     router.push(`/screening/blacklist/${r.entryId}`);
   };
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-6 pb-16">
+    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-6 pb-16">
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/screening/blacklist" className="hover:text-accent-text">
-          Blacklist
+          {t("breadcrumb")}
         </Link>
-        <ChevronRight className="size-3.5" />
+        <DirIcon icon={ChevronRight} className="size-3.5" />
         {entry && (
           <>
             <Link href={`/screening/blacklist/${entry.id}`} className="font-mono hover:text-accent-text">
               {entry.id}
             </Link>
-            <ChevronRight className="size-3.5" />
+            <DirIcon icon={ChevronRight} className="size-3.5" />
           </>
         )}
-        <span className="text-ink-2">{entry ? "Edit" : "Add entry"}</span>
+        <span className="text-ink-2">{entry ? tf("crumbEdit") : tf("crumbAdd")}</span>
       </nav>
-      <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">{entry ? (status === "active" ? `Propose a change to ${entry.id}` : `Edit ${entry.id}`) : "Add blacklist entry"}</h1>
-      <p className="mt-1 text-sm text-ink-2">Nothing is blocked until a second person with Blacklist Approve approves it.</p>
+      <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">{entry ? (status === "active" ? tf("titleChange", { id: entry.id }) : tf("titleEdit", { id: entry.id })) : tf("titleAdd")}</h1>
+      <p className="mt-1 text-sm text-ink-2">{tf("subtitle")}</p>
 
       {sourceRequest && (
         <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-600/20">
           <ShieldBan className="mt-0.5 size-4 shrink-0" />
           <span>
-            Filled in from request{" "}
-            <Link href={`/requests/${sourceRequest.id}`} className="font-mono font-semibold underline">
-              {sourceRequest.id}
-            </Link>
-            . When you submit, that request goes to Screening Hold until someone decides.
+            {tf.rich("fromRequest", {
+              id: sourceRequest.id,
+              link: (chunks) => (
+                <Link href={`/requests/${sourceRequest.id}`} className="font-mono font-semibold underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </span>
         </p>
       )}
@@ -237,18 +253,21 @@ export function EntryFormPage({ id }: { id: ID | null }) {
         <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-600/20">
           <ShieldBan className="mt-0.5 size-4 shrink-0" />
           <span>
-            Moving watchlist entry{" "}
-            <Link href={`/screening/watchlist/${sourceWatch.id}`} className="font-mono font-semibold underline">
-              {sourceWatch.id}
-            </Link>{" "}
-            to the blacklist. The watchlist entry stays as it is; the blacklist entry waits for a second person.
+            {tf.rich("fromWatchlist", {
+              id: sourceWatch.id,
+              link: (chunks) => (
+                <Link href={`/screening/watchlist/${sourceWatch.id}`} className="font-mono font-semibold underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </span>
         </p>
       )}
       {entry && status === "active" && (
         <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900 ring-1 ring-sky-600/15">
           <Info className="mt-0.5 size-4 shrink-0" />
-          This entry is active. Your edit is sent as a proposed change; the current version keeps working until a second person approves it.
+          {tf("activeNotice")}
         </p>
       )}
 
@@ -260,71 +279,71 @@ export function EntryFormPage({ id }: { id: ID | null }) {
             void submit();
           }}
         >
-          <Section {...sectionProps("who", 1, "A person, or a company whose staff must all be matched.")}>
+          <Section {...sectionProps("who", 1, tf("whoHint"))}>
             <div className="space-y-4 px-6 py-5">
               <Segmented<ListIdentity["subjectType"]>
-                label="Type"
+                label={tf("typeLabel")}
                 value={draft.identity.subjectType}
                 onChange={(subjectType) => setIdentity({ subjectType })}
                 options={[
-                  { value: "person", label: "Person", icon: UserRound },
-                  { value: "company", label: "Company", icon: Building2 },
+                  { value: "person", label: t("type.person"), icon: UserRound },
+                  { value: "company", label: t("type.company"), icon: Building2 },
                 ]}
               />
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={person ? "Full name" : "Display name"} htmlFor="bl-name">
-                  <TextInput id="bl-name" value={draft.identity.fullName} invalid={invalid("nameRequired")} onChange={(e) => setIdentity({ fullName: e.target.value })} placeholder={person ? "As on the ID document" : "e.g. Crescent Shield Trading"} />
+                <Field label={person ? tf("fullName") : tf("displayName")} htmlFor="bl-name">
+                  <TextInput id="bl-name" dir="auto" value={draft.identity.fullName} invalid={invalid("nameRequired")} onChange={(e) => setIdentity({ fullName: e.target.value })} placeholder={person ? tf("namePlaceholderPerson") : tf("namePlaceholderCompany")} />
                 </Field>
                 {!person && (
-                  <Field label="Company name to match" htmlFor="bl-company" hint="Everyone registering under it">
-                    <TextInput id="bl-company" value={draft.identity.company ?? ""} invalid={invalid("companyRequired")} onChange={(e) => setIdentity({ company: e.target.value })} />
+                  <Field label={tf("companyToMatch")} htmlFor="bl-company" hint={tf("companyHint")}>
+                    <TextInput id="bl-company" dir="auto" value={draft.identity.company ?? ""} invalid={invalid("companyRequired")} onChange={(e) => setIdentity({ company: e.target.value })} />
                   </Field>
                 )}
               </div>
-              <Field label="Other spellings" hint={`${draft.identity.aliases.length} / ${MAX_ALIASES}, including Arabic`}>
+              <Field label={t("field.otherSpellings")} hint={tf("aliasesHint", { count: fmt.number(draft.identity.aliases.length), max: fmt.number(MAX_ALIASES) })}>
                 <AliasInput value={draft.identity.aliases} onChange={(aliases) => setIdentity({ aliases })} />
               </Field>
             </div>
             <Issues issues={bySection("who")} show={showErrors} />
           </Section>
 
-          <Section {...sectionProps("identifiers", 2, person ? "An ID number or passport is required. These must match exactly." : "Optional contact details that also match exactly.")}>
+          <Section {...sectionProps("identifiers", 2, person ? tf("identifiersPerson") : tf("identifiersCompany"))}>
             <div className="grid gap-4 px-6 py-5 sm:grid-cols-2">
               {person && (
                 <>
-                  <Field label="National ID / Iqama" htmlFor="bl-nid">
+                  <Field label={t("field.nationalId")} htmlFor="bl-nid">
                     <TextInput id="bl-nid" dir="ltr" className="font-mono" value={draft.identity.nationalId ?? ""} invalid={invalid("idRequired")} onChange={(e) => setIdentity({ nationalId: e.target.value })} />
                   </Field>
-                  <Field label="Date of birth" htmlFor="bl-dob" hint="Used with the name">
+                  <Field label={t("field.dob")} htmlFor="bl-dob" hint={tf("dobHint")}>
                     <TextInput id="bl-dob" type="date" dir="ltr" value={draft.identity.dob ?? ""} invalid={invalid("dobInvalid")} onChange={(e) => setIdentity({ dob: e.target.value || undefined })} />
                   </Field>
-                  <Field label="Passport number" htmlFor="bl-pass">
+                  <Field label={tf("passportNumber")} htmlFor="bl-pass">
                     <TextInput id="bl-pass" dir="ltr" className="font-mono" value={draft.identity.passportNo ?? ""} invalid={invalid("idRequired")} onChange={(e) => setIdentity({ passportNo: e.target.value })} />
                   </Field>
-                  <Field label="Passport nationality">
-                    <Select label="Passport nationality" placeholder="Choose a country" searchable invalid={invalid("nationalityRequired")} value={draft.identity.nationality ?? null} onChange={(nationality) => setIdentity({ nationality })} options={nationalities} />
+                  <Field label={tf("passportNationality")}>
+                    <Select label={tf("passportNationality")} placeholder={tf("chooseCountry")} searchable invalid={invalid("nationalityRequired")} value={draft.identity.nationality ?? null} onChange={(nationality) => setIdentity({ nationality })} options={nationalities} />
                   </Field>
                 </>
               )}
-              <Field label="Email" htmlFor="bl-email" hint="Optional · capital letters ignored">
+              <Field label={t("field.email")} htmlFor="bl-email" hint={tf("emailHint")}>
                 <TextInput id="bl-email" type="email" dir="ltr" value={draft.identity.email ?? ""} invalid={invalid("emailInvalid")} onChange={(e) => setIdentity({ email: e.target.value })} />
               </Field>
-              <Field label="Mobile" htmlFor="bl-mobile" hint="Optional">
+              <Field label={t("field.mobile")} htmlFor="bl-mobile" hint={tf("optional")}>
                 <TextInput id="bl-mobile" dir="ltr" value={draft.identity.mobile ?? ""} onChange={(e) => setIdentity({ mobile: e.target.value })} placeholder="+966…" />
               </Field>
             </div>
             <Issues issues={bySection("identifiers")} show={showErrors} />
           </Section>
 
-          <Section {...sectionProps("events", 3, "Where this entry applies.")}>
+          <Section {...sectionProps("events", 3, tf("eventsHint"))}>
             <div className="space-y-3 px-6 py-5">
               <Segmented<"all" | "some">
-                label="Events"
+                label={t("field.events")}
                 value={draft.eventScope === "all" ? "all" : "some"}
                 onChange={(v) => setDraft((d) => ({ ...d, eventScope: v === "all" ? "all" : [] }))}
                 options={[
-                  { value: "all", label: "All events" },
-                  { value: "some", label: "Selected events" },
+                  { value: "all", label: t("allEvents") },
+                  { value: "some", label: tf("selectedEvents") },
                 ]}
               />
               {draft.eventScope !== "all" && (
@@ -343,7 +362,7 @@ export function EntryFormPage({ id }: { id: ID | null }) {
                       >
                         <span className={cn("inline-flex size-4 items-center justify-center rounded-xs border", on ? "border-accent bg-accent text-white" : "border-line-strong")}>{on && <CircleCheck className="size-3" />}</span>
                         <span>
-                          <span className="block font-medium">{e.name.en}</span>
+                          <span className="block font-medium">{fmt.text(e.name)}</span>
                           <span className="block font-mono text-xs opacity-75">{e.code}</span>
                         </span>
                       </button>
@@ -355,15 +374,15 @@ export function EntryFormPage({ id }: { id: ID | null }) {
             <Issues issues={bySection("events")} show={showErrors} />
           </Section>
 
-          <Section {...sectionProps("reason", 4, "Internal. The attendee never sees it; they only see “Under review” or the normal rejection email.")}>
+          <Section {...sectionProps("reason", 4, tf("reasonHint"))}>
             <div className="space-y-4 px-6 py-5">
-              <Field label="Reason type">
-                <Select label="Reason type" placeholder="Choose a reason" invalid={invalid("reasonTypeRequired")} value={draft.reasonType} onChange={(v) => setDraft((d) => ({ ...d, reasonType: v as BlacklistReason }))} options={REASON_TYPES.map((r) => ({ value: r, label: REASON_LABEL[r] }))} />
+              <Field label={t("field.reasonType")}>
+                <Select label={t("field.reasonType")} placeholder={tf("chooseReason")} invalid={invalid("reasonTypeRequired")} value={draft.reasonType} onChange={(v) => setDraft((d) => ({ ...d, reasonType: v as BlacklistReason }))} options={REASON_TYPES.map((r) => ({ value: r, label: reasonLabel(r) }))} />
               </Field>
-              <Field label="Reason details" htmlFor="bl-detail" hint={`${draft.reasonDetail.length} / ${DETAIL_MAX}`}>
-                <TextArea id="bl-detail" rows={4} maxLength={DETAIL_MAX + 50} value={draft.reasonDetail} onChange={(e) => setDraft((d) => ({ ...d, reasonDetail: e.target.value }))} placeholder="What happened, who reported it, any reference number" />
+              <Field label={t("field.reasonDetails")} htmlFor="bl-detail" hint={tf("detailCount", { count: fmt.number(draft.reasonDetail.length), max: fmt.number(DETAIL_MAX) })}>
+                <TextArea id="bl-detail" dir="auto" rows={4} maxLength={DETAIL_MAX + 50} value={draft.reasonDetail} onChange={(e) => setDraft((d) => ({ ...d, reasonDetail: e.target.value }))} placeholder={tf("detailPlaceholder")} />
               </Field>
-              <Field label="Evidence" hint={`Up to ${EVIDENCE_MAX} files · PDF, JPG or PNG · 10 MB each`}>
+              <Field label={t("field.evidence")} hint={tf("evidenceHint", { max: fmt.number(EVIDENCE_MAX) })}>
                 <div
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
@@ -377,9 +396,9 @@ export function EntryFormPage({ id }: { id: ID | null }) {
                       {draft.evidence.map((f) => (
                         <li key={f.id} className="flex items-center gap-2.5 rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-line">
                           <FileText className="size-4 text-ink-3" />
-                          <span className="min-w-0 flex-1 truncate">{f.fileName}</span>
-                          <span className="tabular text-xs text-ink-3">{(f.sizeKb / 1024).toFixed(1)} MB</span>
-                          <Button size="sm" variant="ghost" iconOnly aria-label={`Remove ${f.fileName}`} onClick={() => setDraft((d) => ({ ...d, evidence: d.evidence.filter((x) => x.id !== f.id) }))}>
+                          <bdi className="min-w-0 flex-1 truncate">{f.fileName}</bdi>
+                          <span className="tabular text-xs text-ink-3">{t("detail.sizeMb", { size: (f.sizeKb / 1024).toFixed(1) })}</span>
+                          <Button size="sm" variant="ghost" iconOnly aria-label={tf("removeFile", { file: f.fileName })} onClick={() => setDraft((d) => ({ ...d, evidence: d.evidence.filter((x) => x.id !== f.id) }))}>
                             <X className="size-3.5" />
                           </Button>
                         </li>
@@ -389,9 +408,9 @@ export function EntryFormPage({ id }: { id: ID | null }) {
                   <div className="flex flex-wrap items-center gap-3">
                     <Button size="sm" onClick={() => fileRef.current?.click()} disabled={draft.evidence.length >= EVIDENCE_MAX}>
                       <Paperclip className="size-3.5" />
-                      Attach files
+                      {tf("attachFiles")}
                     </Button>
-                    <span className="text-xs text-ink-3">or drop them here. Files stay in the prototype only.</span>
+                    <span className="text-xs text-ink-3">{tf("dropFiles")}</span>
                     <input
                       ref={fileRef}
                       type="file"
@@ -410,12 +429,12 @@ export function EntryFormPage({ id }: { id: ID | null }) {
             <Issues issues={bySection("reason")} show={showErrors} />
           </Section>
 
-          <Section {...sectionProps("validity", 5, "No end date means the entry stays until someone removes it.")}>
+          <Section {...sectionProps("validity", 5, tf("validityHint"))}>
             <div className="grid gap-4 px-6 py-5 sm:grid-cols-2">
-              <Field label="Start date" htmlFor="bl-start">
+              <Field label={t("field.startDate")} htmlFor="bl-start">
                 <TextInput id="bl-start" type="date" dir="ltr" value={draft.startsOn} invalid={invalid("startRequired")} onChange={(e) => setDraft((d) => ({ ...d, startsOn: e.target.value }))} />
               </Field>
-              <Field label="End date" htmlFor="bl-end" hint="Optional">
+              <Field label={t("field.endDate")} htmlFor="bl-end" hint={tf("optional")}>
                 <TextInput id="bl-end" type="date" dir="ltr" value={draft.endsOn ?? ""} invalid={invalid("endBeforeStart")} onChange={(e) => setDraft((d) => ({ ...d, endsOn: e.target.value || null }))} />
               </Field>
             </div>
@@ -426,8 +445,8 @@ export function EntryFormPage({ id }: { id: ID | null }) {
         <aside className="space-y-4 lg:sticky lg:top-6">
           <div className="overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
             <div className="px-5 pt-4 pb-3">
-              <h2 className="text-sm font-bold text-ink">Would match today</h2>
-              <p className="mt-0.5 text-xs text-ink-3">Requests in progress or approved that this entry would catch once approved.</p>
+              <h2 className="text-sm font-bold text-ink">{tf("wouldMatch")}</h2>
+              <p className="mt-0.5 text-xs text-ink-3">{tf("wouldMatchHint")}</p>
             </div>
             <div className="border-t border-line px-5 py-3">
               {preview.length ? (
@@ -440,13 +459,13 @@ export function EntryFormPage({ id }: { id: ID | null }) {
                       <span className="min-w-0 flex-1 truncate text-ink-2">
                         <bdi>{db.attendees[db.requests[h.requestId].attendeeId].profile.fullName}</bdi>
                       </span>
-                      <span className={cn("rounded px-1.5 py-0.5 text-2xs font-semibold", h.strength === "strong" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-800")}>{h.strength === "strong" ? "Strong" : "Possible"}</span>
+                      <span className={cn("rounded px-1.5 py-0.5 text-2xs font-semibold", h.strength === "strong" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-800")}>{h.strength === "strong" ? tf("strong") : tf("possible")}</span>
                     </li>
                   ))}
-                  {preview.length > 6 && <li className="text-xs text-ink-3">and {preview.length - 6} more</li>}
+                  {preview.length > 6 && <li className="text-xs text-ink-3">{tf("andMore", { n: fmt.number(preview.length - 6) })}</li>}
                 </ul>
               ) : (
-                <p className="text-xs text-ink-3">No current request matches.</p>
+                <p className="text-xs text-ink-3">{tf("noMatches")}</p>
               )}
             </div>
           </div>
@@ -458,8 +477,8 @@ export function EntryFormPage({ id }: { id: ID | null }) {
                 return (
                   <li key={s}>
                     <a href={`#${s}`} className="flex items-center gap-3 px-5 py-2 text-sm hover:bg-subtle">
-                      <span className="w-4 text-center text-xs font-semibold text-ink-3">{i + 1}</span>
-                      <span className="flex-1 text-ink">{SECTION_TITLE[s]}</span>
+                      <span className="w-4 text-center text-xs font-semibold text-ink-3">{fmt.number(i + 1)}</span>
+                      <span className="flex-1 text-ink">{tf(`section.${s}`)}</span>
                       {err ? <CircleAlert className={cn("size-4", showErrors ? "text-rose-500" : "text-ink-3")} /> : warn ? <TriangleAlert className="size-4 text-amber-500" /> : <CircleCheck className="size-4 text-emerald-500" />}
                     </a>
                   </li>
@@ -476,13 +495,13 @@ export function EntryFormPage({ id }: { id: ID | null }) {
               <div className="flex items-center gap-2">
                 <Button variant="primary" className="flex-1" disabled={busy} onClick={() => void submit()}>
                   {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-                  {busy ? "Sending…" : "Send for approval"}
+                  {busy ? tf("sending") : tf("send")}
                 </Button>
                 <Link href={entry ? `/screening/blacklist/${entry.id}` : "/screening/blacklist"}>
-                  <Button disabled={busy}>Cancel</Button>
+                  <Button disabled={busy}>{tf("cancel")}</Button>
                 </Link>
               </div>
-              <p className="text-center text-xs text-ink-3">A second person must approve it.</p>
+              <p className="text-center text-xs text-ink-3">{tf("secondPerson")}</p>
             </div>
           </div>
         </aside>

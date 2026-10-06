@@ -48,15 +48,4 @@ export const blacklistService = {
   },
 };
 
-/** English messages (the Blacklist area is English-only). */
-export const BLACKLIST_ERRORS: Record<bl.BlacklistError, string> = {
-  forbidden: "You don't have permission to do this.",
-  notFound: "This entry no longer exists.",
-  stale: "Someone else changed this entry. Reload to see their changes.",
-  invalid: "Fix the highlighted fields first.",
-  ownProposal: "You proposed this, so a second person has to approve it.",
-  notWaiting: "This entry is no longer waiting for approval.",
-  notEditable: "Removed and expired entries can't be edited.",
-  notActive: "Only active entries can be removed.",
-  noteRequired: "Add a short note explaining why.",
-};
+/** Errors come back as codes (bl.BlacklistError); screens show them with useBlacklistError() from features/blacklist/parts. */

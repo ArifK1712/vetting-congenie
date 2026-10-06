@@ -23,11 +23,10 @@ import { OverTimeChart } from "./OverTimeChart";
 import { Lollipop, Ring, ShareStrip, Sparkline } from "./visuals";
 import { Empty, Legend, Panel, StatTile } from "./widgets";
 
-// Tailwind dot classes resolved to hex for inline bar widths (same hues as the pills).
-const STATUS_HEX: Record<string, string> = {
-  sky: "#0ea5e9", indigo: "#6366f1", amber: "#f59e0b", orange: "#f97316", red: "#ef4444",
-  emerald: "#10b981", rose: "#e11d48", gray: "#9ca3af",
-};
+// Tailwind dot hues as colour variables for inline bar widths (same hues as the pills).
+const STATUS_HEX: Record<string, string> = Object.fromEntries(
+  ["sky", "indigo", "amber", "orange", "red", "emerald", "rose", "gray"].map((h) => [h, `var(--color-${h}-500)`]),
+);
 
 export function DashboardPage() {
   const t = useTranslations("dashboard");
@@ -66,7 +65,7 @@ export function DashboardPage() {
   const shownStatuses = STATUS_ORDER.filter((s) => s !== "configuration_error" && (s !== "screening_hold" || viewer.can("blacklist.view")));
 
   return (
-    <div className="mx-auto max-w-[96rem] space-y-5 px-7 pt-7 pb-16">
+    <div className="mx-auto max-w-[96rem] space-y-5 px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-16">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>
@@ -264,7 +263,7 @@ export function DashboardPage() {
                   label={fmt.text(s.name)}
                   hint={t("timePerStage.visits", { n: fmt.number(s.count) })}
                   share={arr[0].medianHours ? s.medianHours / arr[0].medianHours : 0}
-                  color="#8b5cf6"
+                  color="var(--color-violet-500)"
                   value={fmt.duration(s.medianHours * 3_600_000)}
                 />
               ))}

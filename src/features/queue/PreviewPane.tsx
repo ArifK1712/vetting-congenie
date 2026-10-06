@@ -55,7 +55,7 @@ export function PreviewPane({
     <aside
       key={row.id}
       aria-label={row.id}
-      className="anim-pane flex h-full w-[26rem] shrink-0 flex-col border-s border-line bg-surface shadow-[0_0_40px_-12px_rgb(16_24_40/0.18)]"
+      className="anim-pane fixed inset-y-0 end-0 z-40 flex h-full w-full shrink-0 flex-col border-s border-line bg-surface shadow-panel sm:w-[26rem] xl:static xl:z-auto xl:shadow-[0_0_40px_-12px_rgb(16_24_40/0.18)]"
     >
       <div className="flex h-12 items-center justify-between border-b border-line ps-5 pe-2">
         <span className="ltr-data rounded-md bg-subtle px-2 py-0.5 font-mono text-xs font-medium text-ink-2 ring-1 ring-line">{row.id}</span>

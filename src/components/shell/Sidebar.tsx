@@ -18,8 +18,10 @@ import {
   Workflow,
   type LucideIcon,
 } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { reviewQueue } from "@/domain/matchReview";
@@ -28,6 +30,8 @@ import { OPEN_STATUSES } from "@/domain/status";
 import type { Permission } from "@/domain/types";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
+import { stripLocale, useNav } from "@/lib/navProgress";
+import { useMedia } from "@/lib/useMedia";
 import { useDb, useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 
@@ -100,13 +104,105 @@ function useNavCounts(): Partial<Record<NavKey, number>> {
   }, [db, viewer.id, eventScope]);
 }
 
+/**
+ * Desktop: full rail (collapsible). Tablet: icon rail. Phone: a drawer opened
+ * from the header's menu button.
+ */
 export function Sidebar() {
   const t = useTranslations("navigation");
-  const tApp = useTranslations("app");
-  const pathname = usePathname();
-  const viewer = useViewer();
-  const collapsed = useSession((s) => s.sidebarCollapsed);
+  const userCollapsed = useSession((s) => s.sidebarCollapsed);
   const toggle = useSession((s) => s.toggleSidebar);
+  const tablet = useMedia("(min-width: 768px) and (max-width: 1023.98px)");
+  const collapsed = tablet || userCollapsed;
+
+  return (
+    <aside
+      className={cn(
+        "hidden h-full shrink-0 flex-col border-e border-nav-line bg-nav text-nav-text transition-[width] duration-150 md:flex",
+        collapsed ? "w-16" : "w-64",
+      )}
+    >
+      <Brand collapsed={collapsed} />
+      <NavLinks collapsed={collapsed} />
+      {!tablet && (
+        <div className={cn("border-t border-nav-line p-3", collapsed && "flex justify-center")}>
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={collapsed ? t("expand") : t("collapse")}
+            className={cn(
+              "flex h-9 items-center gap-3 rounded-lg text-[13px] text-nav-muted hover:bg-nav-hover hover:text-nav-strong",
+              collapsed ? "w-9 justify-center" : "w-full px-3",
+            )}
+          >
+            <DirIcon icon={collapsed ? PanelLeftOpen : PanelLeftClose} className="size-[18px]" strokeWidth={1.75} />
+            {!collapsed && <span>{t("collapse")}</span>}
+          </button>
+        </div>
+      )}
+    </aside>
+  );
+}
+
+/** Phone navigation drawer. Closes on navigation and when the screen grows. */
+export function MobileNav() {
+  const t = useTranslations("navigation");
+  const open = useSession((s) => s.navOpen);
+  const setOpen = useSession((s) => s.setNavOpen);
+  const pathname = usePathname();
+  const wide = useMedia("(min-width: 768px)");
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname, wide, setOpen]);
+
+  return (
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="anim-fade fixed inset-0 z-50 bg-overlay md:hidden" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          className="anim-drawer fixed inset-y-0 start-0 z-50 flex w-[min(18rem,85vw)] flex-col bg-nav text-nav-text shadow-panel outline-none md:hidden"
+        >
+          <Dialog.Title className="sr-only">{t("mainNavigation")}</Dialog.Title>
+          <div className="flex items-center justify-between pe-3">
+            <Brand collapsed={false} />
+            <Dialog.Close
+              aria-label={t("close")}
+              className="inline-flex size-9 items-center justify-center rounded-lg text-nav-muted hover:bg-nav-hover hover:text-nav-strong"
+            >
+              <X className="size-[18px]" strokeWidth={1.75} />
+            </Dialog.Close>
+          </div>
+          <NavLinks collapsed={false} />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function Brand({ collapsed }: { collapsed: boolean }) {
+  const tApp = useTranslations("app");
+  return (
+    <div className={cn("flex h-16 items-center gap-3", collapsed ? "justify-center" : "px-5")}>
+      <LogoMark />
+      {!collapsed && (
+        <div className="min-w-0 leading-tight">
+          <p className="text-[15px] font-bold tracking-tight text-nav-strong">{tApp("name")}</p>
+          <p className="truncate text-2xs text-nav-muted">{tApp("workspace")}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NavLinks({ collapsed }: { collapsed: boolean }) {
+  const t = useTranslations("navigation");
+  const current = usePathname();
+  // Highlight where we're going as soon as a page change starts.
+  const target = useNav((s) => s.target);
+  const pathname = target ? stripLocale(target) : current;
+  const viewer = useViewer();
   const counts = useNavCounts();
 
   const countTone: Partial<Record<NavKey, string>> = {
@@ -116,107 +212,75 @@ export function Sidebar() {
   };
 
   return (
-    <aside
-      className={cn(
-        "flex h-full shrink-0 flex-col border-e border-nav-line bg-nav text-nav-text transition-[width] duration-150",
-        collapsed ? "w-16" : "w-64",
-      )}
-    >
-      <div className={cn("flex h-16 items-center gap-3", collapsed ? "justify-center" : "px-5")}>
-        <LogoMark />
-        {!collapsed && (
-          <div className="min-w-0 leading-tight">
-            <p className="text-[15px] font-bold tracking-tight text-nav-strong">{tApp("name")}</p>
-            <p className="truncate text-2xs text-nav-muted">{tApp("workspace")}</p>
+    <nav aria-label={t("mainNavigation")} className="flex-1 overflow-y-auto px-3 pt-2 pb-3">
+      {GROUPS.map((group) => {
+        const items = group.items.filter((i) => !i.requires || i.requires.some((p) => viewer.can(p)));
+        if (!items.length) return null;
+        return (
+          <div key={group.key} className="mb-5">
+            {!collapsed ? (
+              <p className="eyebrow px-3 pb-2 !text-nav-muted">{t(`groups.${group.key}`)}</p>
+            ) : (
+              <div className="mx-3 mb-3 h-px bg-nav-line" />
+            )}
+            <ul className="space-y-0.5">
+              {items.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`) ||
+                  (item.key === "queue" && pathname.startsWith("/requests"));
+                const count = counts[item.key];
+                const link = (
+                  <Link
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "group relative flex h-9 items-center gap-3 rounded-lg text-[13.5px] transition-colors",
+                      collapsed ? "justify-center" : "px-3",
+                      active ? "bg-nav-active font-semibold text-accent-text" : "hover:bg-nav-hover hover:text-nav-strong",
+                    )}
+                  >
+                    {active && <span aria-hidden className="absolute inset-y-2 start-0 w-[3px] rounded-full bg-accent" />}
+                    <item.icon
+                      className={cn("size-[18px] shrink-0", active ? "text-accent" : "text-nav-muted group-hover:text-nav-text")}
+                      strokeWidth={1.75}
+                    />
+                    {!collapsed && <span className="flex-1 truncate">{t(item.key)}</span>}
+                    {!collapsed && count !== undefined && count > 0 && (
+                      <span
+                        className={cn(
+                          "tabular inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-2xs font-semibold",
+                          countTone[item.key] ?? "bg-hover text-nav-text",
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </Link>
+                );
+                return (
+                  <li key={item.key}>
+                    {collapsed ? (
+                      <Tooltip content={t(item.key)} side="right">
+                        {link}
+                      </Tooltip>
+                    ) : (
+                      link
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-        )}
-      </div>
-
-      <nav aria-label={t("mainNavigation")} className="flex-1 overflow-y-auto px-3 pt-2 pb-3">
-        {GROUPS.map((group) => {
-          const items = group.items.filter((i) => !i.requires || i.requires.some((p) => viewer.can(p)));
-          if (!items.length) return null;
-          return (
-            <div key={group.key} className="mb-5">
-              {!collapsed ? (
-                <p className="eyebrow px-3 pb-2 !text-nav-muted">{t(`groups.${group.key}`)}</p>
-              ) : (
-                <div className="mx-3 mb-3 h-px bg-nav-line" />
-              )}
-              <ul className="space-y-0.5">
-                {items.map((item) => {
-                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`) ||
-                    (item.key === "queue" && pathname.startsWith("/requests"));
-                  const count = counts[item.key];
-                  const link = (
-                    <Link
-                      href={item.href}
-                      aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "group relative flex h-9 items-center gap-3 rounded-lg text-[13.5px] transition-colors",
-                        collapsed ? "justify-center" : "px-3",
-                        active ? "bg-nav-active font-semibold text-accent-text" : "hover:bg-nav-hover hover:text-nav-strong",
-                      )}
-                    >
-                      {active && <span aria-hidden className="absolute inset-y-2 start-0 w-[3px] rounded-full bg-accent" />}
-                      <item.icon
-                        className={cn("size-[18px] shrink-0", active ? "text-accent" : "text-nav-muted group-hover:text-nav-text")}
-                        strokeWidth={1.75}
-                      />
-                      {!collapsed && <span className="flex-1 truncate">{t(item.key)}</span>}
-                      {!collapsed && count !== undefined && count > 0 && (
-                        <span
-                          className={cn(
-                            "tabular inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-2xs font-semibold",
-                            countTone[item.key] ?? "bg-hover text-nav-text",
-                          )}
-                        >
-                          {count}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                  return (
-                    <li key={item.key}>
-                      {collapsed ? (
-                        <Tooltip content={t(item.key)} side="right">
-                          {link}
-                        </Tooltip>
-                      ) : (
-                        link
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          );
-        })}
-      </nav>
-
-      <div className={cn("border-t border-nav-line p-3", collapsed && "flex justify-center")}>
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={collapsed ? t("expand") : t("collapse")}
-          className={cn(
-            "flex h-9 items-center gap-3 rounded-lg text-[13px] text-nav-muted hover:bg-nav-hover hover:text-nav-strong",
-            collapsed ? "w-9 justify-center" : "w-full px-3",
-          )}
-        >
-          <DirIcon icon={collapsed ? PanelLeftOpen : PanelLeftClose} className="size-[18px]" strokeWidth={1.75} />
-          {!collapsed && <span>{t("collapse")}</span>}
-        </button>
-      </div>
-    </aside>
+        );
+      })}
+    </nav>
   );
 }
 
 function LogoMark() {
   return (
     <svg viewBox="0 0 32 32" className="size-8 shrink-0" aria-hidden>
-      <rect width="32" height="32" rx="9" fill="#4f46e5" />
-            <path d="M10 11l6 10 6-10" fill="none" stroke="white" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <rect width="32" height="32" rx="9" className="fill-accent" />
+      <path d="M10 11l6 10 6-10" fill="none" stroke="white" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx="22.5" cy="9.5" r="2.6" fill="#a5f3fc" />
     </svg>
   );

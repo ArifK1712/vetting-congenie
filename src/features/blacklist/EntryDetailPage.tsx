@@ -1,9 +1,11 @@
 "use client";
 
 import { CheckCircle2, ChevronRight, FileText, History, Hourglass, Lock, MoreHorizontal, Pencil, ScanSearch, SearchX, ShieldBan, Trash2, XCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/Menu";
 import { Pill } from "@/components/ui/Status";
@@ -17,7 +19,7 @@ import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/useNow";
 import { useDb } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
-import { ApprovalImpact, DecisionDialog, displayName, EntryStatus, HISTORY_LABEL, REASON_LABEL, SOURCE_LABEL, TypeChip } from "./parts";
+import { ApprovalImpact, DecisionDialog, displayName, EntryStatus, TypeChip, useHistoryLabel, useReasonLabel, useSourceLabel } from "./parts";
 
 function Card({ title, subtitle, children, action }: { title: string; subtitle?: string; children: ReactNode; action?: ReactNode }) {
   return (
@@ -44,21 +46,24 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function useEventsText(db: Database) {
-  return (scope: "all" | ID[]) => (scope === "all" ? "All events" : scope.map((id) => db.events[id]?.name.en ?? id).join(" · "));
+  const t = useTranslations("blacklist");
+  const fmt = useFormat();
+  return (scope: "all" | ID[]) => (scope === "all" ? t("allEvents") : scope.map((id) => (db.events[id] ? fmt.text(db.events[id].name) : id)).join(" · "));
 }
 
 function IdentityRows({ identity }: { identity: ListIdentity }) {
+  const t = useTranslations("blacklist.field");
   const fmt = useFormat();
   const person = identity.subjectType === "person";
   return (
     <dl>
-      <Row label="Type">
+      <Row label={t("type")}>
         <TypeChip type={identity.subjectType} />
       </Row>
-      <Row label="Name">
+      <Row label={t("name")}>
         <bdi className="font-semibold">{identity.fullName}</bdi>
       </Row>
-      <Row label="Other spellings">
+      <Row label={t("otherSpellings")}>
         {identity.aliases.length ? (
           <span className="flex flex-wrap gap-1.5">
             {identity.aliases.map((a) => (
@@ -71,39 +76,41 @@ function IdentityRows({ identity }: { identity: ListIdentity }) {
       </Row>
       {person ? (
         <>
-          <Row label="National ID / Iqama">{identity.nationalId ? <span className="font-mono">{identity.nationalId}</span> : null}</Row>
-          <Row label="Passport">{identity.passportNo ? <span><span className="font-mono">{identity.passportNo}</span>{identity.nationality ? ` · ${fmt.country(identity.nationality)}` : ""}</span> : null}</Row>
-          <Row label="Date of birth">{identity.dob ? fmt.day(identity.dob) : null}</Row>
+          <Row label={t("nationalId")}>{identity.nationalId ? <span className="ltr-data font-mono">{identity.nationalId}</span> : null}</Row>
+          <Row label={t("passport")}>{identity.passportNo ? <span><span className="ltr-data font-mono">{identity.passportNo}</span>{identity.nationality ? ` · ${fmt.country(identity.nationality)}` : ""}</span> : null}</Row>
+          <Row label={t("dob")}>{identity.dob ? fmt.day(identity.dob) : null}</Row>
         </>
       ) : (
-        <Row label="Company">{identity.company}</Row>
+        <Row label={t("company")}>{identity.company ? <bdi>{identity.company}</bdi> : null}</Row>
       )}
-      <Row label="Email">{identity.email ? <span className="ltr-data">{identity.email}</span> : null}</Row>
-      <Row label="Mobile">{identity.mobile ? <span className="ltr-data font-mono">{identity.mobile}</span> : null}</Row>
+      <Row label={t("email")}>{identity.email ? <span className="ltr-data">{identity.email}</span> : null}</Row>
+      <Row label={t("mobile")}>{identity.mobile ? <span className="ltr-data font-mono">{identity.mobile}</span> : null}</Row>
     </dl>
   );
 }
 
 /** Field-by-field comparison of an active entry and its proposed change. */
 function ChangeDiff({ db, entry }: { db: Database; entry: BlacklistEntry }) {
+  const t = useTranslations("blacklist");
+  const reasonLabel = useReasonLabel();
   const fmt = useFormat();
   const events = useEventsText(db);
   const pc = entry.pendingChange!;
   const text = (c: BlacklistContent) => ({
-    Name: c.identity.fullName,
-    "Other spellings": c.identity.aliases.join(" · "),
-    "National ID / Iqama": c.identity.nationalId ?? "",
-    Passport: c.identity.passportNo ? `${c.identity.passportNo} ${c.identity.nationality ?? ""}`.trim() : "",
-    "Date of birth": c.identity.dob ?? "",
-    Company: c.identity.company ?? "",
-    Email: c.identity.email ?? "",
-    Mobile: c.identity.mobile ?? "",
-    Events: events(c.eventScope),
-    "Reason type": REASON_LABEL[c.reasonType],
-    "Reason details": c.reasonDetail,
-    Evidence: c.evidence.map((f) => f.fileName).join(", "),
-    "Start date": fmt.date(c.startsOn),
-    "End date": c.endsOn ? fmt.date(c.endsOn) : "No end date",
+    name: c.identity.fullName,
+    otherSpellings: c.identity.aliases.join(" · "),
+    nationalId: c.identity.nationalId ?? "",
+    passport: c.identity.passportNo ? `${c.identity.passportNo} ${c.identity.nationality ?? ""}`.trim() : "",
+    dob: c.identity.dob ?? "",
+    company: c.identity.company ?? "",
+    email: c.identity.email ?? "",
+    mobile: c.identity.mobile ?? "",
+    events: events(c.eventScope),
+    reasonType: reasonLabel(c.reasonType),
+    reasonDetails: c.reasonDetail,
+    evidence: c.evidence.map((f) => f.fileName).join(", "),
+    startDate: fmt.date(c.startsOn),
+    endDate: c.endsOn ? fmt.date(c.endsOn) : t("noEndDate"),
   });
   const before = text(entry);
   const after = text(pc);
@@ -112,15 +119,15 @@ function ChangeDiff({ db, entry }: { db: Database; entry: BlacklistEntry }) {
     <table className="w-full table-fixed text-sm">
       <thead>
         <tr className="text-start">
-          <th className="eyebrow w-36 px-4 py-2 text-start">Field</th>
-          <th className="eyebrow px-4 py-2 text-start">Now</th>
-          <th className="eyebrow px-4 py-2 text-start">Proposed</th>
+          <th className="eyebrow w-36 px-4 py-2 text-start">{t("detail.diffField")}</th>
+          <th className="eyebrow px-4 py-2 text-start">{t("detail.diffNow")}</th>
+          <th className="eyebrow px-4 py-2 text-start">{t("detail.diffProposed")}</th>
         </tr>
       </thead>
       <tbody>
         {changed.map((k) => (
           <tr key={k} className="border-t border-amber-200/60 align-top">
-            <td className="px-4 py-2 text-ink-2">{k}</td>
+            <td className="px-4 py-2 text-ink-2">{t(`field.${k}`)}</td>
             <td dir="auto" className="px-4 py-2 text-ink-3 line-through decoration-rose-300">{before[k] || "—"}</td>
             <td dir="auto" className="px-4 py-2 font-medium text-ink">{after[k] || "—"}</td>
           </tr>
@@ -131,6 +138,10 @@ function ChangeDiff({ db, entry }: { db: Database; entry: BlacklistEntry }) {
 }
 
 export function EntryDetailPage({ id }: { id: ID }) {
+  const t = useTranslations("blacklist");
+  const reasonLabel = useReasonLabel();
+  const sourceLabel = useSourceLabel();
+  const historyLabel = useHistoryLabel();
   const db = useDb();
   const viewer = useViewer();
   const fmt = useFormat();
@@ -140,16 +151,16 @@ export function EntryDetailPage({ id }: { id: ID }) {
   const entry = db.blacklist[id];
 
   if (!viewer.can("blacklist.view")) {
-    return <EmptyState icon={Lock} title="You can't see the blacklist" body="This needs the Blacklist View permission." />;
+    return <EmptyState icon={Lock} title={t("list.noAccessTitle")} body={t("detail.noAccessBody")} />;
   }
   if (!entry) {
     return (
       <EmptyState
         icon={SearchX}
-        title="Entry not found"
+        title={t("entryNotFound")}
         action={
           <Link href="/screening/blacklist" className="text-sm text-accent-text hover:underline">
-            Back to the blacklist
+            {t("backToList")}
           </Link>
         }
       />
@@ -166,12 +177,12 @@ export function EntryDetailPage({ id }: { id: ID }) {
   const name = displayName(entry);
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-6 pb-16">
+    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-6 pb-16">
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/screening/blacklist" className="hover:text-accent-text">
-          Blacklist
+          {t("breadcrumb")}
         </Link>
-        <ChevronRight className="size-3.5" />
+        <DirIcon icon={ChevronRight} className="size-3.5" />
         <span className="font-mono text-ink-2">{entry.id}</span>
       </nav>
 
@@ -188,7 +199,7 @@ export function EntryDetailPage({ id }: { id: ID }) {
               <EntryStatus entry={entry} now={now} />
             </div>
             <p className="mt-1 text-sm text-ink-2">
-              {REASON_LABEL[entry.reasonType]} · {events(entry.eventScope)} · {SOURCE_LABEL[entry.source]}
+              {reasonLabel(entry.reasonType)} · {events(entry.eventScope)} · {sourceLabel(entry.source)}
               {entry.sourceRequestId && (
                 <>
                   {" "}
@@ -206,21 +217,21 @@ export function EntryDetailPage({ id }: { id: ID }) {
                 <Link href={`/screening/blacklist/${entry.id}/edit`}>
                   <Button>
                     <Pencil className="size-4" />
-                    {status === "active" ? "Propose a change" : "Edit"}
+                    {status === "active" ? t("detail.proposeChange") : t("detail.edit")}
                   </Button>
                 </Link>
               )}
               {viewer.can("blacklist.approve") && status === "active" && (
                 <Menu>
                   <MenuTrigger asChild>
-                    <Button iconOnly aria-label="More actions">
+                    <Button iconOnly aria-label={t("detail.moreActions")}>
                       <MoreHorizontal className="size-4" />
                     </Button>
                   </MenuTrigger>
                   <MenuContent align="end">
                     <MenuItem onSelect={() => setDeciding("remove")}>
                       <Trash2 className="size-4 text-rose-500" />
-                      <span className="text-rose-700">Remove entry</span>
+                      <span className="text-rose-700">{t("detail.removeEntry")}</span>
                     </MenuItem>
                   </MenuContent>
                 </Menu>
@@ -230,10 +241,10 @@ export function EntryDetailPage({ id }: { id: ID }) {
         </div>
         <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-5 md:grid-cols-4">
           {[
-            ["Proposed by", <span key="p" className="flex items-center gap-2"><Avatar name={db.users[entry.proposedBy]?.name ?? "?"} size="xs" />{db.users[entry.proposedBy]?.name} · {fmt.date(entry.proposedAt)}</span>],
-            ["Approved by", entry.approvedBy ? <span key="a" className="flex items-center gap-2"><Avatar name={db.users[entry.approvedBy]?.name ?? "?"} size="xs" />{db.users[entry.approvedBy]?.name} · {fmt.date(entry.approvedAt!)}</span> : "Not yet"],
-            ["Valid from", fmt.date(entry.startsOn)],
-            ["Until", entry.endsOn ? fmt.date(entry.endsOn) : "No end date (until removed)"],
+            [t("detail.proposedBy"), <span key="p" className="flex items-center gap-2"><Avatar name={db.users[entry.proposedBy]?.name ?? "?"} size="xs" />{db.users[entry.proposedBy]?.name} · {fmt.date(entry.proposedAt)}</span>],
+            [t("detail.approvedBy"), entry.approvedBy ? <span key="a" className="flex items-center gap-2"><Avatar name={db.users[entry.approvedBy]?.name ?? "?"} size="xs" />{db.users[entry.approvedBy]?.name} · {fmt.date(entry.approvedAt!)}</span> : t("detail.notYet")],
+            [t("detail.validFrom"), fmt.date(entry.startsOn)],
+            [t("detail.until"), entry.endsOn ? fmt.date(entry.endsOn) : t("detail.untilRemoved")],
           ].map(([label, value]) => (
             <div key={label as string}>
               <dt className="text-xs font-medium text-ink-3">{label}</dt>
@@ -248,33 +259,33 @@ export function EntryDetailPage({ id }: { id: ID }) {
           <div className="flex flex-wrap items-start gap-4 px-5 py-4">
             <Hourglass className="mt-0.5 size-5 shrink-0 text-amber-600" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-amber-950">{entry.pendingChange ? "A change is waiting for a second person" : "Waiting for a second person to approve"}</p>
+              <p className="text-sm font-bold text-amber-950">{entry.pendingChange ? t("detail.changeWaitingTitle") : t("detail.entryWaitingTitle")}</p>
               <p className="mt-0.5 text-sm text-amber-900/80">
-                Proposed by {db.users[maker]?.name} {fmt.ago(entry.pendingChange?.proposedAt ?? entry.proposedAt, now)}.{" "}
-                {entry.pendingChange ? "The current version keeps working until the change is approved." : "It matches no one until it is approved."}
+                {t("detail.proposedByAgo", { name: db.users[maker]?.name ?? "", ago: fmt.ago(entry.pendingChange?.proposedAt ?? entry.proposedAt, now) })}{" "}
+                {entry.pendingChange ? t("detail.changeKeepsWorking") : t("detail.matchesNoOne")}
               </p>
-              <div className="mt-3 rounded-lg bg-white/80 px-4 py-3 ring-1 ring-amber-600/15">
-                <p className="mb-1 text-xs font-bold text-ink">If approved now</p>
+              <div className="mt-3 rounded-lg bg-surface/80 px-4 py-3 ring-1 ring-amber-600/15">
+                <p className="mb-1 text-xs font-bold text-ink">{t("detail.ifApproved")}</p>
                 <ApprovalImpact db={db} entry={entry} />
               </div>
             </div>
             {viewer.can("blacklist.approve") && (
-              <Tooltip content={own ? "You proposed this, so a second person has to decide." : ""}>
+              <Tooltip content={own ? t("ownProposalHint") : ""}>
                 <span className="flex items-center gap-2">
                   <Button variant="danger" disabled={own} onClick={() => setDeciding("reject")}>
                     <XCircle className="size-4" />
-                    Don’t approve
+                    {t("dontApprove")}
                   </Button>
                   <Button variant="success" disabled={own} onClick={() => setDeciding("approve")}>
                     <CheckCircle2 className="size-4" />
-                    Approve
+                    {t("approve")}
                   </Button>
                 </span>
               </Tooltip>
             )}
           </div>
           {entry.pendingChange && (
-            <div className="border-t border-amber-600/15 bg-white/60">
+            <div className="border-t border-amber-600/15 bg-surface/60">
               <ChangeDiff db={db} entry={entry} />
             </div>
           )}
@@ -284,7 +295,7 @@ export function EntryDetailPage({ id }: { id: ID }) {
         <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-subtle px-5 py-3.5 text-sm text-ink-2 ring-1 ring-line">
           <XCircle className="mt-0.5 size-4 shrink-0 text-ink-3" />
           <span>
-            <span className="font-semibold text-ink">Not approved:</span> {entry.decisionNote}
+            <span className="font-semibold text-ink">{t("detail.notApproved")}</span> <bdi>{entry.decisionNote}</bdi>
           </span>
         </p>
       )}
@@ -292,31 +303,31 @@ export function EntryDetailPage({ id }: { id: ID }) {
         <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-subtle px-5 py-3.5 text-sm text-ink-2 ring-1 ring-line">
           <Trash2 className="mt-0.5 size-4 shrink-0 text-ink-3" />
           <span>
-            <span className="font-semibold text-ink">Removed by {db.users[entry.removedBy ?? ""]?.name}</span> on {entry.removedAt ? fmt.date(entry.removedAt) : ""}: {entry.removalReason}
+            <span className="font-semibold text-ink">{t("detail.removedBy", { name: db.users[entry.removedBy ?? ""]?.name ?? "" })}</span> {t("detail.removedOn", { date: entry.removedAt ? fmt.date(entry.removedAt) : "" })} <bdi>{entry.removalReason}</bdi>
           </span>
         </p>
       )}
 
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-5">
-          <Card title="Identity" subtitle="ID numbers, passport, email and mobile must match exactly. Names are compared after removing accents and converting Arabic to English letters.">
+          <Card title={t("detail.identity")} subtitle={t("detail.identityHint")}>
             <IdentityRows identity={entry.identity} />
           </Card>
-          <Card title="Reason" subtitle="Internal. Never shown to the attendee.">
+          <Card title={t("detail.reason")} subtitle={t("detail.reasonHint")}>
             <dl>
-              <Row label="Reason type">{REASON_LABEL[entry.reasonType]}</Row>
-              <Row label="Details">
+              <Row label={t("field.reasonType")}>{reasonLabel(entry.reasonType)}</Row>
+              <Row label={t("detail.details")}>
                 <span dir="auto" className="whitespace-pre-line">{entry.reasonDetail}</span>
               </Row>
-              <Row label="Evidence">
+              <Row label={t("field.evidence")}>
                 {entry.evidence.length ? (
                   <ul className="space-y-1.5">
                     {entry.evidence.map((f) => (
                       <li key={f.id}>
-                        <button type="button" onClick={() => toast("Downloads are simulated in the prototype")} className="inline-flex items-center gap-2 text-accent-text hover:underline">
+                        <button type="button" onClick={() => toast(t("detail.downloadsSimulated"))} className="inline-flex items-center gap-2 text-accent-text hover:underline">
                           <FileText className="size-4" />
-                          {f.fileName}
-                          <span className="text-xs text-ink-3">{(f.sizeKb / 1024).toFixed(1)} MB</span>
+                          <bdi>{f.fileName}</bdi>
+                          <span className="text-xs text-ink-3">{t("detail.sizeMb", { size: (f.sizeKb / 1024).toFixed(1) })}</span>
                         </button>
                       </li>
                     ))}
@@ -326,13 +337,13 @@ export function EntryDetailPage({ id }: { id: ID }) {
             </dl>
           </Card>
           <Card
-            title="Matches"
-            subtitle="Requests this entry has matched, and what was decided."
+            title={t("detail.matches")}
+            subtitle={t("detail.matchesHint")}
             action={
               matches.some((m) => m.status === "open") ? (
                 <Link href="/screening/matches" className="inline-flex items-center gap-1 text-xs font-semibold text-accent-text hover:underline">
                   <ScanSearch className="size-3.5" />
-                  Match Review
+                  {t("detail.matchReview")}
                 </Link>
               ) : undefined
             }
@@ -341,7 +352,7 @@ export function EntryDetailPage({ id }: { id: ID }) {
               <table className="w-full text-sm">
                 <thead className="bg-subtle">
                   <tr>
-                    {["Request", "Applicant", "Match", "Found", "Decision"].map((h) => (
+                    {[t("detail.colRequest"), t("detail.colApplicant"), t("detail.colMatch"), t("detail.colFound"), t("detail.colDecision")].map((h) => (
                       <th key={h} className="eyebrow h-9 px-3 text-start first:ps-5 last:pe-5">
                         {h}
                       </th>
@@ -364,17 +375,17 @@ export function EntryDetailPage({ id }: { id: ID }) {
                         </td>
                         <td className="px-3 py-2.5 text-xs">
                           <Pill tone={m.strength === "strong" ? "rose" : "amber"} dot={false}>
-                            {m.matchType === "id" ? "ID match" : m.matchType === "company" ? "Company" : m.matchType === "nameDob" ? "Name + DOB" : "Name only"} · {m.score}%
+                            {t(`detail.matchType.${m.matchType}`)} · {t("detail.score", { score: fmt.number(m.score) })}
                           </Pill>
                         </td>
                         <td className="tabular px-3 py-2.5 text-xs text-ink-2">{fmt.date(m.foundAt)}</td>
                         <td className="px-3 py-2.5 pe-5 text-xs">
                           {m.status === "open" ? (
-                            <Pill tone="amber">Open</Pill>
+                            <Pill tone="amber">{t("detail.open")}</Pill>
                           ) : (
                             <Tooltip content={m.decisionNote ?? ""}>
                               <span>
-                                <Pill tone={m.status === "confirmed" ? "rose" : "emerald"}>{m.status === "confirmed" ? "Confirmed" : "Not the same person"}</Pill>
+                                <Pill tone={m.status === "confirmed" ? "rose" : "emerald"}>{m.status === "confirmed" ? t("detail.confirmed") : t("detail.cleared")}</Pill>
                               </span>
                             </Tooltip>
                           )}
@@ -385,25 +396,25 @@ export function EntryDetailPage({ id }: { id: ID }) {
                 </tbody>
               </table>
             ) : (
-              <p className="px-5 py-6 text-center text-sm text-ink-3">No matches yet.</p>
+              <p className="px-5 py-6 text-center text-sm text-ink-3">{t("detail.noMatches")}</p>
             )}
           </Card>
         </div>
 
-        <Card title="History" subtitle="Every proposal, decision and removal.">
+        <Card title={t("detail.history")} subtitle={t("detail.historyHint")}>
           <ol className="px-5 py-2">
             {history.map((h) => (
               <li key={h.id} className="flex gap-3 border-b border-line py-3 last:border-b-0">
                 <Avatar name={db.users[h.actorId]?.name ?? "?"} size="sm" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-ink">
-                    <span className="font-semibold">{db.users[h.actorId]?.name}</span> <span className="text-ink-2">{HISTORY_LABEL[h.action]}</span>
+                    <span className="font-semibold">{db.users[h.actorId]?.name}</span> <span className="text-ink-2">{historyLabel(h.action)}</span>
                   </p>
                   {h.note && <p dir="auto" className="mt-1 border-s-2 border-line ps-2.5 text-xs text-ink-2">{h.note}</p>}
                   {(h.matched ?? 0) > 0 && (
                     <p className="mt-1 text-xs text-ink-3">
-                      Matched {h.matched} request{h.matched === 1 ? "" : "s"}
-                      {h.suspended ? `, suspended ${h.suspended} badge${h.suspended === 1 ? "" : "s"}` : ""}
+                      {t("detail.historyMatched", { count: h.matched ?? 0, n: fmt.number(h.matched ?? 0) })}
+                      {h.suspended ? t("detail.historySuspended", { count: h.suspended, n: fmt.number(h.suspended) }) : ""}
                     </p>
                   )}
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-3">

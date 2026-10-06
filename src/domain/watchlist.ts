@@ -1,8 +1,8 @@
 import { Tx } from "./actions";
-import { readImport as readBlacklistImport, retroMatches, TEMPLATE_COLUMNS as BL_COLUMNS, validateEntry, parseCsv, type EntryDraft, type EntryIssue, type ImportRow } from "./blacklist";
+import { readImport as readBlacklistImport, retroMatches, TEMPLATE_COLUMNS as BL_COLUMNS, validateEntry, parseCsv, type EntryDraft, type EntryIssue, type ImportError, type ImportRow } from "./blacklist";
 import { can } from "./permissions";
 import { normalizeId, normalizeName } from "./screening";
-import type { BlacklistReason, Database, ID, ListIdentity, VettingRequest, WatchlistEntry, WatchlistHistoryEvent, WatchlistLevel } from "./types";
+import type { BlacklistReason, Database, ID, ListIdentity, LocalizedText, VettingRequest, WatchlistEntry, WatchlistHistoryEvent, WatchlistLevel } from "./types";
 import { WATCHLIST_REVIEW } from "./workflow";
 
 /**
@@ -135,15 +135,20 @@ export function findWatchDuplicate(db: Database, id: ListIdentity, entryId: ID |
   return null;
 }
 
+/** A stage an entry can add. `workflow`/`stage` are null for the standard Watchlist Review; the UI words the label. */
+export interface ExtraStageOption {
+  value: string;
+  workflow: LocalizedText | null;
+  stage: LocalizedText | null;
+}
+
 /** Stages an entry can add: the standard Watchlist Review, or any published workflow stage. */
-export function extraStageOptions(db: Database) {
-  const options: { value: string; label: string; hint: string }[] = [
-    { value: WATCHLIST_REVIEW, label: "Standard Watchlist Review", hint: "Senior Security, 24 hours, mandatory" },
-  ];
+export function extraStageOptions(db: Database): ExtraStageOption[] {
+  const options: ExtraStageOption[] = [{ value: WATCHLIST_REVIEW, workflow: null, stage: null }];
   for (const wf of Object.values(db.workflows)) {
     const v = wf.currentVersionId ? db.workflowVersions[wf.currentVersionId] : null;
     for (const n of v?.graph.nodes ?? []) {
-      if (n.type === "stage") options.push({ value: `${wf.id}:${n.id}`, label: `${wf.name.en} › ${n.stage.name.en}`, hint: "Only for requests on this workflow; others get the standard stage" });
+      if (n.type === "stage") options.push({ value: `${wf.id}:${n.id}`, workflow: wf.name, stage: n.stage.name });
     }
   }
   return options;
@@ -283,7 +288,7 @@ export function createWatchEntry(db: Database, a: Actor & { draft: WatchDraft; s
   };
   tx.put("watchlist", entry);
   const marked = Date.parse(entry.startsOn) <= a.now ? markRequests(tx, entry, a.actorId, a.now) : 0;
-  log(tx, { entryId: entry.id, action: "created", actorId: a.actorId, at, marked, note: a.sourceRequestId ? `From request ${a.sourceRequestId}` : undefined });
+  log(tx, { entryId: entry.id, action: "created", actorId: a.actorId, at, marked, ref: a.sourceRequestId ?? undefined });
   return { ok: true, db: tx.db, entryId: entry.id, marked };
 }
 
@@ -357,16 +362,16 @@ export interface WatchImportRow {
   line: number;
   draft: WatchDraft;
   issues: WatchIssue[];
-  readErrors: string[];
+  readErrors: ImportError[];
 }
 
-export function readWatchImport(db: Database, text: string, now: number): { rows: WatchImportRow[]; headerError: string | null } {
+export function readWatchImport(db: Database, text: string, now: number): { rows: WatchImportRow[]; headerError: ImportError | null } {
   const base = readBlacklistImport(db, text, now);
   if (base.headerError) return { rows: [], headerError: base.headerError };
   const table = parseCsv(text);
   const header = table[0].map((h) => h.trim().toLowerCase());
   const missing = ["level", "on_match", "reviewer_note"].filter((c) => !header.includes(c));
-  if (missing.length) return { rows: [], headerError: `Missing columns: ${missing.join(", ")}. Use the watchlist template.` };
+  if (missing.length) return { rows: [], headerError: { code: "missingWatchColumns", params: { columns: missing.join(", ") } } };
   const col = (r: string[], c: string) => (r[header.indexOf(c)] ?? "").trim();
   const ON_MATCH: Record<string, WatchlistEntry["onMatch"]> = { mark: "mark", mark_only: "mark", email: "markEmail", mark_and_email: "markEmail", stage: "markStage", mark_and_stage: "markStage" };
 
@@ -375,10 +380,10 @@ export function readWatchImport(db: Database, text: string, now: number): { rows
     const readErrors = [...b.readErrors];
     const levelRaw = col(r, "level").toLowerCase();
     const level = LEVELS.find((l) => l === levelRaw) ?? null;
-    if (levelRaw && !level) readErrors.push(`Level must be low, medium or high, not "${col(r, "level")}".`);
+    if (levelRaw && !level) readErrors.push({ code: "badLevel", params: { value: col(r, "level") } });
     const onRaw = col(r, "on_match").toLowerCase().replace(/[\s-]+/g, "_") || "mark";
     const onMatch = ON_MATCH[onRaw];
-    if (!onMatch) readErrors.push(`On match must be mark, email or stage, not "${col(r, "on_match")}".`);
+    if (!onMatch) readErrors.push({ code: "badOnMatch", params: { value: col(r, "on_match") } });
     const draft: WatchDraft = {
       identity: b.draft.identity,
       eventScope: b.draft.eventScope,
@@ -393,9 +398,9 @@ export function readWatchImport(db: Database, text: string, now: number): { rows
       startsOn: b.draft.startsOn,
       endsOn: b.draft.endsOn,
     };
-    if (onMatch === "markEmail") readErrors.push("“email” can't be imported (choose who to tell in the form). Use mark or stage.");
+    if (onMatch === "markEmail") readErrors.push({ code: "emailNotImportable" });
     const issues = validateWatch(db, draft, null, now).filter(
-      (x) => !(b.readErrors.some((e) => e.startsWith("Unknown event code")) && x.code === "eventsRequired") && !(levelRaw && !level && x.code === "levelRequired"),
+      (x) => !(b.readErrors.some((e) => e.code === "unknownEvent") && x.code === "eventsRequired") && !(levelRaw && !level && x.code === "levelRequired"),
     );
     return { line: b.line, draft, issues, readErrors };
   });

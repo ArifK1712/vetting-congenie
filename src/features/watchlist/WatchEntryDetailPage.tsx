@@ -1,9 +1,11 @@
 "use client";
 
 import { ChevronRight, CircleSlash, Eye, FileText, Flag, History, Lock, MailCheck, MessageSquareText, MoreHorizontal, Pencil, SearchX, ShieldBan, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "@/components/ui/Menu";
 import { Pill, StatusLabel } from "@/components/ui/Status";
@@ -17,8 +19,8 @@ import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/useNow";
 import { useDb } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
-import { displayName, REASON_LABEL, TypeChip } from "@/features/blacklist/parts";
-import { ClearMatchDialog, extraStageLabel, HISTORY_LABEL, LevelMeter, LevelPill, matchesOf, notifyNames, ON_MATCH_HINT, ON_MATCH_LABEL, RemoveDialog, WatchStatus } from "./parts";
+import { displayName, TypeChip, useReasonLabel } from "@/features/blacklist/parts";
+import { ClearMatchDialog, LevelMeter, LevelPill, matchesOf, RemoveDialog, useExtraStageLabel, useNotifyNames, useOnMatchHint, useOnMatchLabel, useWatchHistoryLabel, WatchStatus } from "./parts";
 
 function Card({ title, subtitle, children, action }: { title: string; subtitle?: string; children: ReactNode; action?: ReactNode }) {
   return (
@@ -45,17 +47,18 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function IdentityRows({ identity }: { identity: ListIdentity }) {
+  const t = useTranslations("watchlist.field");
   const fmt = useFormat();
   const person = identity.subjectType === "person";
   return (
     <dl>
-      <Row label="Type">
+      <Row label={t("type")}>
         <TypeChip type={identity.subjectType} />
       </Row>
-      <Row label="Name">
+      <Row label={t("name")}>
         <bdi className="font-semibold">{identity.fullName}</bdi>
       </Row>
-      <Row label="Other spellings">
+      <Row label={t("otherSpellings")}>
         {identity.aliases.length ? (
           <span className="flex flex-wrap gap-1.5">
             {identity.aliases.map((a) => (
@@ -68,21 +71,29 @@ function IdentityRows({ identity }: { identity: ListIdentity }) {
       </Row>
       {person ? (
         <>
-          <Row label="National ID / Iqama">{identity.nationalId ? <span className="font-mono">{identity.nationalId}</span> : null}</Row>
-          <Row label="Passport">{identity.passportNo ? <span><span className="font-mono">{identity.passportNo}</span>{identity.nationality ? ` · ${fmt.country(identity.nationality)}` : ""}</span> : null}</Row>
-          <Row label="Date of birth">{identity.dob ? fmt.day(identity.dob) : null}</Row>
+          <Row label={t("nationalId")}>{identity.nationalId ? <span className="ltr-data font-mono">{identity.nationalId}</span> : null}</Row>
+          <Row label={t("passport")}>{identity.passportNo ? <span><span className="ltr-data font-mono">{identity.passportNo}</span>{identity.nationality ? ` · ${fmt.country(identity.nationality)}` : ""}</span> : null}</Row>
+          <Row label={t("dob")}>{identity.dob ? fmt.day(identity.dob) : null}</Row>
         </>
       ) : (
-        <Row label="Company">{identity.company}</Row>
+        <Row label={t("company")}>{identity.company ? <bdi>{identity.company}</bdi> : null}</Row>
       )}
-      <Row label="Email">{identity.email ? <span className="ltr-data">{identity.email}</span> : null}</Row>
-      <Row label="Mobile">{identity.mobile ? <span className="ltr-data font-mono">{identity.mobile}</span> : null}</Row>
+      <Row label={t("email")}>{identity.email ? <span className="ltr-data">{identity.email}</span> : null}</Row>
+      <Row label={t("mobile")}>{identity.mobile ? <span className="ltr-data font-mono">{identity.mobile}</span> : null}</Row>
     </dl>
   );
 }
 
 export function WatchEntryDetailPage({ id }: { id: ID }) {
+  const t = useTranslations("watchlist");
+  const td = useTranslations("watchlist.detail");
+  const reasonLabel = useReasonLabel();
+  const onMatchLabel = useOnMatchLabel();
+  const onMatchHint = useOnMatchHint();
+  const historyLabel = useWatchHistoryLabel();
   const db = useDb();
+  const stageLabel = useExtraStageLabel(db);
+  const notifyNames = useNotifyNames(db);
   const viewer = useViewer();
   const fmt = useFormat();
   const now = useNow();
@@ -92,10 +103,20 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
   const entry = db.watchlist[id];
 
   if (!viewer.can("watchlist.view")) {
-    return <EmptyState icon={Lock} title="You can't see the watchlist" body="This needs the Watchlist View permission." />;
+    return <EmptyState icon={Lock} title={t("noAccessTitle")} body={td("noAccessBody")} />;
   }
   if (!entry) {
-    return <EmptyState icon={SearchX} title="Entry not found" action={<Link href="/screening/watchlist" className="text-sm text-accent-text hover:underline">Back to the watchlist</Link>} />;
+    return (
+      <EmptyState
+        icon={SearchX}
+        title={t("entryNotFound")}
+        action={
+          <Link href="/screening/watchlist" className="text-sm text-accent-text hover:underline">
+            {t("backToList")}
+          </Link>
+        }
+      />
+    );
   }
 
   const status = effectiveStatus(entry, now);
@@ -103,16 +124,25 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
   const canMove = viewer.can("blacklist.propose") && status === "active";
   const matches = matchesOf(db, id).sort((a, b) => (a.status === "open" ? -1 : 1) - (b.status === "open" ? -1 : 1) || b.foundAt.localeCompare(a.foundAt));
   const history = Object.values(db.watchlistHistory).filter((h) => h.entryId === id).sort((a, b) => b.at.localeCompare(a.at));
-  const events = entry.eventScope === "all" ? "All events" : entry.eventScope.map((e) => db.events[e]?.name.en).join(" · ");
+  const events = entry.eventScope === "all" ? t("form.allEvents") : entry.eventScope.map((e) => (db.events[e] ? fmt.text(db.events[e].name) : e)).join(" · ");
   const OnIcon = entry.onMatch === "markEmail" ? MailCheck : entry.onMatch === "markStage" ? ShieldBan : Flag;
+  const sep = fmt.locale === "ar" ? "، " : ", ";
+  const requestLink = (id: ID) =>
+    function RequestLink(chunks: ReactNode) {
+      return (
+        <Link href={`/requests/${id}`} className="font-mono text-accent-text hover:underline">
+          {chunks}
+        </Link>
+      );
+    };
 
   return (
     <div className="mx-auto max-w-[88rem] px-7 pt-6 pb-16">
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/screening/watchlist" className="hover:text-accent-text">
-          Watchlist
+          {t("breadcrumb")}
         </Link>
-        <ChevronRight className="size-3.5" />
+        <DirIcon icon={ChevronRight} className="size-3.5" />
         <span className="font-mono text-ink-2">{entry.id}</span>
       </nav>
 
@@ -133,13 +163,10 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
               <WatchStatus entry={entry} now={now} />
             </div>
             <p className="mt-1 text-sm text-ink-2">
-              {events} · {ON_MATCH_LABEL[entry.onMatch]}
+              {events} · {onMatchLabel(entry.onMatch)}
               {entry.sourceRequestId && (
                 <>
-                  {" "}· from{" "}
-                  <Link href={`/requests/${entry.sourceRequestId}`} className="font-mono text-accent-text hover:underline">
-                    {entry.sourceRequestId}
-                  </Link>
+                  {" "}· {td.rich("fromRequest", { id: entry.sourceRequestId, link: requestLink(entry.sourceRequestId) })}
                 </>
               )}
             </p>
@@ -151,13 +178,13 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
                 <Link href={`/screening/watchlist/${entry.id}/edit`}>
                   <Button>
                     <Pencil className="size-4" />
-                    Edit
+                    {td("edit")}
                   </Button>
                 </Link>
               )}
               <Menu>
                 <MenuTrigger asChild>
-                  <Button iconOnly aria-label="More actions">
+                  <Button iconOnly aria-label={td("moreActions")}>
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </MenuTrigger>
@@ -165,7 +192,7 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
                   {canMove && (
                     <MenuItem onSelect={() => router.push(`/screening/blacklist/new?fromWatchlist=${entry.id}`)}>
                       <ShieldBan className="size-4 text-ink-3" />
-                      Move to blacklist
+                      {td("moveToBlacklist")}
                     </MenuItem>
                   )}
                   {canManage && (
@@ -173,7 +200,7 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
                       <MenuSeparator />
                       <MenuItem onSelect={() => setRemoving(true)}>
                         <Trash2 className="size-4 text-rose-500" />
-                        <span className="text-rose-700">Remove entry</span>
+                        <span className="text-rose-700">{td("removeEntry")}</span>
                       </MenuItem>
                     </>
                   )}
@@ -184,10 +211,10 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
         </div>
         <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-5 md:grid-cols-4">
           {[
-            ["Added by", <span key="a" className="flex items-center gap-2"><Avatar name={db.users[entry.createdBy]?.name ?? "?"} size="xs" />{db.users[entry.createdBy]?.name} · {fmt.date(entry.createdAt)}</span>],
-            ["Last changed", `${db.users[entry.updatedBy]?.name ?? ""} · ${fmt.date(entry.updatedAt)}`],
-            ["Valid from", fmt.date(entry.startsOn)],
-            ["Until", entry.endsOn ? fmt.date(entry.endsOn) : "No end date (until removed)"],
+            [td("addedBy"), <span key="a" className="flex items-center gap-2"><Avatar name={db.users[entry.createdBy]?.name ?? "?"} size="xs" />{db.users[entry.createdBy]?.name} · {fmt.date(entry.createdAt)}</span>],
+            [td("lastChanged"), `${db.users[entry.updatedBy]?.name ?? ""} · ${fmt.date(entry.updatedAt)}`],
+            [td("validFrom"), fmt.date(entry.startsOn)],
+            [td("until"), entry.endsOn ? fmt.date(entry.endsOn) : td("untilRemoved")],
           ].map(([label, value]) => (
             <div key={label as string}>
               <dt className="text-xs font-medium text-ink-3">{label}</dt>
@@ -201,29 +228,29 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
         <p className="mt-5 flex items-start gap-2.5 rounded-xl bg-subtle px-5 py-3.5 text-sm text-ink-2 ring-1 ring-line">
           <Trash2 className="mt-0.5 size-4 shrink-0 text-ink-3" />
           <span>
-            <span className="font-semibold text-ink">Removed by {db.users[entry.removedBy ?? ""]?.name}</span> on {entry.removedAt ? fmt.date(entry.removedAt) : ""}: {entry.removalReason}
+            <span className="font-semibold text-ink">{td("removedBy", { name: db.users[entry.removedBy ?? ""]?.name ?? "" })}</span> {td("removedOn", { date: entry.removedAt ? fmt.date(entry.removedAt) : "" })} <bdi>{entry.removalReason}</bdi>
           </span>
         </p>
       )}
 
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-5">
-          <Card title="On a match" subtitle="What happens to a request that matches this entry. It is never rejected by the watchlist alone.">
+          <Card title={td("onMatch")} subtitle={td("onMatchHint")}>
             <div className="flex items-start gap-3.5 px-5 py-4">
               <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                 <OnIcon className="size-4" />
               </span>
               <div className="min-w-0 flex-1 text-sm">
-                <p className="font-semibold text-ink">{ON_MATCH_LABEL[entry.onMatch]}</p>
-                <p className="text-ink-2">{ON_MATCH_HINT[entry.onMatch]}</p>
+                <p className="font-semibold text-ink">{onMatchLabel(entry.onMatch)}</p>
+                <p className="text-ink-2">{onMatchHint(entry.onMatch)}</p>
                 {entry.onMatch === "markStage" && (
                   <p className="mt-1.5 text-ink-2">
-                    Stage added: <span className="font-medium text-ink">{extraStageLabel(db, entry.extraStage)}</span>
+                    {td("stageAdded")} <span className="font-medium text-ink">{stageLabel(entry.extraStage)}</span>
                   </p>
                 )}
                 {entry.onMatch === "markEmail" && (
                   <p className="mt-1.5 text-ink-2">
-                    Emails go to: <span className="font-medium text-ink">{notifyNames(db, entry.notify).join(", ")}</span>
+                    {td("emailsTo")} <span className="font-medium text-ink">{notifyNames(entry.notify).join(sep)}</span>
                   </p>
                 )}
               </div>
@@ -231,30 +258,30 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
             <div className="flex items-start gap-3.5 border-t border-line bg-amber-50/50 px-5 py-4">
               <MessageSquareText className="mt-0.5 size-4 shrink-0 text-amber-600" />
               <div className="text-sm">
-                <p className="text-xs font-semibold text-amber-900">Note shown to reviewers on the request</p>
-                <p dir="auto" className="mt-0.5 text-ink">{entry.reviewerNote || <span className="text-ink-3">No note</span>}</p>
+                <p className="text-xs font-semibold text-amber-900">{td("reviewerNote")}</p>
+                <p dir="auto" className="mt-0.5 text-ink">{entry.reviewerNote || <span className="text-ink-3">{td("noNote")}</span>}</p>
               </div>
             </div>
           </Card>
 
-          <Card title="Identity" subtitle="ID numbers, passport, email and mobile must match exactly; names are compared after removing accents and converting Arabic to English letters.">
+          <Card title={td("identity")} subtitle={td("identityHint")}>
             <IdentityRows identity={entry.identity} />
           </Card>
 
-          <Card title="Reason" subtitle="Visible only to people with Watchlist View. Reviewers see the note above, not this.">
+          <Card title={td("reason")} subtitle={td("reasonHint")}>
             <dl>
-              <Row label="Reason type">{REASON_LABEL[entry.reasonType]}</Row>
-              <Row label="Details">
+              <Row label={td("reasonType")}>{reasonLabel(entry.reasonType)}</Row>
+              <Row label={td("details")}>
                 <span dir="auto" className="whitespace-pre-line">{entry.reason}</span>
               </Row>
-              <Row label="Evidence">
+              <Row label={td("evidence")}>
                 {entry.evidence.length ? (
                   <ul className="space-y-1.5">
                     {entry.evidence.map((f) => (
                       <li key={f.id}>
-                        <button type="button" onClick={() => toast("Downloads are simulated in the prototype")} className="inline-flex items-center gap-2 text-accent-text hover:underline">
+                        <button type="button" onClick={() => toast(td("downloadsSimulated"))} className="inline-flex items-center gap-2 text-accent-text hover:underline">
                           <FileText className="size-4" />
-                          {f.fileName}
+                          <bdi>{f.fileName}</bdi>
                         </button>
                       </li>
                     ))}
@@ -264,12 +291,12 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
             </dl>
           </Card>
 
-          <Card title="Matches" subtitle="Requests this entry has marked. Clear a match if it isn't the same person.">
+          <Card title={td("matches")} subtitle={td("matchesHint")}>
             {matches.length ? (
               <table className="w-full text-sm">
                 <thead className="bg-subtle">
                   <tr>
-                    {["Request", "Applicant", "Status", "Match", "Found", ""].map((h, i) => (
+                    {[td("colRequest"), td("colApplicant"), td("colStatus"), td("colMatch"), td("colFound"), ""].map((h, i) => (
                       <th key={i} className="eyebrow h-9 px-3 text-start first:ps-5 last:pe-5">
                         {h}
                       </th>
@@ -293,7 +320,7 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
                         <td className="px-3 py-2.5 text-xs">{r && <StatusLabel status={r.status} />}</td>
                         <td className="px-3 py-2.5 text-xs">
                           <Pill tone={m.strength === "strong" ? "orange" : "amber"} dot={false}>
-                            {m.matchType === "id" ? "ID match" : m.matchType === "company" ? "Company" : m.matchType === "nameDob" ? "Name + DOB" : "Name only"} · {m.score}%
+                            {td(`matchType.${m.matchType}`)} · {td("score", { score: fmt.number(m.score) })}
                           </Pill>
                         </td>
                         <td className="tabular px-3 py-2.5 text-xs text-ink-2">{fmt.date(m.foundAt)}</td>
@@ -302,13 +329,13 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
                             r && !["rejected", "withdrawn"].includes(r.status) && (
                               <Button size="sm" onClick={() => setClearing(m)}>
                                 <CircleSlash className="size-3.5" />
-                                Not the same person
+                                {td("notSamePerson")}
                               </Button>
                             )
                           ) : (
                             <Tooltip content={`${db.users[m.decidedBy ?? ""]?.name ?? ""}: ${m.decisionNote ?? ""}`}>
                               <span>
-                                <Pill tone="emerald">Cleared</Pill>
+                                <Pill tone="emerald">{td("cleared")}</Pill>
                               </span>
                             </Tooltip>
                           )}
@@ -319,37 +346,42 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
                 </tbody>
               </table>
             ) : (
-              <p className="px-5 py-6 text-center text-sm text-ink-3">No requests matched yet.</p>
+              <p className="px-5 py-6 text-center text-sm text-ink-3">{td("noMatches")}</p>
             )}
           </Card>
         </div>
 
-        <Card title="History" subtitle="Every change, cleared match and removal.">
+        <Card title={td("history")} subtitle={td("historyHint")}>
           <ol className="px-5 py-2">
-            {history.map((h) => (
-              <li key={h.id} className="flex gap-3 border-b border-line py-3 last:border-b-0">
-                <Avatar name={db.users[h.actorId]?.name ?? "?"} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-ink">
-                    <span className="font-semibold">{db.users[h.actorId]?.name}</span> <span className="text-ink-2">{HISTORY_LABEL[h.action]}</span>
-                    {h.ref && (
-                      <>
-                        {" "}
-                        <Link href={h.action === "moved_to_blacklist" ? `/screening/blacklist/${h.ref}` : `/requests/${h.ref}`} className="font-mono text-xs text-accent-text hover:underline">
-                          {h.ref}
-                        </Link>
-                      </>
-                    )}
-                  </p>
-                  {h.note && <p dir="auto" className="mt-1 border-s-2 border-line ps-2.5 text-xs text-ink-2">{h.note}</p>}
-                  {(h.marked ?? 0) > 0 && <p className="mt-1 text-xs text-ink-3">Marked {h.marked} request{h.marked === 1 ? "" : "s"}</p>}
-                  <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-3">
-                    <History className="size-3" />
-                    {fmt.dateTime(h.at)}
-                  </p>
-                </div>
-              </li>
-            ))}
+            {history.map((h) => {
+              // A created event's ref is the request the entry was added from; it's shown as a note line.
+              const fromRequest = h.action === "created" ? h.ref : undefined;
+              return (
+                <li key={h.id} className="flex gap-3 border-b border-line py-3 last:border-b-0">
+                  <Avatar name={db.users[h.actorId]?.name ?? "?"} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-ink">
+                      <span className="font-semibold">{db.users[h.actorId]?.name}</span> <span className="text-ink-2">{historyLabel(h.action)}</span>
+                      {h.ref && !fromRequest && (
+                        <>
+                          {" "}
+                          <Link href={h.action === "moved_to_blacklist" ? `/screening/blacklist/${h.ref}` : `/requests/${h.ref}`} className="font-mono text-xs text-accent-text hover:underline">
+                            {h.ref}
+                          </Link>
+                        </>
+                      )}
+                    </p>
+                    {fromRequest && <p className="mt-1 border-s-2 border-line ps-2.5 text-xs text-ink-2">{td.rich("fromRequestNote", { id: fromRequest, link: requestLink(fromRequest) })}</p>}
+                    {h.note && <p dir="auto" className="mt-1 border-s-2 border-line ps-2.5 text-xs text-ink-2">{h.note}</p>}
+                    {(h.marked ?? 0) > 0 && <p className="mt-1 text-xs text-ink-3">{td("historyMarked", { count: h.marked ?? 0, n: fmt.number(h.marked ?? 0) })}</p>}
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-3">
+                      <History className="size-3" />
+                      {fmt.dateTime(h.at)}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </Card>
       </div>

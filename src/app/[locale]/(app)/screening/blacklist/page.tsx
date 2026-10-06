@@ -1,13 +1,10 @@
 import { Suspense } from "react";
 import { BlacklistListPage } from "@/features/blacklist/BlacklistListPage";
-import { EnglishOnly } from "@/features/workflows/EnglishOnly";
 
 export default function Page() {
   return (
-    <EnglishOnly>
-      <Suspense>
-        <BlacklistListPage />
-      </Suspense>
-    </EnglishOnly>
+    <Suspense>
+      <BlacklistListPage />
+    </Suspense>
   );
 }

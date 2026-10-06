@@ -525,23 +525,34 @@ export interface ImportRow {
   draft: EntryDraft;
   issues: EntryIssue[];
   /** Problems reading the row itself (unknown event code, bad type…). */
-  readErrors: string[];
+  readErrors: ImportError[];
 }
 
-export function readImport(db: Database, text: string, now: number): { rows: ImportRow[]; headerError: string | null } {
+/**
+ * A problem reading an import file or row, as a code plus parameters so the
+ * screen can show it in the user's language. Blacklist codes: empty,
+ * missingColumns {columns}, badType {value}, unknownEvent {code},
+ * unknownReason {value}, duplicateRow. Other lists (watchlist) add their own.
+ */
+export interface ImportError {
+  code: string;
+  params?: Record<string, string>;
+}
+
+export function readImport(db: Database, text: string, now: number): { rows: ImportRow[]; headerError: ImportError | null } {
   const table = parseCsv(text);
-  if (!table.length) return { rows: [], headerError: "The file is empty." };
+  if (!table.length) return { rows: [], headerError: { code: "empty" } };
   const header = table[0].map((h) => h.trim().toLowerCase());
   const missing = TEMPLATE_COLUMNS.filter((c) => !header.includes(c));
-  if (missing.length) return { rows: [], headerError: `Missing columns: ${missing.join(", ")}. Use the template.` };
+  if (missing.length) return { rows: [], headerError: { code: "missingColumns", params: { columns: missing.join(", ") } } };
   const col = (r: string[], c: (typeof TEMPLATE_COLUMNS)[number]) => (r[header.indexOf(c)] ?? "").trim();
   const codes = new Map(Object.values(db.events).map((e) => [e.code.toUpperCase(), e.id]));
 
   const seen: ListIdentity[] = [];
   const rows = table.slice(1).map((r, i): ImportRow => {
-    const readErrors: string[] = [];
+    const readErrors: ImportError[] = [];
     const type = col(r, "type").toLowerCase();
-    if (type !== "person" && type !== "company") readErrors.push(`Type must be "person" or "company", not "${col(r, "type") || "empty"}".`);
+    if (type !== "person" && type !== "company") readErrors.push({ code: "badType", params: { value: col(r, "type") } });
     const eventsRaw = col(r, "events");
     let eventScope: "all" | ID[] = "all";
     if (eventsRaw && eventsRaw.toLowerCase() !== "all") {
@@ -549,12 +560,12 @@ export function readImport(db: Database, text: string, now: number): { rows: Imp
       for (const code of eventsRaw.split("|").map((x) => x.trim().toUpperCase()).filter(Boolean)) {
         const id = codes.get(code);
         if (id) eventScope.push(id);
-        else readErrors.push(`Unknown event code "${code}".`);
+        else readErrors.push({ code: "unknownEvent", params: { code } });
       }
     }
     const reasonRaw = col(r, "reason_type").toLowerCase().replace(/[\s-]+/g, "_");
     const reasonType = REASON_TYPES.find((x) => x === reasonRaw || x.startsWith(reasonRaw)) ?? null;
-    if (col(r, "reason_type") && !reasonType) readErrors.push(`Unknown reason type "${col(r, "reason_type")}".`);
+    if (col(r, "reason_type") && !reasonType) readErrors.push({ code: "unknownReason", params: { value: col(r, "reason_type") } });
     const draft: EntryDraft = {
       identity: {
         subjectType: type === "company" ? "company" : "person",
@@ -575,11 +586,11 @@ export function readImport(db: Database, text: string, now: number): { rows: Imp
       startsOn: col(r, "start_date") || new Date(now).toISOString().slice(0, 10),
       endsOn: col(r, "end_date") || null,
     };
-    const unknownEvents = readErrors.some((e) => e.startsWith("Unknown event code"));
+    const unknownEvents = readErrors.some((e) => e.code === "unknownEvent");
     const issues = validateEntry(db, draft, null, now).filter((x) => !(unknownEvents && x.code === "eventsRequired"));
     // The same person twice in one file.
     const twin = seen.find((s) => (s.nationalId && s.nationalId === draft.identity.nationalId) || (s.passportNo && s.passportNo === draft.identity.passportNo));
-    if (twin) readErrors.push("Same ID number as an earlier row in this file.");
+    if (twin) readErrors.push({ code: "duplicateRow" });
     seen.push(draft.identity);
     return { line: i + 2, draft, issues, readErrors };
   });

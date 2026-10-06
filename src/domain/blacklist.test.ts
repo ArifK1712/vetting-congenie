@@ -157,7 +157,7 @@ describe("import", () => {
     expect(headerError).toBeNull();
     expect(rows.map(rowReady)).toEqual([true, false, false]);
     expect(rows[1].issues.map((i) => i.code)).toContain("idRequired");
-    expect(rows[2].readErrors[0]).toMatch(/Unknown event code/);
+    expect(rows[2].readErrors[0]).toMatchObject({ code: "unknownEvent" });
   });
 
   it("imports ready rows as entries waiting for approval", () => {

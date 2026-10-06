@@ -1,38 +1,46 @@
 "use client";
 
 import { CircleSlash, Eye, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { ActionDialog, DialogIcon } from "@/components/ui/Dialog";
 import { Field, TextArea } from "@/components/ui/Field";
 import { Pill } from "@/components/ui/Status";
 import { toast } from "@/components/ui/Toast";
 import type { Tone } from "@/design/tones";
-import { effectiveStatus, extraStageOptions, type WatchIssueCode } from "@/domain/watchlist";
-import type { Database, ID, ScreeningMatch, WatchlistEntry, WatchlistLevel } from "@/domain/types";
+import { effectiveStatus, extraStageOptions, type WatchError, type WatchIssueCode } from "@/domain/watchlist";
+import type { Database, ID, ScreeningMatch, WatchlistEntry, WatchlistHistoryEvent, WatchlistLevel } from "@/domain/types";
 import { WATCHLIST_REVIEW } from "@/domain/workflow";
+import { useFormat } from "@/i18n/format";
 import { cn } from "@/lib/cn";
-import { WATCHLIST_ERRORS, watchlistService } from "@/services/watchlist";
+import { watchlistService } from "@/services/watchlist";
 import { useViewer } from "@/store/useViewer";
-import { ISSUE_TEXT } from "@/features/blacklist/parts";
+import { useIssueText } from "@/features/blacklist/parts";
 
-/** English copy for the Watchlist area (English-only by product decision). */
+/** Level label, e.g. "High". */
+export function useLevelLabel() {
+  const t = useTranslations("watchlist.level");
+  return (level: WatchlistLevel) => t(level);
+}
 
-export const LEVEL_LABEL: Record<WatchlistLevel, string> = { low: "Low", medium: "Medium", high: "High" };
 const LEVEL_TONE: Record<WatchlistLevel, Tone> = { low: "gold", medium: "amber", high: "orange" };
 
 export function LevelPill({ level, size }: { level: WatchlistLevel; size?: "sm" | "md" }) {
+  const levelLabel = useLevelLabel();
   return (
     <Pill tone={LEVEL_TONE[level]} size={size}>
-      {LEVEL_LABEL[level]}
+      {levelLabel(level)}
     </Pill>
   );
 }
 
 /** Three bars, filled up to the level: readable without relying on colour. */
 export function LevelMeter({ level }: { level: WatchlistLevel }) {
+  const t = useTranslations("watchlist");
+  const levelLabel = useLevelLabel();
   const n = { low: 1, medium: 2, high: 3 }[level];
   return (
-    <span aria-label={`${LEVEL_LABEL[level]} level`} className="inline-flex items-end gap-[2px]">
+    <span aria-label={t("levelAria", { level: levelLabel(level) })} className="inline-flex items-end gap-[2px]">
       {[1, 2, 3].map((i) => (
         <span key={i} className={cn("w-1 rounded-sm", i === 1 ? "h-2" : i === 2 ? "h-3" : "h-4", i <= n ? (level === "high" ? "bg-orange-500" : level === "medium" ? "bg-amber-500" : "bg-yellow-500") : "bg-line-strong")} />
       ))}
@@ -40,50 +48,87 @@ export function LevelMeter({ level }: { level: WatchlistLevel }) {
   );
 }
 
-export const ON_MATCH_LABEL: Record<WatchlistEntry["onMatch"], string> = {
-  mark: "Mark only",
-  markEmail: "Mark and send email",
-  markStage: "Mark and add a review stage",
-};
+/** All "on match" choices, in display order. */
+export const ON_MATCH: WatchlistEntry["onMatch"][] = ["mark", "markEmail", "markStage"];
 
-export const ON_MATCH_HINT: Record<WatchlistEntry["onMatch"], string> = {
-  mark: "The request shows the level and the reviewer note.",
-  markEmail: "Also emails the chosen people and teams on every match.",
-  markStage: "Also adds one extra review stage, just before final approval.",
-};
+/** What happens on a match, e.g. "Mark and send email". */
+export function useOnMatchLabel() {
+  const t = useTranslations("watchlist.onMatch");
+  return (onMatch: WatchlistEntry["onMatch"]) => t(onMatch);
+}
 
-export const STATUS_LABEL: Record<WatchlistEntry["status"], string> = { active: "Active", removed: "Removed", expired: "Expired" };
+/** One-line explanation of an "on match" choice. */
+export function useOnMatchHint() {
+  const t = useTranslations("watchlist.onMatchHint");
+  return (onMatch: WatchlistEntry["onMatch"]) => t(onMatch);
+}
+
 const STATUS_TONE: Record<WatchlistEntry["status"], Tone> = { active: "indigo", removed: "gray", expired: "slate" };
 
+/** All entry statuses, in display order (for filters). */
+export const WATCH_STATUSES = Object.keys(STATUS_TONE) as WatchlistEntry["status"][];
+
+/** Entry status label, e.g. "Expired". */
+export function useWatchStatusLabel() {
+  const t = useTranslations("watchlist.status");
+  return (status: WatchlistEntry["status"]) => t(status);
+}
+
 export function WatchStatus({ entry, now }: { entry: WatchlistEntry; now: number }) {
+  const statusLabel = useWatchStatusLabel();
   const s = effectiveStatus(entry, now);
-  return <Pill tone={STATUS_TONE[s]}>{STATUS_LABEL[s]}</Pill>;
+  return <Pill tone={STATUS_TONE[s]}>{statusLabel(s)}</Pill>;
 }
 
-export const WATCH_ISSUE_TEXT: Record<WatchIssueCode, string> = {
-  ...ISSUE_TEXT,
-  possibleDuplicate: "Another watchlist entry already has this ID number, email or company.",
-  levelRequired: "Choose a level.",
-  notifyRequired: "Choose at least one person or team to email.",
-  stageRequired: "Choose the review stage to add.",
-  noteTooLong: "Keep the reviewer note under 200 characters.",
-};
+/** Issue codes worded for the watchlist; the rest share the blacklist wording. */
+const WATCH_ONLY_ISSUES = ["possibleDuplicate", "levelRequired", "notifyRequired", "stageRequired", "noteTooLong"] as const;
+type WatchOnlyIssue = (typeof WATCH_ONLY_ISSUES)[number];
+const isWatchOnly = (code: WatchIssueCode): code is WatchOnlyIssue => (WATCH_ONLY_ISSUES as readonly string[]).includes(code);
 
-export const HISTORY_LABEL: Record<string, string> = {
-  created: "added the entry",
-  edited: "edited the entry",
-  removed: "removed the entry",
-  match_cleared: "cleared a match: not the same person",
-  moved_to_blacklist: "proposed it for the blacklist",
-};
-
-export function extraStageLabel(db: Database, value: string | null) {
-  if (!value || value === WATCHLIST_REVIEW) return "Standard Watchlist Review";
-  return extraStageOptions(db).find((o) => o.value === value)?.label ?? "Workflow stage";
+/** Validation message for a watchlist issue code. */
+export function useWatchIssueText() {
+  const t = useTranslations("watchlist.issue");
+  const shared = useIssueText();
+  return (code: WatchIssueCode) => (isWatchOnly(code) ? t(code) : shared(code));
 }
 
-export function notifyNames(db: Database, ids: ID[]) {
-  return ids.map((id) => db.users[id]?.name ?? db.teams[id]?.name.en ?? id);
+/** History line after the actor's name, e.g. "removed the entry". */
+export function useWatchHistoryLabel() {
+  const t = useTranslations("watchlist.history");
+  return (action: WatchlistHistoryEvent["action"]) => t(action);
+}
+
+/** Service error code to a message. */
+export function useWatchlistError() {
+  const t = useTranslations("watchlist.errors");
+  return (error: WatchError) => t(error);
+}
+
+/** The extra review stages an entry can add, worded for the current locale. */
+export function useExtraStageOptions(db: Database) {
+  const t = useTranslations("watchlist.stage");
+  const fmt = useFormat();
+  return extraStageOptions(db).map((o) =>
+    o.workflow && o.stage
+      ? { value: o.value, label: t("option", { workflow: fmt.text(o.workflow), stage: fmt.text(o.stage) }), hint: t("optionHint") }
+      : { value: o.value, label: t("standard"), hint: t("standardHint") },
+  );
+}
+
+/** Label for an entry's extra stage. */
+export function useExtraStageLabel(db: Database) {
+  const t = useTranslations("watchlist.stage");
+  const options = useExtraStageOptions(db);
+  return (value: string | null) => {
+    if (!value || value === WATCHLIST_REVIEW) return t("standard");
+    return options.find((o) => o.value === value)?.label ?? t("fallback");
+  };
+}
+
+/** Names of the people and teams an entry emails. */
+export function useNotifyNames(db: Database) {
+  const fmt = useFormat();
+  return (ids: ID[]) => ids.map((id) => db.users[id]?.name ?? (db.teams[id] ? fmt.text(db.teams[id].name) : id));
 }
 
 export function matchesOf(db: Database, entryId: ID): ScreeningMatch[] {
@@ -93,6 +138,8 @@ export function matchesOf(db: Database, entryId: ID): ScreeningMatch[] {
 // ─── Dialogs ────────────────────────────────────────────────────────────
 
 export function RemoveDialog({ entry, onClose }: { entry: WatchlistEntry; onClose: () => void }) {
+  const t = useTranslations("watchlist.remove");
+  const errorText = useWatchlistError();
   const viewer = useViewer();
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -101,14 +148,14 @@ export function RemoveDialog({ entry, onClose }: { entry: WatchlistEntry; onClos
     <ActionDialog
       open
       onOpenChange={(o) => !o && onClose()}
-      title={`Remove ${entry.id}?`}
-      description="New registrations won't be marked by it, and the requests it marked lose its level. Past decisions stay. This is logged."
+      title={t("title", { id: entry.id })}
+      description={t("description")}
       icon={
         <DialogIcon className="bg-rose-50 text-rose-600">
           <Trash2 className="size-5" />
         </DialogIcon>
       }
-      confirmLabel="Remove entry"
+      confirmLabel={t("confirm")}
       confirmVariant="danger"
       confirmDisabled={!reason.trim()}
       busy={busy}
@@ -117,19 +164,21 @@ export function RemoveDialog({ entry, onClose }: { entry: WatchlistEntry; onClos
         setBusy(true);
         const r = await watchlistService.remove({ entryId: entry.id, expectedRevision: entry.revision, reason, actorId: viewer.id });
         setBusy(false);
-        if (!r.ok) return setError(WATCHLIST_ERRORS[r.error]);
-        toast(`${entry.id} removed`);
+        if (!r.ok) return setError(errorText(r.error));
+        toast(t("toast", { id: entry.id }));
         onClose();
       }}
     >
-      <Field label="Reason for removing" htmlFor="wl-remove" hint="Required">
-        <TextArea id="wl-remove" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Concern resolved with the sponsoring organisation" />
+      <Field label={t("reason")} htmlFor="wl-remove" hint={t("required")}>
+        <TextArea id="wl-remove" dir="auto" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("placeholder")} />
       </Field>
     </ActionDialog>
   );
 }
 
 export function ClearMatchDialog({ db, match, onClose }: { db: Database; match: ScreeningMatch; onClose: () => void }) {
+  const t = useTranslations("watchlist.clear");
+  const errorText = useWatchlistError();
   const viewer = useViewer();
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -140,14 +189,14 @@ export function ClearMatchDialog({ db, match, onClose }: { db: Database; match: 
     <ActionDialog
       open
       onOpenChange={(o) => !o && onClose()}
-      title="Not the same person?"
-      description={`${name} (${match.requestId}) loses this watchlist mark, and this pair won't match again. Logged on the request and the entry.`}
+      title={t("title")}
+      description={t("description", { name, id: match.requestId })}
       icon={
         <DialogIcon className="bg-emerald-50 text-emerald-600">
           <CircleSlash className="size-5" />
         </DialogIcon>
       }
-      confirmLabel="Clear the match"
+      confirmLabel={t("confirm")}
       confirmVariant="success"
       confirmDisabled={!note.trim()}
       busy={busy}
@@ -156,13 +205,13 @@ export function ClearMatchDialog({ db, match, onClose }: { db: Database; match: 
         setBusy(true);
         const res = await watchlistService.clearMatch({ matchId: match.id, note, actorId: viewer.id });
         setBusy(false);
-        if (!res.ok) return setError(WATCHLIST_ERRORS[res.error]);
-        toast(`Match cleared for ${match.requestId}`);
+        if (!res.ok) return setError(errorText(res.error));
+        toast(t("toast", { id: match.requestId }));
         onClose();
       }}
     >
-      <Field label="Why is it not the same person?" htmlFor="wl-clear" hint="Required">
-        <TextArea id="wl-clear" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Different date of birth and nationality" />
+      <Field label={t("reason")} htmlFor="wl-clear" hint={t("required")}>
+        <TextArea id="wl-clear" dir="auto" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("placeholder")} />
       </Field>
     </ActionDialog>
   );

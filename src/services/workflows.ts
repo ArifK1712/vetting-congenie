@@ -42,14 +42,5 @@ export const workflowService = {
   allot: (a: { workflowId: ID; registrationIds: ID[]; replace: ID[]; actorId: ID }) => run((db, now) => wf.setAllotments(db, { ...a, now })),
 };
 
-/** English messages for service errors (the Workflows area is English-only). */
-export const WORKFLOW_ERRORS: Record<NonNullable<Extract<WorkflowResult, { ok: false }>["error"]>, string> = {
-  forbidden: "You don't have permission to do this.",
-  notFound: "This workflow no longer exists.",
-  stale: "Someone else changed this workflow. Reload to see their changes.",
-  invalid: "Fix the highlighted problems first.",
-  badgeTypeLocked: "The badge type can't change after a version is published. Duplicate the workflow instead.",
-  notPublished: "Publish the workflow first.",
-  clash: "Some registrations already use another workflow for this badge type.",
-  noChanges: "Nothing changed.",
-};
+/** Error codes returned by the service; screens show them as `workflows.errors.<code>`. */
+export type WorkflowErrorCode = NonNullable<Extract<WorkflowResult, { ok: false }>["error"]>;

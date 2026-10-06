@@ -1,7 +1,10 @@
 "use client";
 
 import { Suspense, type ReactNode } from "react";
-import { LanguageMenu } from "@/components/shell/Header";
+import { LanguageSwitch, ThemeMenu } from "@/components/shell/Header";
+import { PendingPage } from "@/components/shell/PendingPage";
+import { PortalSkeleton } from "@/components/ui/Skeleton";
+import { NavProgress } from "@/lib/navProgress";
 import { StoreGate } from "@/store/StoreGate";
 import { useTranslations } from "next-intl";
 
@@ -10,21 +13,27 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const t = useTranslations("portal");
   return (
     <div className="min-h-full bg-canvas">
+      <NavProgress />
       <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-5">
+        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between gap-3 px-4 sm:px-5">
           <span className="flex items-center gap-2.5">
             <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
               E
             </span>
             <span className="text-sm font-bold text-ink">{t("brand")}</span>
           </span>
-          <Suspense>
-            <LanguageMenu />
-          </Suspense>
+          <span className="flex items-center gap-1">
+            <Suspense>
+              <LanguageSwitch />
+            </Suspense>
+            <ThemeMenu />
+          </span>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-5 py-10">
-        <StoreGate fallback={<div className="h-64 animate-pulse rounded-2xl bg-surface ring-1 ring-line" />}>{children}</StoreGate>
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-5 sm:py-10">
+        <StoreGate fallback={<PortalSkeleton />}>
+          <PendingPage>{children}</PendingPage>
+        </StoreGate>
       </main>
     </div>
   );

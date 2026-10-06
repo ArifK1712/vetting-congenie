@@ -257,7 +257,7 @@ export function TeamsListPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-7 pb-12">
+    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-12">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>

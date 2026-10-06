@@ -1,0 +1,118 @@
+{
+  "matchReview": {
+    "title": "Match Review",
+    "subtitle": "Blacklist matches waiting for a person. Nobody is rejected on a similar name alone: compare, then confirm or clear.",
+    "noAccessTitle": "You can't see Match Review",
+    "noAccessBody": "Match Review needs the Blacklist View permission.",
+    "metric": {
+      "waiting": "Waiting for a decision",
+      "waitingHint": "{strong} strong, {possible} possible",
+      "onHold": "Requests on hold",
+      "onHoldHint": "Out of the team queues until decided",
+      "suspended": "Badges suspended",
+      "suspendedHint": "Approved before the entry existed",
+      "decided": "Decided this week",
+      "decidedHint": "{confirmed} confirmed, {cleared} cleared"
+    },
+    "tabs": {
+      "waiting": "Waiting",
+      "decided": "Decided (7 days)"
+    },
+    "emptyTitle": "Nothing to review",
+    "emptyBody": "New blacklist matches appear here: at registration, at final approval, and when a new entry is approved.",
+    "noDecisionsTitle": "No decisions this week",
+    "kind": {
+      "hold": "On hold",
+      "badge": "Badge suspended",
+      "inProgress": "In review"
+    },
+    "matchType": {
+      "id": "ID match",
+      "company": "Company match",
+      "nameDob": "Name + date of birth",
+      "name": "Name only"
+    },
+    "matchSummary": "{type} · {score}%",
+    "found": {
+      "submission": "Found at registration",
+      "resubmission": "Found on resubmission",
+      "final": "Found at final approval",
+      "retro": "Found after a new entry"
+    },
+    "moreMatches": "{count, plural, one {{n} more blacklist match on this request} other {{n} more blacklist matches on this request}}",
+    "compare": {
+      "field": "Field",
+      "applicant": "Applicant",
+      "entry": "Blacklist entry",
+      "row": {
+        "name": "Name",
+        "company": "Company",
+        "nationalId": "National ID / Iqama",
+        "passport": "Passport",
+        "nationality": "Nationality",
+        "dob": "Date of birth",
+        "email": "Email",
+        "mobile": "Mobile"
+      },
+      "triggered": "Triggered the match",
+      "same": "Same",
+      "close": "Similar",
+      "differs": "Differs",
+      "none": "Not on entry",
+      "similarity": "{score}% similar"
+    },
+    "why": {
+      "title": "Why this entry exists · {reason}",
+      "eventsAll": "Events: all",
+      "events": "Events: <codes>{events}</codes>",
+      "approvedBy": "Approved by <who>{name}</who>",
+      "downloadsSimulated": "Downloads are simulated in the prototype"
+    },
+    "decide": {
+      "note": "Note",
+      "noteHint": "Required for Not the same person",
+      "notePlaceholder": "What you checked, e.g. date of birth and nationality differ",
+      "clear": "Not the same person",
+      "clearHint": {
+        "badge": "The badge is restored. This pair never matches again.",
+        "hold": "The request goes back to its stage. This pair never matches again.",
+        "inProgress": "The flag is removed. This pair never matches again."
+      },
+      "clearHintOthers": {
+        "badge": "The badge is restored once its other matches are decided. This pair never matches again.",
+        "hold": "The request goes back to its stage once its other matches are decided. This pair never matches again.",
+        "inProgress": "The flag is removed once its other matches are decided. This pair never matches again."
+      },
+      "confirm": "Confirm: same person",
+      "confirmHintBadge": "The badge is revoked and its place released.",
+      "confirmHintRequest": "The request is rejected with reason Blacklisted. The attendee only gets the normal rejection email.",
+      "noPermission": "You can see this match, but deciding needs Blacklist Approve."
+    },
+    "outcome": {
+      "rejected": "{id} rejected as Blacklisted. The attendee gets the normal rejection email.",
+      "badgeRevoked": "Badge for {id} revoked.",
+      "backToStage": "{id} is back with its review team.",
+      "stillHeld": "Match cleared. {id} still has another match to decide.",
+      "badgeRestored": "Badge for {id} restored.",
+      "recorded": "Decision recorded for {id}."
+    },
+    "errors": {
+      "forbidden": "Deciding matches needs the Blacklist Approve permission.",
+      "notFound": "This match no longer exists.",
+      "notOpen": "Someone already decided this match.",
+      "noteRequired": "Say why it isn't the same person.",
+      "stale": "The request changed while you were looking. Check it again before deciding."
+    },
+    "decided": {
+      "colRequest": "Request",
+      "colApplicant": "Applicant",
+      "colEntry": "Entry",
+      "colMatch": "Match",
+      "colDecision": "Decision",
+      "colBy": "By",
+      "colNote": "Note",
+      "confirmed": "Confirmed",
+      "cleared": "Not the same person"
+    }
+  }
+}

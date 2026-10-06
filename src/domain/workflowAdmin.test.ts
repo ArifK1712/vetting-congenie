@@ -7,6 +7,7 @@ import {
   createWorkflow,
   duplicateWorkflow,
   edge,
+  editText,
   errorsOf,
   newNode,
   normalizeGraph,
@@ -186,6 +187,15 @@ describe("lifecycle", () => {
     const db = ok(duplicateWorkflow(seed, { workflowId: "wf_vip", actorId: "u_sara", now: NOW }));
     const copy = Object.values(db.workflows).find((w) => w.name.en === "Copy of VIP Security Vetting")!;
     expect(copy).toMatchObject({ status: "draft", currentVersionId: null, badgeTypeId: "bt_vip" });
+    expect(copy.name.ar).toBe(`نسخة من ${seed.workflows.wf_vip.name.ar || seed.workflows.wf_vip.name.en}`);
+    const again = ok(duplicateWorkflow(db, { workflowId: "wf_vip", actorId: "u_sara", now: NOW }));
+    const second = Object.values(again.workflows).find((w) => w.name.en === "Copy of VIP Security Vetting (2)")!;
+    expect(second.name.ar).toBe(`${copy.name.ar} (2)`);
+  });
+
+  it("gives the starter stage a name in both languages", () => {
+    const stage = starterGraph().nodes.find((n) => n.type === "stage");
+    expect(stage?.type === "stage" && stage.stage.name).toEqual({ en: "Security Review", ar: "المراجعة الأمنية" });
   });
 
   it("deactivates and reactivates a published workflow", () => {
@@ -193,6 +203,24 @@ describe("lifecycle", () => {
     const off = ok(setWorkflowStatus(seed, { workflowId: wf.id, expectedRevision: wf.revision, status: "inactive", actorId: "u_sara", now: NOW }));
     expect(off.workflows[wf.id].status).toBe("inactive");
     expect(coverageGaps(off).some((g) => g.badgeTypeId === "bt_speaker")).toBe(true);
+  });
+});
+
+describe("editText", () => {
+  it("edits English without touching Arabic", () => {
+    expect(editText({ en: "Docs", ar: "المستندات" }, "en", "Documents")).toEqual({ en: "Documents", ar: "المستندات" });
+    expect(editText({ en: "", ar: "" }, "en", "Docs")).toEqual({ en: "Docs", ar: "" });
+  });
+
+  it("edits Arabic without overwriting a separate English name", () => {
+    expect(editText({ en: "Docs", ar: "المستندات" }, "ar", "الوثائق")).toEqual({ en: "Docs", ar: "الوثائق" });
+    expect(editText({ en: "Docs", ar: "" }, "ar", "و")).toEqual({ en: "Docs", ar: "و" });
+  });
+
+  it("fills English while it is empty or a copy of the Arabic", () => {
+    const one = editText({ en: "", ar: "" }, "ar", "م");
+    expect(one).toEqual({ en: "م", ar: "م" });
+    expect(editText(one, "ar", "مر")).toEqual({ en: "مر", ar: "مر" });
   });
 });
 

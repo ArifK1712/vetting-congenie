@@ -26,7 +26,9 @@
     "outbox": "Email outbox",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
-    "mainNavigation": "Main navigation"
+    "mainNavigation": "Main navigation",
+    "close": "Close menu",
+    "open": "Open menu"
   },
   "header": {
     "eventScope": "Event",
@@ -39,7 +41,16 @@
     "personaHint": "Personas let you see the product with different permissions.",
     "resetDemo": "Reset demo data",
     "resetDemoDone": "Demo data has been reset.",
-    "permissions": "{count, plural, one {{n} permission} other {{n} permissions}}"
+    "permissions": "{count, plural, one {{n} permission} other {{n} permissions}}",
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "openSearch": "Search",
+    "closeSearch": "Close search",
+    "preferences": "Display"
   },
   "common": {
     "cancel": "Cancel",

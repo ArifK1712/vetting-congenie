@@ -114,8 +114,8 @@ export function QueuePage() {
   const to = Math.min(rows.length, (safePage + 1) * PAGE_SIZE);
 
   return (
-    <div className="flex h-full min-h-0">
-      <div className="flex min-w-0 flex-1 flex-col gap-5 px-7 pt-7 pb-6">
+    <div className="flex min-h-full lg:h-full lg:min-h-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-4 px-4 sm:gap-5 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>
@@ -131,7 +131,7 @@ export function QueuePage() {
           onSelect={(tile) => update({ statuses: tileStatuses(tile) })}
         />
 
-        <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
+        <section className="flex min-h-[28rem] flex-1 flex-col overflow-hidden rounded-xl lg:min-h-0 bg-surface shadow-card ring-1 ring-line">
           <FilterBar db={db} rows={allRows} viewerId={viewer.id} reviewAll={viewer.can("queue.reviewAll")} filters={filters} onChange={update} />
 
           <div className="min-h-0 flex-1 overflow-auto border-t border-line">
@@ -180,6 +180,9 @@ export function QueuePage() {
         </section>
       </div>
 
+      {selected && (
+        <div aria-hidden onClick={() => setSelectedId(null)} className="anim-fade fixed inset-0 z-30 bg-overlay xl:hidden" />
+      )}
       {selected && (
         <PreviewPane
           db={db}

@@ -23,17 +23,19 @@ const helper = createColumnHelper<typeof features, QueueRow>();
  * Columns collapse progressively by container width (not viewport), so the
  * table stays readable when the preview pane takes space. Always-visible
  * columns take ~32.5rem; each breakpoint keeps at least 12rem for the applicant.
+ * On phones only applicant + status remain; the ID moves under the name and
+ * tapping a row opens the preview, which has the claim button.
  */
 const COLUMN_CLASS: Record<string, string> = {
-  request: "w-24",
+  request: "hidden w-24 @[40rem]:table-cell",
   applicant: "",
   registration: "hidden w-36 @[79rem]:table-cell",
   stage: "hidden w-36 @[70rem]:table-cell",
   team: "hidden w-36 @[61rem]:table-cell",
-  screening: "w-28",
-  status: "w-44",
+  screening: "hidden w-28 @[40rem]:table-cell",
+  status: "w-36 @[40rem]:w-44",
   submitted: "hidden w-30 @[52rem]:table-cell",
-  actions: "w-24 text-end",
+  actions: "hidden w-24 text-end @[30rem]:table-cell",
 };
 
 export function QueueTable({
@@ -77,6 +79,7 @@ export function QueueTable({
               <div className="min-w-0">
                 <bdi className="block truncate font-semibold text-ink">{r.applicantName}</bdi>
                 {r.applicantEmail && <span className="ltr-data block truncate text-xs text-ink-3">{r.applicantEmail}</span>}
+                <span className="ltr-data block font-mono text-2xs text-ink-3 @[40rem]:hidden">{r.id}</span>
               </div>
             </div>
           ),

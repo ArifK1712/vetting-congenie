@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarClock, Eye, FileUp, Flag, Lock, MailCheck, MoreHorizontal, Pencil, Plus, Search, SearchX, ShieldBan, Trash2, TriangleAlert, type LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -19,9 +20,9 @@ import { useNow } from "@/lib/useNow";
 import { useDb } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 import { displayName, MaskedIds, TypeChip } from "@/features/blacklist/parts";
-import { LEVEL_LABEL, LevelMeter, LevelPill, ON_MATCH_LABEL, RemoveDialog, STATUS_LABEL, WatchStatus } from "./parts";
+import { LevelMeter, LevelPill, ON_MATCH, RemoveDialog, useLevelLabel, useOnMatchLabel, useWatchStatusLabel, WATCH_STATUSES, WatchStatus } from "./parts";
 
-function Metric({ icon: Icon, tone, label, value, hint }: { icon: LucideIcon; tone: Tone; label: string; value: number; hint: string }) {
+function Metric({ icon: Icon, tone, label, value, hint }: { icon: LucideIcon; tone: Tone; label: string; value: string; hint: string }) {
   return (
     <div className="flex items-start gap-3.5 bg-surface px-5 py-4">
       <span className={cn("mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl", TONE[tone].chip)}>
@@ -39,6 +40,11 @@ function Metric({ icon: Icon, tone, label, value, hint }: { icon: LucideIcon; to
 const ON_MATCH_ICON: Record<WatchlistEntry["onMatch"], LucideIcon> = { mark: Flag, markEmail: MailCheck, markStage: ShieldBan };
 
 export function WatchlistListPage() {
+  const t = useTranslations("watchlist");
+  const tl = useTranslations("watchlist.list");
+  const levelLabel = useLevelLabel();
+  const onMatchLabel = useOnMatchLabel();
+  const statusLabel = useWatchStatusLabel();
   const db = useDb();
   const viewer = useViewer();
   const router = useRouter();
@@ -85,7 +91,7 @@ export function WatchlistListPage() {
   }, [entries, search, levels, statuses, type, events, onMatch, now]);
 
   if (!viewer.can("watchlist.view")) {
-    return <EmptyState icon={Lock} title="You can't see the watchlist" body="The watchlist needs the Watchlist View permission. Reviewers only see the level and the reviewer note on a request." />;
+    return <EmptyState icon={Lock} title={t("noAccessTitle")} body={tl("noAccessBody")} />;
   }
 
   const active = entries.filter((e) => effectiveStatus(e, now) === "active");
@@ -99,80 +105,79 @@ export function WatchlistListPage() {
     setEvents([]);
     setOnMatch([]);
   };
+  const addStage = active.filter((e) => e.onMatch === "markStage").length;
 
   return (
     <div className="mx-auto max-w-[88rem] px-7 pt-7 pb-12">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-ink">Watchlist</h1>
-          <p className="mt-1.5 text-sm text-ink-2">People and companies who need a more careful check. A match never rejects anyone on its own: it marks the request, and can email people or add a review stage.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-ink">{tl("title")}</h1>
+          <p className="mt-1.5 text-sm text-ink-2">{tl("subtitle")}</p>
         </div>
         {canManage ? (
           <div className="flex items-center gap-2">
             <Link href="/screening/watchlist/import">
               <Button>
                 <FileUp className="size-4" />
-                Import file
+                {tl("importFile")}
               </Button>
             </Link>
             <Link href="/screening/watchlist/new">
               <Button variant="primary">
                 <Plus className="size-4" strokeWidth={2.5} />
-                Add entry
+                {tl("addEntry")}
               </Button>
             </Link>
           </div>
         ) : (
           <Pill tone="slate" dot={false}>
             <Eye className="size-3.5" />
-            View only
+            {tl("viewOnly")}
           </Pill>
         )}
       </div>
 
       <div className="mt-6 grid gap-px overflow-hidden rounded-xl bg-line shadow-card ring-1 ring-line sm:grid-cols-2 xl:grid-cols-4">
-        <Metric icon={Eye} tone="indigo" label="Active entries" value={active.length} hint={LEVELS.map((l) => `${active.filter((e) => e.level === l).length} ${LEVEL_LABEL[l].toLowerCase()}`).join(" · ")} />
-        <Metric icon={TriangleAlert} tone="orange" label="High level" value={active.filter((e) => e.level === "high").length} hint={`${active.filter((e) => e.onMatch === "markStage").length} add a review stage`} />
-        <Metric icon={Flag} tone="amber" label="Requests marked" value={marked.size} hint="Open matches on active entries" />
-        <Metric icon={CalendarClock} tone="sky" label="Ending in 30 days" value={active.filter((e) => e.endsOn && Date.parse(e.endsOn) < now + 30 * DAY_MS).length} hint="Active entries with an end date" />
+        <Metric icon={Eye} tone="indigo" label={tl("activeEntries")} value={fmt.number(active.length)} hint={LEVELS.map((l) => tl(`levelCount.${l}`, { n: fmt.number(active.filter((e) => e.level === l).length) })).join(" · ")} />
+        <Metric icon={TriangleAlert} tone="orange" label={tl("highLevel")} value={fmt.number(active.filter((e) => e.level === "high").length)} hint={tl("addStageCount", { count: addStage, n: fmt.number(addStage) })} />
+        <Metric icon={Flag} tone="amber" label={tl("requestsMarked")} value={fmt.number(marked.size)} hint={tl("requestsMarkedHint")} />
+        <Metric icon={CalendarClock} tone="sky" label={tl("endingSoon")} value={fmt.number(active.filter((e) => e.endsOn && Date.parse(e.endsOn) < now + 30 * DAY_MS).length)} hint={tl("endingSoonHint")} />
       </div>
 
       <section className="mt-5 overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
         <div className="flex flex-wrap items-center gap-2 px-5 py-3.5">
           <label className="relative me-1 w-full max-w-72">
-            <span className="sr-only">Search the watchlist</span>
+            <span className="sr-only">{tl("searchLabel")}</span>
             <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
             <input
               dir="auto"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name, ID, email or entry"
+              placeholder={tl("searchPlaceholder")}
               className="h-8 w-full rounded-lg border border-line-strong bg-surface ps-8 pe-3 text-sm outline-none placeholder:text-ink-3 focus:border-accent focus:ring-4 focus:ring-accent/10"
             />
           </label>
-          <MultiFilter label="Level" value={levels} onChange={setLevels} options={LEVELS.map((l) => ({ value: l, label: LEVEL_LABEL[l] }))} />
-          <MultiFilter label="Status" value={statuses} onChange={setStatuses} options={Object.entries(STATUS_LABEL).map(([value, label]) => ({ value, label }))} />
+          <MultiFilter label={tl("filterLevel")} value={levels} onChange={setLevels} options={LEVELS.map((l) => ({ value: l, label: levelLabel(l) }))} />
+          <MultiFilter label={tl("filterStatus")} value={statuses} onChange={setStatuses} options={WATCH_STATUSES.map((s) => ({ value: s, label: statusLabel(s) }))} />
           <SingleFilter
-            label="Type"
+            label={tl("filterType")}
             value={type}
             defaultValue="any"
             onChange={setType}
             options={[
-              { value: "any", label: "Any type" },
-              { value: "person", label: "Person" },
-              { value: "company", label: "Company" },
+              { value: "any", label: tl("anyType") },
+              { value: "person", label: tl("person") },
+              { value: "company", label: tl("company") },
             ]}
           />
-          <MultiFilter label="Event" value={events} onChange={setEvents} wide options={Object.values(db.events).map((e) => ({ value: e.id, label: e.name.en, hint: e.code }))} />
-          <MultiFilter label="On match" value={onMatch} onChange={setOnMatch} wide options={Object.entries(ON_MATCH_LABEL).map(([value, label]) => ({ value, label }))} />
+          <MultiFilter label={tl("filterEvent")} value={events} onChange={setEvents} wide options={Object.values(db.events).map((e) => ({ value: e.id, label: fmt.text(e.name), hint: e.code }))} />
+          <MultiFilter label={tl("filterOnMatch")} value={onMatch} onChange={setOnMatch} wide options={ON_MATCH.map((m) => ({ value: m, label: onMatchLabel(m) }))} />
           {filtered ? (
             <Button size="sm" variant="ghost" onClick={reset}>
-              Reset filters
+              {tl("resetFilters")}
             </Button>
           ) : null}
-          <span className="tabular ms-auto text-xs text-ink-3">
-            {rows.length} of {entries.length}
-          </span>
+          <span className="tabular ms-auto text-xs text-ink-3">{tl("count", { shown: fmt.number(rows.length), total: fmt.number(entries.length) })}</span>
         </div>
 
         <div className="@container overflow-x-auto border-t border-line">
@@ -181,15 +186,15 @@ export function WatchlistListPage() {
               <thead className="bg-subtle">
                 <tr>
                   {[
-                    ["Entry", "w-24"],
-                    ["Name", ""],
-                    ["Level", "w-32"],
-                    ["Type", "w-28 hidden @[76rem]:table-cell"],
-                    ["ID numbers", "w-44 hidden @[66rem]:table-cell"],
-                    ["On match", "w-52 hidden @[52rem]:table-cell"],
-                    ["Matches", "w-24"],
-                    ["Status", "w-28"],
-                    ["End date", "w-32 hidden @[86rem]:table-cell"],
+                    [tl("colEntry"), "w-24"],
+                    [tl("colName"), ""],
+                    [tl("colLevel"), "w-32"],
+                    [tl("colType"), "w-28 hidden @[76rem]:table-cell"],
+                    [tl("colIds"), "w-44 hidden @[66rem]:table-cell"],
+                    [tl("colOnMatch"), "w-52 hidden @[52rem]:table-cell"],
+                    [tl("colMatches"), "w-24"],
+                    [tl("colStatus"), "w-28"],
+                    [tl("colEnd"), "w-32 hidden @[86rem]:table-cell"],
                     ["", "w-14"],
                   ].map(([h, cls], i) => (
                     <th key={i} scope="col" className={cn("eyebrow h-10 border-b border-line px-3 text-start whitespace-nowrap first:ps-5 last:pe-5", cls)}>
@@ -226,49 +231,49 @@ export function WatchlistListPage() {
                       </td>
                       <td className={cn(td, "hidden @[66rem]:table-cell")}>
                         {e.identity.subjectType === "company" ? (
-                          <span className="text-xs text-ink-3">Company match</span>
+                          <span className="text-xs text-ink-3">{tl("companyMatch")}</span>
                         ) : e.identity.nationalId || e.identity.passportNo ? (
                           <MaskedIds identity={e.identity} />
                         ) : (
-                          <span className="ltr-data block truncate text-xs text-ink-2">{e.identity.email ?? "—"}</span>
+                          <span className="ltr-data block truncate text-xs text-ink-2 rtl:text-right">{e.identity.email ?? "—"}</span>
                         )}
                       </td>
                       <td className={cn(td, "hidden truncate text-xs text-ink-2 @[52rem]:table-cell")}>
                         <span className="flex items-center gap-1.5">
                           <Icon className="size-3.5 shrink-0 text-ink-3" />
-                          {ON_MATCH_LABEL[e.onMatch]}
+                          {onMatchLabel(e.onMatch)}
                         </span>
                       </td>
                       <td className={cn(td, "tabular text-xs")}>
-                        <span className="font-semibold text-ink">{mc.total}</span>
-                        {mc.open > 0 && <span className="ms-1 text-amber-700">· {mc.open} open</span>}
+                        <span className="font-semibold text-ink">{fmt.number(mc.total)}</span>
+                        {mc.open > 0 && <span className="ms-1 text-amber-700">{tl("openCount", { n: fmt.number(mc.open) })}</span>}
                       </td>
                       <td className={td}>
                         <WatchStatus entry={e} now={now} />
                       </td>
-                      <td className={cn(td, "tabular hidden text-xs @[86rem]:table-cell", e.endsOn ? "text-ink-2" : "text-ink-3")}>{e.endsOn ? fmt.date(e.endsOn) : "No end date"}</td>
+                      <td className={cn(td, "tabular hidden text-xs @[86rem]:table-cell", e.endsOn ? "text-ink-2" : "text-ink-3")}>{e.endsOn ? fmt.date(e.endsOn) : tl("noEndDate")}</td>
                       <td className={cn(td, "pe-5 text-end")}>
                         <Menu>
                           <MenuTrigger asChild>
-                            <Button size="sm" variant="ghost" iconOnly aria-label={`Actions for ${e.id}`} onClick={(ev) => ev.stopPropagation()}>
+                            <Button size="sm" variant="ghost" iconOnly aria-label={tl("actionsFor", { id: e.id })} onClick={(ev) => ev.stopPropagation()}>
                               <MoreHorizontal className="size-4" />
                             </Button>
                           </MenuTrigger>
                           <MenuContent align="end">
                             <MenuItem onSelect={() => router.push(`/screening/watchlist/${e.id}`)}>
                               <Eye className="size-4 text-ink-3" />
-                              View
+                              {tl("view")}
                             </MenuItem>
                             {canManage && status === "active" && (
                               <MenuItem onSelect={() => router.push(`/screening/watchlist/${e.id}/edit`)}>
                                 <Pencil className="size-4 text-ink-3" />
-                                Edit
+                                {tl("edit")}
                               </MenuItem>
                             )}
                             {viewer.can("blacklist.propose") && status === "active" && (
                               <MenuItem onSelect={() => router.push(`/screening/blacklist/new?fromWatchlist=${e.id}`)}>
                                 <ShieldBan className="size-4 text-ink-3" />
-                                Move to blacklist
+                                {tl("moveToBlacklist")}
                               </MenuItem>
                             )}
                             {canManage && status === "active" && (
@@ -276,7 +281,7 @@ export function WatchlistListPage() {
                                 <MenuSeparator />
                                 <MenuItem onSelect={() => setRemoving(e.id)}>
                                   <Trash2 className="size-4 text-rose-500" />
-                                  <span className="text-rose-700">Remove</span>
+                                  <span className="text-rose-700">{tl("remove")}</span>
                                 </MenuItem>
                               </>
                             )}
@@ -289,7 +294,7 @@ export function WatchlistListPage() {
               </tbody>
             </table>
           ) : (
-            <EmptyState icon={SearchX} title="No entries match" body="Try another search, or reset the filters." action={<Button onClick={reset}>Reset filters</Button>} />
+            <EmptyState icon={SearchX} title={tl("noRowsTitle")} body={tl("noRowsBody")} action={<Button onClick={reset}>{tl("resetFilters")}</Button>} />
           )}
         </div>
       </section>

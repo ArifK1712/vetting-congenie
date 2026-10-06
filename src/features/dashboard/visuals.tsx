@@ -17,7 +17,7 @@ export function Sparkline({ values, color, className }: { values: number[]; colo
     <svg direction="ltr" viewBox={`0 0 ${w} ${h}`} className={cn("h-9 w-28 overflow-visible", className)} aria-hidden>
       <path d={`${line} L${w},${h} L0,${h} Z`} fill={color} fillOpacity={0.1} />
       <path d={line} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-      {last && <circle cx={last[0]} cy={last[1]} r={3.5} fill={color} stroke="#fff" strokeWidth={2} />}
+      {last && <circle cx={last[0]} cy={last[1]} r={3.5} fill={color} stroke="var(--c-surface)" strokeWidth={2} />}
     </svg>
   );
 }
@@ -47,7 +47,7 @@ export function Ring({
     <Tooltip content={segments.map((s) => `${s.label}: ${s.value}`).join(" · ")}>
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         <svg viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef0f5" strokeWidth={thickness} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--c-hover)" strokeWidth={thickness} />
           {total > 0 &&
             visible.map((s) => {
               const len = (s.value / total) * c;

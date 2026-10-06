@@ -500,7 +500,7 @@ export function TeamDetailPage({ id }: { id: ID }) {
   const AssignIcon = ASSIGNMENT_ICON[team.assignmentMode];
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-6 pb-16">
+    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-6 pb-16">
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/teams" className="hover:text-accent-text">
           {td("backToTeams")}

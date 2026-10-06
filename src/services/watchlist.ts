@@ -1,11 +1,14 @@
 "use client";
 
 import * as wl from "@/domain/watchlist";
-import type { WatchDraft, WatchError, WatchResult } from "@/domain/watchlist";
+import type { WatchDraft, WatchResult } from "@/domain/watchlist";
 import type { Database, ID, WatchlistEntry } from "@/domain/types";
 import { useAppStore } from "@/store/app";
 
-/** Mock API for the watchlist; re-reads shared state first so other tabs' changes are seen. */
+/**
+ * Mock API for the watchlist; re-reads shared state first so other tabs' changes are seen.
+ * Failures are WatchError codes; the UI words them with useWatchlistError().
+ */
 
 const LATENCY_MS = 320;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -45,16 +48,4 @@ export const watchlistService = {
     if (r.ok) useAppStore.getState().setDb(r.db);
     return r;
   },
-};
-
-/** English messages (the Watchlist area is English-only). */
-export const WATCHLIST_ERRORS: Record<WatchError, string> = {
-  forbidden: "You don't have permission to do this. Adding and editing needs Watchlist Manage.",
-  notFound: "This entry or match no longer exists.",
-  stale: "Someone else changed this entry. Reload to see their changes.",
-  invalid: "Fix the highlighted fields first.",
-  notEditable: "Removed and expired entries can't be edited.",
-  notActive: "Only active entries can be removed.",
-  noteRequired: "Add a short note explaining why.",
-  notOpen: "This match was already decided.",
 };

@@ -1,0 +1,22 @@
+/**
+ * Messages are split: messages/<locale>.json for the core app, and
+ * messages/modules/<module>/<locale>.json for larger modules, so modules can
+ * be translated independently. Each module file holds one top-level key.
+ */
+import arCore from "../../messages/ar.json";
+import enCore from "../../messages/en.json";
+import blacklistAr from "../../messages/modules/blacklist/ar.json";
+import blacklistEn from "../../messages/modules/blacklist/en.json";
+import matchReviewAr from "../../messages/modules/matchReview/ar.json";
+import matchReviewEn from "../../messages/modules/matchReview/en.json";
+import watchlistAr from "../../messages/modules/watchlist/ar.json";
+import watchlistEn from "../../messages/modules/watchlist/en.json";
+import workflowsAr from "../../messages/modules/workflows/ar.json";
+import workflowsEn from "../../messages/modules/workflows/en.json";
+
+export const enMessages = { ...enCore, ...workflowsEn, ...blacklistEn, ...watchlistEn, ...matchReviewEn };
+export const arMessages = { ...arCore, ...workflowsAr, ...blacklistAr, ...watchlistAr, ...matchReviewAr };
+
+export type AppMessages = typeof enMessages;
+
+export const messagesFor = (locale: string) => (locale === "ar" ? arMessages : enMessages);

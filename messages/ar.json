@@ -26,7 +26,9 @@
     "outbox": "صندوق البريد الصادر",
     "collapse": "طي الشريط الجانبي",
     "expand": "توسيع الشريط الجانبي",
-    "mainNavigation": "التنقل الرئيسي"
+    "mainNavigation": "التنقل الرئيسي",
+    "close": "إغلاق القائمة",
+    "open": "فتح القائمة"
   },
   "header": {
     "eventScope": "الفعالية",
@@ -39,7 +41,16 @@
     "personaHint": "تتيح لك الشخصيات رؤية المنتج بصلاحيات مختلفة.",
     "resetDemo": "إعادة تعيين البيانات التجريبية",
     "resetDemoDone": "تمت إعادة تعيين البيانات التجريبية.",
-    "permissions": "{count, plural, zero {لا صلاحيات} one {صلاحية واحدة} two {صلاحيتان} few {{n} صلاحيات} many {{n} صلاحية} other {{n} صلاحية}}"
+    "permissions": "{count, plural, zero {لا صلاحيات} one {صلاحية واحدة} two {صلاحيتان} few {{n} صلاحيات} many {{n} صلاحية} other {{n} صلاحية}}",
+    "theme": "المظهر",
+    "themes": {
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "حسب النظام"
+    },
+    "openSearch": "بحث",
+    "closeSearch": "إغلاق البحث",
+    "preferences": "العرض"
   },
   "common": {
     "cancel": "إلغاء",

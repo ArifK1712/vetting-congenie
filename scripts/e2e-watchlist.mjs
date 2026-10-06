@@ -119,7 +119,7 @@ await open("/en/screening/watchlist", "text=You can't see the watchlist");
 check("reviewer can't open the watchlist", true);
 await setPersona("u_sara");
 await open("/ar/screening/watchlist");
-check("Arabic app keeps the watchlist in English", (await page.locator("main h1").innerText()).trim() === "Watchlist");
+check("Watchlist is in Arabic", /[؀-ۿ]/.test(await page.locator("main h1").innerText()));
 
 console.log(results.join("\n"));
 console.log(errors.length ? `Page errors:\n${[...new Set(errors)].join("\n")}` : "No page errors");

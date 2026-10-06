@@ -109,7 +109,7 @@ await open("/en/screening/blacklist", "text=You can't see the blacklist");
 check("reviewer can't open the blacklist", true);
 await setPersona("u_sara");
 await open("/ar/screening/blacklist");
-check("Arabic app keeps the blacklist in English", (await page.locator("main h1").innerText()).trim() === "Blacklist");
+check("Blacklist is in Arabic, right-to-left", (await page.locator("main h1").innerText()).trim() === "القائمة السوداء" && (await page.locator("html").getAttribute("dir")) === "rtl");
 
 console.log(results.join("\n"));
 console.log(errors.length ? `Page errors:\n${[...new Set(errors)].join("\n")}` : "No page errors");

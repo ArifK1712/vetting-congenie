@@ -10,8 +10,8 @@ import type { Locale } from "./routing";
  */
 export const localeConfig: Record<
   Locale,
-  { dir: "ltr" | "rtl"; intl: string; nativeName: string }
+  { dir: "ltr" | "rtl"; intl: string; nativeName: string; shortName: string }
 > = {
-  en: { dir: "ltr", intl: "en-GB", nativeName: "English" },
-  ar: { dir: "rtl", intl: "ar-u-ca-gregory-nu-latn", nativeName: "العربية" },
+  en: { dir: "ltr", intl: "en-GB", nativeName: "English", shortName: "EN" },
+  ar: { dir: "rtl", intl: "ar-u-ca-gregory-nu-latn", nativeName: "العربية", shortName: "عربي" },
 };

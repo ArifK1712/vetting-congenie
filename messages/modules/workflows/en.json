@@ -1,0 +1,396 @@
+{
+  "workflows": {
+    "separator": ", ",
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "moreInfo": "Ask for more information",
+      "escalate": "Escalate"
+    },
+    "nodes": {
+      "start": "Start",
+      "stage": "Review stage",
+      "condition": "Condition",
+      "final": "Final approval",
+      "rejected": "Rejected"
+    },
+    "handles": {
+      "next": "Next",
+      "otherwise": "Otherwise",
+      "branch": "Branch"
+    },
+    "names": {
+      "block": "Block",
+      "untitledStage": "Untitled stage",
+      "condition": "Condition",
+      "untitledWorkflow": "Untitled workflow",
+      "unknownTeam": "Unknown team",
+      "aTeam": "A team",
+      "unknownUser": "Unknown"
+    },
+    "defaults": {
+      "newStage": "New stage",
+      "condition": "Condition",
+      "branch": "Branch {n}",
+      "path": "Path {n}"
+    },
+    "operators": {
+      "is": "is",
+      "isNot": "is not",
+      "isAnyOf": "is any of",
+      "isNoneOf": "is none of",
+      "contains": "contains",
+      "isEmpty": "is empty",
+      "isNotEmpty": "is not empty"
+    },
+    "rule": {
+      "text": "{field} {operator} {values}",
+      "fields": {
+        "nationality": "Nationality",
+        "company": "Company",
+        "jobTitle": "Job Title",
+        "email": "Email",
+        "paymentStatus": "Payment status",
+        "watchlistLevel": "Watchlist level"
+      },
+      "payment": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "free": "Free"
+      },
+      "level": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      }
+    },
+    "errors": {
+      "forbidden": "You don't have permission to do this.",
+      "notFound": "This workflow no longer exists.",
+      "stale": "Someone else changed this workflow. Reload to see their changes.",
+      "invalid": "Fix the highlighted problems first.",
+      "badgeTypeLocked": "The badge type can't change after a version is published. Duplicate the workflow instead.",
+      "notPublished": "Publish the workflow first.",
+      "clash": "Some registrations already use another workflow for this badge type.",
+      "noChanges": "Nothing changed."
+    },
+    "issues": {
+      "nameRequired": "Enter a workflow name.",
+      "nameTaken": "Another workflow already has this name.",
+      "labelRequired": "Enter a label. It is shown on every request.",
+      "badgeTypeRequired": "Choose the badge type this workflow checks.",
+      "noStart": "Add a Start block.",
+      "multipleStart": "Only one Start block is allowed. Remove the extra one.",
+      "noFinal": "Add a Final approval block.",
+      "notConnected": "“{name}”: connect “{handle}” to the next block.",
+      "unreachable": "“{name}” can't be reached from Start.",
+      "noPathToEnd": "“{name}” has no path to Final approval or Rejected.",
+      "endlessLoop": "“{name}” is in a loop a request can never leave.",
+      "stageNameRequired": "A stage has no name.",
+      "noTeam": "“{name}” has no team.",
+      "noFallback": "“{name}” has no fallback team.",
+      "teamInactive": "“{name}”: {team} is inactive.",
+      "teamNoReviewer": "“{name}”: {team} has no reviewer with Review Queue Access.",
+      "conditionNoBranches": "“{name}” needs at least one branch.",
+      "conditionIncomplete": "“{name}”: finish the rule for “{handle}”.",
+      "teamsShareBadgeType": "“{name}”: {a} and {b} both cover this badge type, so {b} only gets requests {a} doesn't match.",
+      "onlyFallbackCovers": "“{name}”: none of its teams covers this badge type, so every request goes to the fallback team."
+    },
+    "stagesCount": "{count, plural, other {{n} stages}}",
+    "registrations": "{count, plural, one {{n} registration} other {{n} registrations}}",
+    "version": "v{n}",
+    "noAccess": {
+      "title": "You can't see workflows",
+      "body": "Workflows need the Workflows View permission. Ask a vetting administrator.",
+      "bodyShort": "Workflows need the Workflows View permission."
+    },
+    "list": {
+      "title": "Workflows",
+      "subtitle": "The review path for each badge type: stages, teams, conditions and where every decision leads.",
+      "create": "Create workflow",
+      "viewOnly": "View only",
+      "gaps": "{count, plural, one {{n} badge type with vetting on has no active workflow} other {{n} badge types with vetting on have no active workflow}}",
+      "noGaps": "Every badge type on a registration with vetting on has an active workflow.",
+      "search": "Search workflows",
+      "searchPlaceholder": "Search name or label",
+      "statusFilter": "Status",
+      "anyStatus": "Any status",
+      "count": "{shown} of {total}",
+      "emptyTitle": "No workflows match",
+      "emptyBody": "Try another search, or clear the status filter.",
+      "columns": {
+        "name": "Workflow",
+        "label": "Label",
+        "badge": "Badge type",
+        "stages": "Stages",
+        "allotted": "Allotted registrations",
+        "version": "Version",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "notAllotted": "Not allotted",
+      "publishFirst": "Publish first",
+      "notPublished": "Not published",
+      "draftSavedAt": "Draft saved {date}",
+      "draftChanges": "Draft changes",
+      "menu": {
+        "actionsFor": "Actions for {name}",
+        "view": "View",
+        "edit": "Edit",
+        "duplicate": "Duplicate",
+        "allot": "Allot registrations",
+        "publish": "Publish",
+        "deactivate": "Deactivate",
+        "activate": "Activate"
+      },
+      "toasts": {
+        "duplicated": "Copy of {name} created",
+        "activated": "{name} activated"
+      }
+    },
+    "create": {
+      "title": "Create workflow",
+      "description": "A workflow is the review path for exactly one badge type. You'll draw its stages next.",
+      "confirm": "Create and open builder",
+      "name": "Workflow name",
+      "nameHint": "Unique in the company",
+      "namePlaceholder": "e.g. VIP Security Vetting",
+      "label": "Label",
+      "labelHint": "Shown on each request",
+      "labelPlaceholder": "e.g. Standard Security Vetting",
+      "badgeType": "Badge type",
+      "badgeTypePlaceholder": "Choose one badge type",
+      "alreadyUsed": "Already used by {names}. Each registration can still use only one workflow per badge type.",
+      "descriptionLabel": "Description",
+      "optional": "Optional",
+      "created": "{name} created as a draft"
+    },
+    "deactivate": {
+      "title": "Deactivate {name}?",
+      "description": "No new requests will start on this workflow. Requests already in progress continue on their version.",
+      "confirm": "Deactivate workflow",
+      "allotted": "{count, plural, one {{n} registration uses this workflow. New submissions there will be flagged until you allot another workflow.} other {{n} registrations use this workflow. New submissions there will be flagged until you allot another workflow.}}",
+      "done": "{name} deactivated"
+    },
+    "builder": {
+      "back": "Back to workflows",
+      "live": "v{n} live",
+      "unsaved": "● Unsaved changes",
+      "draftSaved": "Draft saved {time}",
+      "undo": "Undo",
+      "undoTip": "Undo (Ctrl+Z)",
+      "redo": "Redo",
+      "redoTip": "Redo (Ctrl+Y)",
+      "versions": "Versions",
+      "allot": "Allot",
+      "discardDraft": "Discard draft",
+      "validate": "Validate",
+      "saveDraft": "Save draft",
+      "publish": "Publish",
+      "edit": "Edit workflow",
+      "viewOnly": "View only",
+      "stale": "Someone changed this workflow in another session. Load the latest version before saving.",
+      "loadLatest": "Load latest",
+      "liveBanner": "Showing the live version (v{n}). Published versions can’t be changed.",
+      "liveBannerEdit": " Edit workflow starts a new draft.",
+      "viewingBanner": "{count, plural, other {Viewing version {v}, read-only. {n} request(s) in progress still use it.}}",
+      "backToDraft": "Back to draft",
+      "backToCurrent": "Back to current",
+      "notFound": "Workflow not found",
+      "toasts": {
+        "draftSaved": "Draft saved",
+        "fixFirst": "Fix the problems before publishing",
+        "published": "Version {n} published. New requests use it from now on.",
+        "discarded": "Draft discarded",
+        "problemsFound": "{count, plural, one {{n} problem found} other {{n} problems found}}",
+        "noProblems": "No problems found"
+      },
+      "publishDialog": {
+        "title": "Publish version {n}?",
+        "description": "Published versions can’t be changed. To change it later, edit the workflow and publish again.",
+        "confirm": "Publish v{n}",
+        "checks": "{count, plural, =0 {All publish checks pass.} one {All publish checks pass ({n} warning).} other {All publish checks pass ({n} warnings).}}",
+        "newRequests": "{count, plural, =0 {New requests for no allotted registrations will use v{v}.} one {New requests for {n} allotted registration will use v{v}.} other {New requests for {n} allotted registrations will use v{v}.}}",
+        "inProgress": "{count, plural, one {{n} request in progress stay on v{v}.} other {{n} requests in progress stay on v{v}.}}"
+      },
+      "discardDialog": {
+        "title": "Discard this draft?",
+        "description": "The draft is deleted and the builder goes back to the live version. This can't be undone.",
+        "confirm": "Discard draft"
+      },
+      "leaveDialog": {
+        "title": "Leave without saving?",
+        "description": "Your changes since the last save will be lost.",
+        "confirm": "Leave"
+      }
+    },
+    "palette": {
+      "blocks": "Blocks",
+      "hints": {
+        "stage": "A team reviews and decides",
+        "condition": "Split by applicant data",
+        "final": "Approve and issue the badge",
+        "rejected": "End with a rejection",
+        "start": "Where requests enter (one only)"
+      },
+      "connections": "Connections",
+      "legend": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "escalate": "Escalate",
+        "next": "Next / condition path",
+        "otherwise": "Otherwise"
+      },
+      "tips": {
+        "drag": "Drag a block onto the canvas, or click to add it.",
+        "connect": "Drag from a coloured dot to another block to connect.",
+        "remove": "Select a block or line and press Delete to remove it.",
+        "lists": "Blacklist and watchlist checks run automatically; they aren’t blocks."
+      }
+    },
+    "problems": {
+      "toFix": "{count, plural, one {{n} problem to fix before publishing} other {{n} problems to fix before publishing}}",
+      "ready": "Ready to publish",
+      "warnings": "{count, plural, one {· {n} warning} other {· {n} warnings}}"
+    },
+    "versions": {
+      "title": "Versions",
+      "subtitle": "Published versions never change.",
+      "close": "Close versions",
+      "draft": "Draft",
+      "working": "Working",
+      "saved": "Saved {date}",
+      "workingHint": "The version you’re looking at or editing",
+      "live": "Live",
+      "latest": "Latest",
+      "inProgress": "{count, plural, other {{n} in progress}}",
+      "note": "Publishing makes a new version for new requests. Requests already in progress stay on the version they started with."
+    },
+    "blocks": {
+      "requestSubmitted": "Request submitted",
+      "mandatory": "Mandatory",
+      "hours": "{n}h",
+      "noTeam": "No team yet",
+      "fallback": "Fallback",
+      "none": "none",
+      "moreInfoReturns": "More info returns to {target, select, same {this stage} other {another stage}}",
+      "ruleNotSet": "rule not set",
+      "otherwiseAll": "Otherwise: everything else",
+      "finalHint": "Re-checks the lists, takes a place from the limit, issues the badge.",
+      "defaultReason": "Default reason: {reason}",
+      "rejectionEmail": "Sends the rejection email"
+    },
+    "inspector": {
+      "deleteBlock": "Delete block",
+      "connection": "Connection",
+      "path": "Path",
+      "pathArrow": "{handle} →",
+      "deleteConnection": "Delete connection",
+      "stage": {
+        "section": "Stage",
+        "name": "Name",
+        "instructions": "Instructions",
+        "instructionsHint": "Shown to reviewers",
+        "teams": "Teams in order",
+        "teamsHint": "The request goes to the first team that matches it.",
+        "noTeam": "No team yet",
+        "covers": "Covers {badge}",
+        "notCovers": "Doesn't cover {badge}",
+        "thisBadge": "this badge type",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "removeTeam": "Remove team",
+        "addTeam": "Add team",
+        "addTeamPlaceholder": "Add a team…",
+        "fallback": "Fallback team",
+        "fallbackHint": "Gets anything no team matches",
+        "fallbackPlaceholder": "Choose a fallback team",
+        "actions": "Allowed actions",
+        "actionsHint": "Approve and Reject are always on.",
+        "escalateTo": "Escalate to",
+        "escalateHint": "Draw from the amber Escalate dot, or add a stage here.",
+        "noEscalation": "No escalation target yet.",
+        "removeEscalation": "Remove escalation",
+        "addEscalation": "Add escalation target",
+        "addStagePlaceholder": "Add a stage…",
+        "afterMoreInfo": "After more information",
+        "returnTo": "Return to",
+        "sameStage": "The same stage (default)",
+        "rules": "Rules",
+        "rejectReason": "Reject reason required",
+        "rejectReasonHint": "Reviewers must pick a reason to reject.",
+        "mandatory": "Mandatory",
+        "mandatoryHint": "Can never be skipped. Suggested for every security stage.",
+        "timeLimit": "Time limit",
+        "optional": "Optional",
+        "none": "None",
+        "hours": "hours",
+        "timeLimitHint": "Late requests are highlighted and the team lead is told."
+      },
+      "condition": {
+        "section": "Condition",
+        "label": "Label",
+        "paths": "Paths",
+        "pathsHint": "Checked in order. A request takes the first path whose rule is true.",
+        "pathName": "Path name",
+        "removePath": "Remove path",
+        "field": "Field",
+        "chooseField": "Choose a field",
+        "operator": "Operator",
+        "values": "Values",
+        "chooseValues": "Choose values",
+        "value": "Value",
+        "chooseValue": "Choose a value",
+        "typeValue": "Type a value",
+        "addPath": "Add path",
+        "otherwiseNote": "Requests that match no path take the grey Otherwise connection. It must lead somewhere before you can publish."
+      },
+      "details": {
+        "title": "Workflow details",
+        "hint": "Select a block on the canvas to edit it.",
+        "name": "Workflow name",
+        "nameHint": "Unique",
+        "label": "Label",
+        "labelHint": "Shown on each request",
+        "badgeType": "Badge type",
+        "fixed": "Fixed after the first publish",
+        "description": "Description",
+        "optional": "Optional"
+      },
+      "start": {
+        "howItWorks": "How it works",
+        "body": "A request enters the workflow here once it has passed the blacklist and watchlist checks. Exactly one Start block is allowed."
+      },
+      "final": {
+        "whatHappens": "What happens here",
+        "lists": "The blacklist and watchlist are checked again.",
+        "place": "One place is taken from the registration limit. If it’s full, the request waits.",
+        "badge": "The badge is issued and the approval email is sent."
+      },
+      "rejected": {
+        "defaultReason": "Default reason",
+        "defaultReasonHint": "Used when the reviewer doesn’t pick one.",
+        "noDefault": "No default"
+      }
+    },
+    "allot": {
+      "title": "Allot to registrations",
+      "description": "Registrations that have the {badge} badge type. Each registration uses one workflow per badge type.",
+      "confirm": "Save allotment",
+      "saved": "Allotment saved for {name}",
+      "usesThis": "Uses this workflow",
+      "willReplace": "Will replace {name}",
+      "uses": "Uses {name}",
+      "none": "No workflow yet",
+      "clash": "{registration} already uses {workflow} for {badge}. Replace it?",
+      "cancel": "Cancel",
+      "replace": "Replace",
+      "note": "Removing or replacing an allotment affects new requests only. Requests already submitted keep their workflow."
+    }
+  }
+}

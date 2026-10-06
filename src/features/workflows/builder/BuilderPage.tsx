@@ -43,10 +43,12 @@ import {
   XCircle,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { ActionDialog, DialogIcon } from "@/components/ui/Dialog";
+import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { toast } from "@/components/ui/Toast";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -64,16 +66,17 @@ import {
   type WorkflowIssue,
   type WorkflowMeta,
 } from "@/domain/workflowAdmin";
-import type { ID, Workflow, WorkflowGraph, WorkflowNode } from "@/domain/types";
+import type { ConditionOperator, ID, Workflow, WorkflowGraph, WorkflowNode } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
+import { useTheme } from "@/lib/theme";
 import { useNow } from "@/lib/useNow";
-import { WORKFLOW_ERRORS, workflowService, workflowWroteLocally } from "@/services/workflows";
+import { workflowService, workflowWroteLocally } from "@/services/workflows";
 import { useAppStore, useDb } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 import { WorkflowStatusPill } from "../WorkflowsListPage";
-import { handleLabel, issueText as describeIssue, NODE_LABEL } from "../text";
+import { useWorkflowText } from "../text";
 import { AllotDialog } from "./AllotDialog";
 import { Inspector, type Selection } from "./Inspector";
 import { colorFor, NODE_TYPES, type BlockNode } from "./nodes";
@@ -81,36 +84,35 @@ import { useBuilder, type Snapshot } from "./useBuilder";
 
 const metaOf = (wf: Workflow): WorkflowMeta => ({ name: wf.name, label: wf.label, description: wf.description, badgeTypeId: wf.badgeTypeId });
 
-const OPERATOR_TEXT: Record<string, string> = {
-  is: "is",
-  isNot: "is not",
-  isAnyOf: "is any of",
-  isNoneOf: "is none of",
-  contains: "contains",
-  isEmpty: "is empty",
-  isNotEmpty: "is not empty",
-};
+/** Profile fields with a translated name in the rule summary. */
+const PROFILE_FIELDS = ["nationality", "company", "jobTitle", "email"] as const;
+const PAYMENT_VALUES = ["paid", "pending", "free"] as const;
+const LEVEL_VALUES = ["low", "medium", "high"] as const;
+const isOneOf = <T extends string>(list: readonly T[], v: string): v is T => (list as readonly string[]).includes(v);
 
 // ─── Palette ────────────────────────────────────────────────────────────
 
-const PALETTE: { type: WorkflowNode["type"]; icon: LucideIcon; tone: string; hint: string }[] = [
-  { type: "stage", icon: Users, tone: "bg-indigo-50 text-indigo-600", hint: "A team reviews and decides" },
-  { type: "condition", icon: GitBranch, tone: "bg-amber-50 text-amber-600", hint: "Split by applicant data" },
-  { type: "final", icon: BadgeCheck, tone: "bg-emerald-50 text-emerald-600", hint: "Approve and issue the badge" },
-  { type: "rejected", icon: XCircle, tone: "bg-rose-50 text-rose-600", hint: "End with a rejection" },
-  { type: "start", icon: Play, tone: "bg-indigo-50 text-indigo-600", hint: "Where requests enter (one only)" },
+const PALETTE: { type: WorkflowNode["type"]; icon: LucideIcon; tone: string }[] = [
+  { type: "stage", icon: Users, tone: "bg-indigo-50 text-indigo-600" },
+  { type: "condition", icon: GitBranch, tone: "bg-amber-50 text-amber-600" },
+  { type: "final", icon: BadgeCheck, tone: "bg-emerald-50 text-emerald-600" },
+  { type: "rejected", icon: XCircle, tone: "bg-rose-50 text-rose-600" },
+  { type: "start", icon: Play, tone: "bg-indigo-50 text-indigo-600" },
 ];
 
+const LEGEND = ["approve", "reject", "escalate", "next", "otherwise"] as const;
+
 function Palette({ graph, onAdd }: { graph: WorkflowGraph; onAdd: (type: WorkflowNode["type"]) => void }) {
+  const { t, nodeLabel } = useWorkflowText();
   const hasStart = graph.nodes.some((n) => n.type === "start");
   return (
-    <aside className="flex w-60 shrink-0 flex-col overflow-y-auto border-e border-line bg-surface">
-      <p className="eyebrow px-4 pt-4 pb-2">Blocks</p>
-      <ul className="space-y-1.5 px-3">
+    <aside className="flex shrink-0 flex-col overflow-y-auto border-b border-line bg-surface lg:w-60 lg:border-e lg:border-b-0">
+      <p className="eyebrow px-4 pt-3 pb-2 lg:pt-4">{t("palette.blocks")}</p>
+      <ul className="flex gap-1.5 overflow-x-auto px-3 pb-3 lg:block lg:space-y-1.5 lg:overflow-visible lg:pb-0">
         {PALETTE.map((p) => {
           const disabled = p.type === "start" && hasStart;
           return (
-            <li key={p.type}>
+            <li key={p.type} className="w-48 shrink-0 lg:w-auto">
               <button
                 type="button"
                 draggable={!disabled}
@@ -126,34 +128,28 @@ function Palette({ graph, onAdd }: { graph: WorkflowGraph; onAdd: (type: Workflo
                   <p.icon className="size-4" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-ink">{NODE_LABEL[p.type]}</span>
-                  <span className="block truncate text-2xs text-ink-3">{p.hint}</span>
+                  <span className="block text-sm font-semibold text-ink">{nodeLabel(p.type)}</span>
+                  <span className="block truncate text-2xs text-ink-3">{t(`palette.hints.${p.type}`)}</span>
                 </span>
               </button>
             </li>
           );
         })}
       </ul>
-      <p className="eyebrow px-4 pt-5 pb-2">Connections</p>
-      <ul className="space-y-1.5 px-4 text-xs text-ink-2">
-        {[
-          ["approve", "Approve"],
-          ["reject", "Reject"],
-          ["escalate", "Escalate"],
-          ["next", "Next / condition path"],
-          ["otherwise", "Otherwise"],
-        ].map(([k, label]) => (
+      <p className="eyebrow hidden px-4 pt-5 pb-2 lg:block">{t("palette.connections")}</p>
+      <ul className="hidden space-y-1.5 px-4 text-xs text-ink-2 lg:block">
+        {LEGEND.map((k) => (
           <li key={k} className="flex items-center gap-2">
             <span className={cn("h-0.5 w-6 rounded-full", k === "escalate" && "bg-transparent border-t-2 border-dashed")} style={k === "escalate" ? { borderColor: colorFor(k) } : { background: colorFor(k) }} />
-            {label}
+            {t(`palette.legend.${k}`)}
           </li>
         ))}
       </ul>
-      <div className="mt-auto space-y-1.5 border-t border-line px-4 py-4 text-2xs leading-relaxed text-ink-3">
-        <p>Drag a block onto the canvas, or click to add it.</p>
-        <p>Drag from a coloured dot to another block to connect.</p>
-        <p>Select a block or line and press Delete to remove it.</p>
-        <p>Blacklist and watchlist checks run automatically; they aren’t blocks.</p>
+      <div className="mt-auto hidden space-y-1.5 border-t border-line px-4 py-4 text-2xs leading-relaxed text-ink-3 lg:block">
+        <p>{t("palette.tips.drag")}</p>
+        <p>{t("palette.tips.connect")}</p>
+        <p>{t("palette.tips.remove")}</p>
+        <p>{t("palette.tips.lists")}</p>
       </div>
     </aside>
   );
@@ -162,15 +158,18 @@ function Palette({ graph, onAdd }: { graph: WorkflowGraph; onAdd: (type: Workflo
 // ─── Problems panel ─────────────────────────────────────────────────────
 
 function ProblemsPanel({ issues, text, open, setOpen, onPick }: { issues: WorkflowIssue[]; text: (i: WorkflowIssue) => string; open: boolean; setOpen: (o: boolean) => void; onPick: (i: WorkflowIssue) => void }) {
+  const t = useTranslations("workflows");
+  const fmt = useFormat();
   const errors = errorsOf(issues).length;
   const warnings = issues.length - errors;
   return (
+    // Bottom-left on purpose: the canvas stays LTR and its zoom controls sit bottom-right.
     <div className="absolute bottom-4 left-4 z-10 w-[26rem] max-w-[calc(100%-2rem)] overflow-hidden rounded-xl bg-surface shadow-pop ring-1 ring-line">
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-start text-sm outline-none hover:bg-subtle">
         {errors ? <CircleAlert className="size-4 text-rose-500" /> : warnings ? <TriangleAlert className="size-4 text-amber-500" /> : <CircleCheck className="size-4 text-emerald-500" />}
         <span className="flex-1 font-semibold text-ink">
-          {errors ? `${errors} problem${errors === 1 ? "" : "s"} to fix before publishing` : "Ready to publish"}
-          {warnings > 0 && <span className="ms-1.5 font-normal text-ink-3">· {warnings} warning{warnings === 1 ? "" : "s"}</span>}
+          {errors ? t("problems.toFix", { count: errors, n: fmt.number(errors) }) : t("problems.ready")}
+          {warnings > 0 && <span className="ms-1.5 font-normal text-ink-3">{t("problems.warnings", { count: warnings, n: fmt.number(warnings) })}</span>}
         </span>
         {issues.length > 0 && (open ? <ChevronDown className="size-4 text-ink-3" /> : <ChevronUp className="size-4 text-ink-3" />)}
       </button>
@@ -195,6 +194,7 @@ function ProblemsPanel({ issues, text, open, setOpen, onPick }: { issues: Workfl
 function VersionsPanel({ wf, viewing, onView, onClose }: { wf: Workflow; viewing: ID | null; onView: (id: ID | null) => void; onClose: () => void }) {
   const db = useDb();
   const fmt = useFormat();
+  const t = useTranslations("workflows");
   const versions = versionsOf(db, wf.id);
   const open = openRequestsByVersion(db, wf.id);
   return (
@@ -204,10 +204,10 @@ function VersionsPanel({ wf, viewing, onView, onClose }: { wf: Workflow; viewing
           <History className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-ink">Versions</p>
-          <p className="text-xs text-ink-3">Published versions never change.</p>
+          <p className="text-sm font-bold text-ink">{t("versions.title")}</p>
+          <p className="text-xs text-ink-3">{t("versions.subtitle")}</p>
         </div>
-        <Button size="sm" variant="ghost" iconOnly aria-label="Close versions" onClick={onClose}>
+        <Button size="sm" variant="ghost" iconOnly aria-label={t("versions.close")} onClick={onClose}>
           <X className="size-4" />
         </Button>
       </div>
@@ -218,9 +218,9 @@ function VersionsPanel({ wf, viewing, onView, onClose }: { wf: Workflow; viewing
             onClick={() => onView(null)}
             className={cn("flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-start outline-none hover:bg-subtle", viewing === null && "bg-accent-soft ring-1 ring-indigo-200")}
           >
-            <span className="mt-0.5 inline-flex h-5 items-center rounded-md bg-amber-50 px-1.5 text-2xs font-semibold text-amber-800 ring-1 ring-amber-600/20">{wf.draft ? "Draft" : "Working"}</span>
+            <span className="mt-0.5 inline-flex h-5 items-center rounded-md bg-amber-50 px-1.5 text-2xs font-semibold text-amber-800 ring-1 ring-amber-600/20">{wf.draft ? t("versions.draft") : t("versions.working")}</span>
             <span className="min-w-0 flex-1 text-xs text-ink-2">
-              {wf.draft ? `Saved ${wf.draftSavedAt ? fmt.dateTime(wf.draftSavedAt) : ""}` : "The version you’re looking at or editing"}
+              {wf.draft ? t("versions.saved", { date: wf.draftSavedAt ? fmt.dateTime(wf.draftSavedAt) : "" }) : t("versions.workingHint")}
             </span>
           </button>
         </li>
@@ -231,16 +231,17 @@ function VersionsPanel({ wf, viewing, onView, onClose }: { wf: Workflow; viewing
               onClick={() => onView(v.id)}
               className={cn("flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-start outline-none hover:bg-subtle", viewing === v.id && "bg-accent-soft ring-1 ring-indigo-200")}
             >
-              <span className="mt-0.5 font-mono text-xs font-bold text-ink">v{v.versionNo}</span>
+              <span className="mt-0.5 font-mono text-xs font-bold text-ink">{t("version", { n: v.versionNo })}</span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
                   {fmt.date(v.publishedAt)}
                   {v.id === wf.currentVersionId && (
-                    <span className="inline-flex h-5 items-center rounded-md bg-emerald-50 px-1.5 text-2xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20">{wf.status === "active" ? "Live" : "Latest"}</span>
+                    <span className="inline-flex h-5 items-center rounded-md bg-emerald-50 px-1.5 text-2xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20">{wf.status === "active" ? t("versions.live") : t("versions.latest")}</span>
                   )}
                 </span>
                 <span className="block text-xs text-ink-3">
-                  {db.users[v.publishedBy]?.name ?? "Unknown"} · {stagesOf(v.graph).length} stages · {open.get(v.id) ?? 0} in progress
+                  {db.users[v.publishedBy]?.name ?? t("names.unknownUser")} · {t("stagesCount", { count: stagesOf(v.graph).length, n: fmt.number(stagesOf(v.graph).length) })} ·{" "}
+                  {t("versions.inProgress", { count: open.get(v.id) ?? 0, n: fmt.number(open.get(v.id) ?? 0) })}
                 </span>
               </span>
               <Eye className="mt-1 size-3.5 text-ink-3" />
@@ -249,7 +250,7 @@ function VersionsPanel({ wf, viewing, onView, onClose }: { wf: Workflow; viewing
         ))}
       </ol>
       <p className="mx-5 mb-5 rounded-lg bg-subtle px-3 py-2.5 text-xs text-ink-2 ring-1 ring-line">
-        Publishing makes a new version for new requests. Requests already in progress stay on the version they started with.
+        {t("versions.note")}
       </p>
     </div>
   );
@@ -257,15 +258,15 @@ function VersionsPanel({ wf, viewing, onView, onClose }: { wf: Workflow; viewing
 
 // ─── Canvas ─────────────────────────────────────────────────────────────
 
-function edgeStyle(handle: string, block: WorkflowNode | undefined, selected: boolean): Partial<Edge> {
+function edgeStyle(handle: string, label: string, selected: boolean): Partial<Edge> {
   const kind = ["approve", "reject", "escalate", "next", "otherwise"].includes(handle) ? handle : "branch";
   const color = colorFor(kind);
   return {
     type: "smoothstep",
-    label: handleLabel(block, handle),
+    label,
     style: { stroke: color, strokeWidth: selected ? 3 : 2, strokeDasharray: kind === "escalate" ? "6 4" : undefined },
     labelStyle: { fill: color, fontSize: 11, fontWeight: 600 },
-    labelBgStyle: { fill: "#ffffff" },
+    labelBgStyle: { fill: "var(--c-surface)" },
     labelBgPadding: [6, 3],
     labelBgBorderRadius: 6,
     markerEnd: { type: MarkerType.ArrowClosed, color, width: 16, height: 16 },
@@ -295,18 +296,38 @@ function Canvas({
   const db = useDb();
   const flow = useReactFlow();
   const wrapper = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
   const fmt = useFormat();
+  const { t, handleLabel, defaultText } = useWorkflowText();
 
   const conditionText = useCallback(
     (field: string, operator: string, value: string[]) => {
       const [source, key] = field.split(".");
       const q = source === "answer" ? Object.values(db.registrations).flatMap((r) => r.questions).find((x) => x.id === key) : null;
+      const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
       const name =
-        source === "profile" ? key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()) : source === "answer" ? (q?.label.en ?? key) : source === "payment" ? "Payment status" : "Watchlist level";
-      const values = value.map((v) => (key === "nationality" ? fmt.country(v) : (q?.options?.find((o) => o.value === v)?.label.en ?? v.charAt(0).toUpperCase() + v.slice(1))));
-      return `${name} ${OPERATOR_TEXT[operator] ?? operator} ${values.join(", ")}`.trim();
+        source === "profile"
+          ? isOneOf(PROFILE_FIELDS, key)
+            ? t(`rule.fields.${key}`)
+            : capitalize(key.replace(/([A-Z])/g, " $1"))
+          : source === "answer"
+            ? q
+              ? fmt.text(q.label)
+              : key
+            : source === "payment"
+              ? t("rule.fields.paymentStatus")
+              : t("rule.fields.watchlistLevel");
+      const valueText = (v: string) => {
+        if (key === "nationality") return fmt.country(v);
+        const option = q?.options?.find((o) => o.value === v);
+        if (option) return fmt.text(option.label);
+        if (source === "payment" && isOneOf(PAYMENT_VALUES, v)) return t(`rule.payment.${v}`);
+        if (source === "screening" && isOneOf(LEVEL_VALUES, v)) return t(`rule.level.${v}`);
+        return capitalize(v);
+      };
+      return t("rule.text", { field: name, operator: t(`operators.${operator as ConditionOperator}`), values: value.map(valueText).join(t("separator")) }).trim();
     },
-    [db, fmt],
+    [db, fmt, t],
   );
 
   const nodes: BlockNode[] = useMemo(
@@ -325,9 +346,10 @@ function Canvas({
     () =>
       graph.edges.map((e) => {
         const selected = selection?.kind === "edge" && selection.id === e.id;
-        return { id: e.id, source: e.source, sourceHandle: e.handle, target: e.target, targetHandle: "in", selected, deletable: editable, ...edgeStyle(e.handle, graph.nodes.find((n) => n.id === e.source), selected) };
+        const label = handleLabel(graph.nodes.find((n) => n.id === e.source), e.handle);
+        return { id: e.id, source: e.source, sourceHandle: e.handle, target: e.target, targetHandle: "in", selected, deletable: editable, ...edgeStyle(e.handle, label, selected) };
       }),
-    [graph, selection, editable],
+    [graph, selection, editable, handleLabel],
   );
 
   // Focus a block picked from the problems list.
@@ -376,7 +398,12 @@ function Canvas({
   const add = (type: WorkflowNode["type"], at?: { x: number; y: number }) => {
     const rect = wrapper.current?.getBoundingClientRect();
     const position = at ?? flow.screenToFlowPosition({ x: (rect?.left ?? 0) + (rect?.width ?? 800) / 2 - 130, y: (rect?.top ?? 0) + (rect?.height ?? 600) / 2 - 60 });
-    const block = newNode(type, graph, { x: Math.round(position.x), y: Math.round(position.y) });
+    let block = newNode(type, graph, { x: Math.round(position.x), y: Math.round(position.y) });
+    if (block.type === "stage") block = { ...block, stage: { ...block.stage, name: defaultText("newStage") } };
+    if (block.type === "condition") {
+      const branches = block.condition.branches.map((br, i) => ({ ...br, label: defaultText("branch", i + 1) }));
+      block = { ...block, condition: { ...block.condition, label: defaultText("condition"), branches } };
+    }
     b.edit((g) => ({ ...g, nodes: [...g.nodes, block] }));
     setSelection({ kind: "node", id: block.id });
   };
@@ -391,8 +418,9 @@ function Canvas({
   return (
     <>
       {editable && <Palette graph={graph} onAdd={(t) => add(t)} />}
-      <div ref={wrapper} className="relative min-w-0 flex-1" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
+      <div ref={wrapper} className="relative h-[62vh] min-h-[22rem] min-w-0 lg:h-auto lg:min-h-0 lg:flex-1" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
         <ReactFlow
+          dir="ltr"
           nodes={nodes}
           edges={edges}
           nodeTypes={NODE_TYPES}
@@ -415,9 +443,10 @@ function Canvas({
           maxZoom={1.6}
           defaultEdgeOptions={{ type: "smoothstep" }}
           proOptions={{ hideAttribution: true }}
-          className="bg-[#f6f7fb]"
+          className="bg-canvas"
+          colorMode={theme}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1.4} color="#d5d9e4" />
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1.4} color="var(--c-line-strong)" />
           <Controls showInteractive={false} position="bottom-right" />
         </ReactFlow>
         {overlay}
@@ -434,6 +463,7 @@ function BuilderInner({ wf }: { wf: Workflow }) {
   const router = useRouter();
   const params = useSearchParams();
   const fmt = useFormat();
+  const { t, issueText: describeIssue } = useWorkflowText();
   const now = useNow();
   const canEdit = viewer.can("workflows.edit");
   const canPublish = viewer.can("workflows.publish");
@@ -467,7 +497,7 @@ function BuilderInner({ wf }: { wf: Workflow }) {
     () => (viewingVersion ? [] : [...validateMeta(db, b.meta, wf.id), ...validateGraph(db, b.graph, b.meta.badgeTypeId)]),
     [db, b.meta, b.graph, wf.id, viewingVersion],
   );
-  const text = useCallback((i: WorkflowIssue) => describeIssue(db, b.graph, i), [db, b.graph]);
+  const text = useCallback((i: WorkflowIssue) => describeIssue(db, b.graph, i), [db, b.graph, describeIssue]);
   const errors = errorsOf(issues);
   const versions = versionsOf(db, wf.id);
   const nextVersion = (versions[0]?.versionNo ?? 0) + 1;
@@ -514,21 +544,21 @@ function BuilderInner({ wf }: { wf: Workflow }) {
     setBusy(null);
     if (!r.ok) {
       if (r.issues) setProblemsOpen(true);
-      return toast(WORKFLOW_ERRORS[r.error]);
+      return toast(t(`errors.${r.error}`));
     }
     setBaseline(JSON.stringify({ meta: b.meta, graph: normalizeGraph(b.graph) }));
     setLoadedRevision(r.db.workflows[wf.id].revision);
-    toast("Draft saved");
+    toast(t("builder.toasts.draftSaved"));
   };
 
   const tryPublish = useCallback(() => {
     if (errorsOf(issues).length) {
       setProblemsOpen(true);
-      toast("Fix the problems before publishing");
+      toast(t("builder.toasts.fixFirst"));
       return;
     }
     setConfirmPublish(true);
-  }, [issues]);
+  }, [issues, t]);
 
   // ?publish=1 from the list opens the publish step once.
   const autoPublish = useRef(params.get("publish") === "1");
@@ -546,7 +576,7 @@ function BuilderInner({ wf }: { wf: Workflow }) {
     if (!r.ok) {
       setConfirmPublish(false);
       if (r.issues) setProblemsOpen(true);
-      return toast(WORKFLOW_ERRORS[r.error]);
+      return toast(t(`errors.${r.error}`));
     }
     const fresh = r.db.workflows[wf.id];
     setConfirmPublish(false);
@@ -555,7 +585,7 @@ function BuilderInner({ wf }: { wf: Workflow }) {
     const snap = { meta: metaOf(fresh), graph: r.db.workflowVersions[fresh.currentVersionId!].graph };
     b.reset(snap);
     setBaseline(JSON.stringify(snap));
-    toast(`Version ${r.versionNo} published. New requests use it from now on.`);
+    toast(t("builder.toasts.published", { n: String(r.versionNo) }));
     if (!allotmentsOf(r.db, wf.id).length) setAllotting(true);
   };
 
@@ -564,14 +594,14 @@ function BuilderInner({ wf }: { wf: Workflow }) {
     const r = await workflowService.discardDraft({ workflowId: wf.id, expectedRevision: loadedRevision, actorId: viewer.id });
     setBusy(null);
     setConfirmDiscard(false);
-    if (!r.ok) return toast(WORKFLOW_ERRORS[r.error]);
+    if (!r.ok) return toast(t(`errors.${r.error}`));
     const fresh = r.db.workflows[wf.id];
     const snap = { meta: metaOf(fresh), graph: r.db.workflowVersions[fresh.currentVersionId!].graph };
     b.reset(snap);
     setBaseline(JSON.stringify(snap));
     setLoadedRevision(fresh.revision);
     setEditing(false);
-    toast("Draft discarded");
+    toast(t("builder.toasts.discarded"));
   };
 
   const reloadLatest = () => {
@@ -593,44 +623,49 @@ function BuilderInner({ wf }: { wf: Workflow }) {
   };
 
   return (
-    <div className="flex h-full min-h-[640px] flex-col">
+    <div className="flex min-h-full flex-col lg:h-full lg:min-h-[640px]">
       {/* Toolbar */}
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface px-5 py-3">
+      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface px-3 py-3 sm:px-5">
         <Button
           variant="ghost"
           size="sm"
           iconOnly
-          aria-label="Back to workflows"
+          aria-label={t("builder.back")}
           onClick={() => (dirty ? setConfirmLeave(true) : router.push("/workflows"))}
         >
-          <ArrowLeft className="size-4" />
+          <DirIcon icon={ArrowLeft} className="size-4" />
         </Button>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="truncate text-lg font-bold tracking-tight text-ink">{b.meta.name.en || "Untitled workflow"}</h1>
+            <h1 className="truncate text-lg font-bold tracking-tight text-ink">{fmt.text(b.meta.name) || t("names.untitledWorkflow")}</h1>
             <WorkflowStatusPill status={wf.status} />
             {wf.currentVersionId && (
               <span className="inline-flex h-5 items-center rounded-md bg-hover px-1.5 font-mono text-2xs font-semibold text-ink-2">
-                v{db.workflowVersions[wf.currentVersionId]?.versionNo} live
+                {t("builder.live", { n: db.workflowVersions[wf.currentVersionId]?.versionNo })}
               </span>
             )}
           </div>
           <p className="truncate text-xs text-ink-3">
-            {db.badgeTypes[b.meta.badgeTypeId]?.name.en} · {stagesOf(graph).length} stages · {allotted} registration{allotted === 1 ? "" : "s"}
-            {editing && <span className={cn("ms-2 font-medium", dirty ? "text-amber-700" : "text-ink-3")}>{dirty ? "● Unsaved changes" : wf.draftSavedAt ? `Draft saved ${fmt.ago(wf.draftSavedAt, now)}` : ""}</span>}
+            {fmt.text(db.badgeTypes[b.meta.badgeTypeId]?.name)} · {t("stagesCount", { count: stagesOf(graph).length, n: fmt.number(stagesOf(graph).length) })} ·{" "}
+            {t("registrations", { count: allotted, n: fmt.number(allotted) })}
+            {editing && (
+              <span className={cn("ms-2 font-medium", dirty ? "text-amber-700" : "text-ink-3")}>
+                {dirty ? t("builder.unsaved") : wf.draftSavedAt ? t("builder.draftSaved", { time: fmt.ago(wf.draftSavedAt, now) }) : ""}
+              </span>
+            )}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
           {editable && (
             <>
-              <Tooltip content="Undo (Ctrl+Z)">
-                <Button size="sm" variant="ghost" iconOnly aria-label="Undo" disabled={!b.canUndo} onClick={b.undo}>
+              <Tooltip content={t("builder.undoTip")}>
+                <Button size="sm" variant="ghost" iconOnly aria-label={t("builder.undo")} disabled={!b.canUndo} onClick={b.undo}>
                   <Undo2 className="size-4" />
                 </Button>
               </Tooltip>
-              <Tooltip content="Redo (Ctrl+Y)">
-                <Button size="sm" variant="ghost" iconOnly aria-label="Redo" disabled={!b.canRedo} onClick={b.redo}>
+              <Tooltip content={t("builder.redoTip")}>
+                <Button size="sm" variant="ghost" iconOnly aria-label={t("builder.redo")} disabled={!b.canRedo} onClick={b.redo}>
                   <Redo2 className="size-4" />
                 </Button>
               </Tooltip>
@@ -639,13 +674,13 @@ function BuilderInner({ wf }: { wf: Workflow }) {
           )}
           <Button size="sm" onClick={() => setSide(side === "versions" ? "inspector" : "versions")}>
             <History className="size-3.5" />
-            Versions
+            {t("builder.versions")}
             <span className="tabular text-ink-3">{versions.length}</span>
           </Button>
           {canEdit && wf.currentVersionId && wf.status === "active" && (
             <Button size="sm" onClick={() => setAllotting(true)}>
               <Share2 className="size-3.5" />
-              Allot
+              {t("builder.allot")}
               <span className="tabular text-ink-3">{allotted}</span>
             </Button>
           )}
@@ -655,39 +690,39 @@ function BuilderInner({ wf }: { wf: Workflow }) {
               {wf.draft && wf.currentVersionId && (
                 <Button size="sm" variant="ghost" onClick={() => setConfirmDiscard(true)} disabled={busy !== null}>
                   <Trash2 className="size-3.5" />
-                  Discard draft
+                  {t("builder.discardDraft")}
                 </Button>
               )}
               <Button
                 size="sm"
                 onClick={() => {
                   setProblemsOpen(true);
-                  toast(errors.length ? `${errors.length} problem${errors.length === 1 ? "" : "s"} found` : "No problems found");
+                  toast(errors.length ? t("builder.toasts.problemsFound", { count: errors.length, n: fmt.number(errors.length) }) : t("builder.toasts.noProblems"));
                 }}
               >
                 <ShieldCheck className="size-3.5" />
-                Validate
+                {t("builder.validate")}
               </Button>
               <Button size="sm" onClick={() => void saveDraft()} disabled={busy !== null || stale || !dirty}>
                 {busy === "save" ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
-                Save draft
+                {t("builder.saveDraft")}
               </Button>
               {canPublish && (
                 <Button size="sm" variant="primary" onClick={tryPublish} disabled={busy !== null || stale}>
                   <Rocket className="size-3.5" />
-                  Publish
+                  {t("builder.publish")}
                 </Button>
               )}
             </>
           ) : canEdit ? (
             <Button size="sm" variant="primary" onClick={startEditing}>
               <Pencil className="size-3.5" />
-              Edit workflow
+              {t("builder.edit")}
             </Button>
           ) : (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-3">
               <Lock className="size-3.5" />
-              View only
+              {t("builder.viewOnly")}
             </span>
           )}
         </div>
@@ -696,32 +731,36 @@ function BuilderInner({ wf }: { wf: Workflow }) {
       {stale && (
         <div role="alert" className="flex items-center gap-3 border-b border-attention/20 bg-attention-soft px-5 py-2.5 text-sm text-attention">
           <TriangleAlert className="size-4 shrink-0" />
-          <span className="flex-1">Someone changed this workflow in another session. Load the latest version before saving.</span>
+          <span className="flex-1">{t("builder.stale")}</span>
           <Button size="sm" onClick={reloadLatest}>
-            Load latest
+            {t("builder.loadLatest")}
           </Button>
         </div>
       )}
       {!editing && !viewingVersion && wf.currentVersionId && (
         <div className="flex items-center gap-2.5 border-b border-line bg-subtle px-5 py-2 text-xs text-ink-2">
           <Eye className="size-3.5 text-ink-3" />
-          Showing the live version (v{db.workflowVersions[wf.currentVersionId]?.versionNo}). Published versions can’t be changed.
-          {canEdit && " Edit workflow starts a new draft."}
+          {t("builder.liveBanner", { n: db.workflowVersions[wf.currentVersionId]?.versionNo })}
+          {canEdit && t("builder.liveBannerEdit")}
         </div>
       )}
       {viewingVersion && (
         <div className="flex items-center gap-2.5 border-b border-violet-200 bg-violet-50 px-5 py-2 text-xs text-violet-900">
           <History className="size-3.5" />
           <span className="flex-1">
-            Viewing version {viewingVersion.versionNo}, read-only. {openRequestsByVersion(db, wf.id).get(viewingVersion.id) ?? 0} request(s) in progress still use it.
+            {t("builder.viewingBanner", {
+              v: viewingVersion.versionNo,
+              count: openRequestsByVersion(db, wf.id).get(viewingVersion.id) ?? 0,
+              n: fmt.number(openRequestsByVersion(db, wf.id).get(viewingVersion.id) ?? 0),
+            })}
           </span>
           <Button size="sm" onClick={() => setViewing(null)}>
-            Back to {editing ? "draft" : "current"}
+            {editing ? t("builder.backToDraft") : t("builder.backToCurrent")}
           </Button>
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <ReactFlowProvider key={viewing ?? (editing ? "edit" : "view")}>
           <Canvas
             graph={graph}
@@ -734,7 +773,7 @@ function BuilderInner({ wf }: { wf: Workflow }) {
             overlay={!viewingVersion && editing ? <ProblemsPanel issues={issues} text={text} open={problemsOpen} setOpen={setProblemsOpen} onPick={pickIssue} /> : null}
           />
         </ReactFlowProvider>
-        <aside className="w-[22rem] shrink-0 overflow-y-auto border-s border-line bg-surface">
+        <aside className="w-full shrink-0 border-t border-line bg-surface lg:w-[22rem] lg:overflow-y-auto lg:border-s lg:border-t-0">
           {side === "versions" ? (
             <VersionsPanel wf={wf} viewing={viewing} onView={setViewing} onClose={() => setSide("inspector")} />
           ) : (
@@ -760,30 +799,30 @@ function BuilderInner({ wf }: { wf: Workflow }) {
         <ActionDialog
           open
           onOpenChange={(o) => !o && setConfirmPublish(false)}
-          title={`Publish version ${nextVersion}?`}
-          description="Published versions can’t be changed. To change it later, edit the workflow and publish again."
+          title={t("builder.publishDialog.title", { n: nextVersion })}
+          description={t("builder.publishDialog.description")}
           icon={
             <DialogIcon className="bg-indigo-50 text-indigo-600">
               <Rocket className="size-5" />
             </DialogIcon>
           }
-          confirmLabel={`Publish v${nextVersion}`}
+          confirmLabel={t("builder.publishDialog.confirm", { n: nextVersion })}
           busy={busy === "publish"}
           onConfirm={() => void publish()}
         >
           <ul className="space-y-2 text-sm text-ink-2">
             <li className="flex gap-2">
               <CircleCheck className="mt-0.5 size-4 shrink-0 text-emerald-500" />
-              All publish checks pass{issues.length ? ` (${issues.length} warning${issues.length === 1 ? "" : "s"})` : ""}.
+              {t("builder.publishDialog.checks", { count: issues.length, n: fmt.number(issues.length) })}
             </li>
             <li className="flex gap-2">
               <CircleCheck className="mt-0.5 size-4 shrink-0 text-emerald-500" />
-              New requests for {allotted || "no"} allotted registration{allotted === 1 ? "" : "s"} will use v{nextVersion}.
+              {t("builder.publishDialog.newRequests", { count: allotted, n: fmt.number(allotted), v: nextVersion })}
             </li>
             {wf.currentVersionId && (
               <li className="flex gap-2">
                 <CircleCheck className="mt-0.5 size-4 shrink-0 text-emerald-500" />
-                {inProgress} request{inProgress === 1 ? "" : "s"} in progress stay on v{db.workflowVersions[wf.currentVersionId]?.versionNo}.
+                {t("builder.publishDialog.inProgress", { count: inProgress, n: fmt.number(inProgress), v: db.workflowVersions[wf.currentVersionId]?.versionNo })}
               </li>
             )}
           </ul>
@@ -793,9 +832,9 @@ function BuilderInner({ wf }: { wf: Workflow }) {
         <ActionDialog
           open
           onOpenChange={(o) => !o && setConfirmDiscard(false)}
-          title="Discard this draft?"
-          description="The draft is deleted and the builder goes back to the live version. This can't be undone."
-          confirmLabel="Discard draft"
+          title={t("builder.discardDialog.title")}
+          description={t("builder.discardDialog.description")}
+          confirmLabel={t("builder.discardDialog.confirm")}
           confirmVariant="danger"
           busy={busy === "discard"}
           onConfirm={() => void discard()}
@@ -805,9 +844,9 @@ function BuilderInner({ wf }: { wf: Workflow }) {
         <ActionDialog
           open
           onOpenChange={(o) => !o && setConfirmLeave(false)}
-          title="Leave without saving?"
-          description="Your changes since the last save will be lost."
-          confirmLabel="Leave"
+          title={t("builder.leaveDialog.title")}
+          description={t("builder.leaveDialog.description")}
+          confirmLabel={t("builder.leaveDialog.confirm")}
           confirmVariant="danger"
           onConfirm={() => router.push("/workflows")}
         />
@@ -820,18 +859,19 @@ function BuilderInner({ wf }: { wf: Workflow }) {
 export function BuilderPage({ id }: { id: ID }) {
   const db = useDb();
   const viewer = useViewer();
+  const t = useTranslations("workflows");
   const wf = db.workflows[id];
   if (!viewer.can("workflows.view") && !viewer.can("workflows.edit")) {
-    return <EmptyState icon={Lock} title="You can't see workflows" body="Workflows need the Workflows View permission." />;
+    return <EmptyState icon={Lock} title={t("noAccess.title")} body={t("noAccess.bodyShort")} />;
   }
   if (!wf) {
     return (
       <EmptyState
         icon={SearchX}
-        title="Workflow not found"
+        title={t("builder.notFound")}
         action={
           <Link href="/workflows" className="text-sm text-accent-text hover:underline">
-            Back to workflows
+            {t("builder.back")}
           </Link>
         }
       />
