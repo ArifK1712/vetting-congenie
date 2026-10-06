@@ -2,7 +2,7 @@ import { evaluateCondition, readField } from "./conditions";
 import { can, isTeamLead } from "./permissions";
 import { canClaim } from "./queue";
 import { routeStage } from "./routing";
-import { screenProfile } from "./screening";
+import { screenProfile, thresholdsOf } from "./screening";
 import { canTransition, FINAL_STATUSES } from "./status";
 import { resolveAccess } from "./fieldAccess";
 import type {
@@ -57,10 +57,11 @@ interface Base {
 
 // ─── Copy-on-write transaction ──────────────────────────────────────────
 
+let idSeq = 0;
+
 export class Tx {
   db: Database;
   private copied = new Set<keyof Database>();
-  private seq = 0;
   constructor(base: Database, private now: number) {
     this.db = { ...base };
   }
@@ -71,8 +72,9 @@ export class Tx {
     }
     return this.db[key];
   }
+  /** Unique even for several transactions in the same millisecond (the counter is shared). */
   id(prefix: string) {
-    return `${prefix}_${this.now.toString(36)}${(++this.seq).toString(36)}`;
+    return `${prefix}_${this.now.toString(36)}${(++idSeq).toString(36)}`;
   }
   put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory" | "attendees" | "infoRequests" | "notificationReads">(
     key: K,
@@ -330,7 +332,7 @@ function runFinalApproval(tx: Tx, r: VettingRequest, actorId: ID, now: number): 
     Object.values(db.matches).filter((m) => m.requestId === r.id && m.status === "cleared").map((m) => m.entryId),
   );
   const known = new Set(Object.values(db.matches).filter((m) => m.requestId === r.id).map((m) => m.entryId));
-  const hits = screenProfile(attendee.profile, r.eventId, Object.values(db.blacklist), Object.values(db.watchlist), cleared);
+  const hits = screenProfile(attendee.profile, r.eventId, Object.values(db.blacklist), Object.values(db.watchlist), cleared, thresholdsOf(db));
   for (const [listType, list] of [["blacklist", hits.blacklist], ["watchlist", hits.watchlist]] as const) {
     for (const m of list) {
       if (known.has(m.entryId)) continue;
@@ -501,7 +503,7 @@ export function correctField(db: Database, a: Base & { field: string; value: str
 
   if (source === "profile" && SCREENED_PROFILE_FIELDS.has(key)) {
     const known = new Set(Object.values(db.matches).filter((m) => m.requestId === r.id).map((m) => m.entryId));
-    const hits = screenProfile(next.profile, r.eventId, Object.values(db.blacklist), Object.values(db.watchlist), known);
+    const hits = screenProfile(next.profile, r.eventId, Object.values(db.blacklist), Object.values(db.watchlist), known, thresholdsOf(db));
     for (const [listType, list] of [["blacklist", hits.blacklist], ["watchlist", hits.watchlist]] as const) {
       for (const m of list) {
         tx.put("matches", {

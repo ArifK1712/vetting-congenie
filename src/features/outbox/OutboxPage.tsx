@@ -7,6 +7,7 @@ import { PAGE } from "@/design/layout";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SingleFilter } from "@/components/ui/FilterMenu";
 import { REPORT_KEYS } from "@/domain/reports";
+import { fillTemplate } from "@/domain/settings";
 import type { EmailOutboxItem, ReportFormat, ReportKey } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
@@ -131,6 +132,7 @@ function Preview({ m, isStaff }: { m: EmailOutboxItem; isStaff: boolean }) {
   const t = useTranslations("outbox");
   const tr = useTranslations("reports");
   const fmt = useFormat();
+  const db = useDb();
   const link = linkOf(m);
   // Scheduled reports: report and frequency are codes, worded here.
   const report = m.template === "report_scheduled" ? m.params : null;
@@ -149,11 +151,16 @@ function Preview({ m, isStaff }: { m: EmailOutboxItem; isStaff: boolean }) {
     rows: m.params.rows ? fmt.number(Number(m.params.rows)) : "",
   };
   const external = !isStaff;
+  // An email template edited in Settings replaces the built-in wording.
+  const override = tpl ? db.emailTemplates?.[tpl] : undefined;
+  const lang = fmt.locale === "ar" ? "ar" : "en";
+  const subject = override ? fillTemplate(override.subject[lang] || override.subject.en, params) : tpl ? t(`templates.${tpl}.subject`, params) : m.template;
+  const body = override ? fillTemplate(override.body[lang] || override.body.en, params) : tpl ? t(`templates.${tpl}.body`, params) : null;
   return (
     <article className="overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line lg:sticky lg:top-4">
       <dl className="grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3 gap-y-1.5 border-b border-line bg-subtle px-6 py-4 text-sm">
         <dt className="text-ink-3">{t("from")}</dt>
-        <dd className="ltr-data text-ink">{t("sender")}</dd>
+        <dd className="ltr-data text-ink" data-outbox-from>{db.config.senderAddress || t("sender")}</dd>
         <dt className="text-ink-3">{t("to")}</dt>
         <dd className="ltr-data text-ink">{m.to}</dd>
         <dt className="text-ink-3">{t("sent")}</dt>
@@ -174,8 +181,14 @@ function Preview({ m, isStaff }: { m: EmailOutboxItem; isStaff: boolean }) {
           <Mail className="size-3.5" />
           {tpl ? t(`templates.${tpl}.name`) : m.template}
         </p>
-        <h2 className="mt-2 text-xl font-bold text-ink">{tpl ? t(`templates.${tpl}.subject`, params) : m.template}</h2>
-        {tpl && <p className="mt-4 text-sm leading-relaxed text-ink-2">{t(`templates.${tpl}.body`, params)}</p>}
+        <h2 dir={override ? "auto" : undefined} className="mt-2 text-xl font-bold text-ink" data-outbox-subject>
+          {subject}
+        </h2>
+        {body && (
+          <p dir={override ? "auto" : undefined} className={cn("mt-4 text-sm leading-relaxed text-ink-2", override && "whitespace-pre-line")} data-outbox-body>
+            {body}
+          </p>
+        )}
         {tpl === "approved" && <p className="mt-2 text-sm text-ink-2">{m.params.badge === "yes" ? t("templates.approved.badgeYes") : t("templates.approved.badgeLater")}</p>}
         {tpl && link && (
           external ? (

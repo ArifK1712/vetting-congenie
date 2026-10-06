@@ -133,7 +133,8 @@ export function RejectDialog({ view, revision, onClose, onDone }: Props) {
   const [comment, setComment] = useState("");
   const { busy, error, run } = useRequestAction();
   // "Blacklisted" is set only by a confirmed screening match, never by hand.
-  const reasons = Object.values(view.db.rejectReasons).filter((r) => r.id !== "rr_blacklisted");
+  // Active reasons in the order set in Settings; Blacklisted is only set by Match Review.
+  const reasons = Object.values(view.db.rejectReasons).filter((r) => r.id !== "rr_blacklisted" && r.active !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const required = view.stage?.rejectReasonRequired ?? true;
 
   return (

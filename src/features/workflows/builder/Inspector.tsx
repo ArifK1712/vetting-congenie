@@ -531,7 +531,7 @@ export function Inspector({
               label={t("inspector.rejected.defaultReason")}
               value={block.defaultReasonId ?? "none"}
               onChange={(v) => b.edit((g) => ({ ...g, nodes: g.nodes.map((n) => (n.id === block.id && n.type === "rejected" ? { ...n, defaultReasonId: v === "none" ? undefined : v } : n)) }))}
-              options={[{ value: "none", label: t("inspector.rejected.noDefault") }, ...Object.values(db.rejectReasons).map((r) => ({ value: r.id, label: fmt.text(r.label) }))]}
+              options={[{ value: "none", label: t("inspector.rejected.noDefault") }, ...Object.values(db.rejectReasons).filter((r) => r.active !== false || r.id === block.defaultReasonId).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((r) => ({ value: r.id, label: fmt.text(r.label) }))]}
             />
           </Section>
         </div>

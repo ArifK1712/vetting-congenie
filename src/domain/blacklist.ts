@@ -1,6 +1,6 @@
 import { Tx } from "./actions";
 import { can } from "./permissions";
-import { matchIdentity, normalizeId, normalizeName } from "./screening";
+import { matchIdentity, normalizeId, normalizeName, thresholdsOf } from "./screening";
 import { canTransition, OPEN_STATUSES } from "./status";
 import type {
   BlacklistContent,
@@ -194,7 +194,7 @@ export function retroMatches(db: Database, identity: ListIdentity, eventScope: "
     const live = OPEN_STATUSES.includes(r.status) || r.status === "screening_hold" || (r.status === "approved" && r.badgeStatus === "issued");
     if (!live || !inScope(eventScope, r.eventId)) continue;
     if (entryId && Object.values(db.matches).some((m) => m.requestId === r.id && m.entryId === entryId)) continue;
-    const m = matchIdentity(db.attendees[r.attendeeId].profile, identity);
+    const m = matchIdentity(db.attendees[r.attendeeId].profile, identity, thresholdsOf(db));
     if (m) hits.push({ requestId: r.id, ...m, approved: r.status === "approved" });
   }
   return hits;
@@ -335,7 +335,7 @@ export function proposeEntry(
   // Spec 9 table: Add to Blacklist from a request puts that request on Screening Hold.
   if (a.sourceRequestId && tx.db.requests[a.sourceRequestId]) {
     const r = tx.db.requests[a.sourceRequestId];
-    const m = matchIdentity(tx.db.attendees[r.attendeeId].profile, entry.identity) ?? { matchType: "id" as const, matchedField: "fullName" as const, score: 100, strength: "strong" as const };
+    const m = matchIdentity(tx.db.attendees[r.attendeeId].profile, entry.identity, thresholdsOf(tx.db)) ?? { matchType: "id" as const, matchedField: "fullName" as const, score: 100, strength: "strong" as const };
     holdRequest(tx, r.id, id, m, a.actorId, a.now);
   }
   return { ok: true, db: tx.db, entryId: id };

@@ -15,6 +15,8 @@ import reportsAr from "../../messages/modules/reports/ar.json";
 import reportsEn from "../../messages/modules/reports/en.json";
 import registrationsAr from "../../messages/modules/registrations/ar.json";
 import registrationsEn from "../../messages/modules/registrations/en.json";
+import settingsAr from "../../messages/modules/settings/ar.json";
+import settingsEn from "../../messages/modules/settings/en.json";
 import simulateAr from "../../messages/modules/simulate/ar.json";
 import simulateEn from "../../messages/modules/simulate/en.json";
 import watchlistAr from "../../messages/modules/watchlist/ar.json";
@@ -22,8 +24,8 @@ import watchlistEn from "../../messages/modules/watchlist/en.json";
 import workflowsAr from "../../messages/modules/workflows/ar.json";
 import workflowsEn from "../../messages/modules/workflows/en.json";
 
-export const enMessages = { ...enCore, ...workflowsEn, ...blacklistEn, ...watchlistEn, ...matchReviewEn, ...registrationsEn, ...simulateEn, ...attendeesEn, ...reportsEn };
-export const arMessages = { ...arCore, ...workflowsAr, ...blacklistAr, ...watchlistAr, ...matchReviewAr, ...registrationsAr, ...simulateAr, ...attendeesAr, ...reportsAr };
+export const enMessages = { ...enCore, ...workflowsEn, ...blacklistEn, ...watchlistEn, ...matchReviewEn, ...registrationsEn, ...simulateEn, ...attendeesEn, ...reportsEn, ...settingsEn };
+export const arMessages = { ...arCore, ...workflowsAr, ...blacklistAr, ...watchlistAr, ...matchReviewAr, ...registrationsAr, ...simulateAr, ...attendeesAr, ...reportsAr, ...settingsAr };
 
 export type AppMessages = typeof enMessages;
 

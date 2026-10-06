@@ -1,6 +1,6 @@
 import { enterStage, graphOf, guard, guardDecision, openExecution, Tx, type ActionResult } from "./actions";
 import { can } from "./permissions";
-import { screenProfile } from "./screening";
+import { screenProfile, thresholdsOf } from "./screening";
 import type { Database, ID, InfoQuestion, InfoRequest, QuestionType, VettingRequest, WatchlistLevel } from "./types";
 import { nodeById, type StageNode } from "./workflow";
 
@@ -13,7 +13,10 @@ import { nodeById, type StageNode } from "./workflow";
 
 export const MAX_ROUNDS = 3;
 export const MAX_QUESTIONS = 10;
+/** Spec default; the company can change it in Settings (db.config.moreInfo.linkDays). */
 export const LINK_DAYS = 7;
+const linkDays = (db: Database) => db.config?.moreInfo.linkDays ?? LINK_DAYS;
+const reminderMs = (db: Database) => (db.config?.moreInfo.reminderHours ?? 24) * 3_600_000;
 export const UPLOAD_MAX_KB = 5 * 1024;
 export const UPLOAD_TYPES = ["pdf", "jpg", "jpeg", "png"];
 export const QUESTION_TYPES: QuestionType[] = ["text", "longText", "number", "date", "singleChoice", "multiChoice", "upload"];
@@ -94,7 +97,7 @@ export function askMoreInfo(
     token: newToken(tx, r, round, a.now),
     returnToNodeId: a.returnToNodeId,
     remindedAt: null,
-    tokenExpiresAt: iso(a.now + LINK_DAYS * DAY),
+    tokenExpiresAt: iso(a.now + linkDays(db) * DAY),
     sentAt: iso(a.now),
     answeredAt: null,
   };
@@ -120,7 +123,7 @@ export function resendLink(db: Database, a: { requestId: ID; actorId: ID; expect
   if (!inTeam && !can(db, a.actorId, "queue.reviewAll")) return { ok: false, error: "forbidden" };
 
   const tx = new Tx(db, a.now);
-  const next: InfoRequest = { ...ir, status: "sent", token: newToken(tx, r, ir.round, a.now), tokenExpiresAt: iso(a.now + LINK_DAYS * DAY), remindedAt: null };
+  const next: InfoRequest = { ...ir, status: "sent", token: newToken(tx, r, ir.round, a.now), tokenExpiresAt: iso(a.now + linkDays(db) * DAY), remindedAt: null };
   tx.put("infoRequests", next);
   tx.updateRequest(r, {});
   tx.log({ requestId: r.id, action: "more_info_requested", actorId: a.actorId, remarks: "link_resent", meta: { round: ir.round, resent: true } });
@@ -129,9 +132,9 @@ export function resendLink(db: Database, a: { requestId: ID; actorId: ID; expect
   return { ok: true, db: tx.db };
 }
 
-/** 16: "Link ends in 24 hours" reminder, sent once per link. Run whenever the app loads. */
+/** 16: "Link ends in 24 hours" reminder (hours set in Settings), sent once per link. Run whenever the app loads. */
 export function sendDueReminders(db: Database, now: number): Database | null {
-  const due = Object.values(db.infoRequests).filter((i) => i.status === "sent" && !i.remindedAt && Date.parse(i.tokenExpiresAt) > now && Date.parse(i.tokenExpiresAt) - now <= DAY);
+  const due = Object.values(db.infoRequests).filter((i) => i.status === "sent" && !i.remindedAt && Date.parse(i.tokenExpiresAt) > now && Date.parse(i.tokenExpiresAt) - now <= reminderMs(db));
   if (!due.length) return null;
   const tx = new Tx(db, now);
   for (const ir of due) {
@@ -223,7 +226,7 @@ export function submitAnswers(db: Database, a: { token: string; answers: Record<
 
   // 17: the list check runs again on resubmission (new matches only).
   const known = new Set(Object.values(db.matches).filter((m) => m.requestId === r.id).map((m) => m.entryId));
-  const hits = screenProfile(profile, r.eventId, Object.values(db.blacklist), Object.values(db.watchlist), known);
+  const hits = screenProfile(profile, r.eventId, Object.values(db.blacklist), Object.values(db.watchlist), known, thresholdsOf(db));
   for (const [listType, list] of [["blacklist", hits.blacklist], ["watchlist", hits.watchlist]] as const) {
     for (const m of list) {
       tx.put("matches", { id: tx.id("m"), requestId: r.id, listType, entryId: m.entryId, matchType: m.matchType, matchedField: m.matchedField, score: m.score, strength: m.strength, stagePoint: "resubmission", status: "open", foundAt: at, decidedBy: null, decidedAt: null, decisionNote: null });

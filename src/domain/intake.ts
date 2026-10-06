@@ -1,6 +1,6 @@
 import { enterStage, Tx } from "./actions";
 import { formOf, profileFieldOf } from "./registrations";
-import { screenProfile, type MatchCandidate } from "./screening";
+import { screenProfile, thresholdsOf, type MatchCandidate } from "./screening";
 import { notifyWatchers } from "./watchlist";
 import { requestPath } from "./workflow";
 import type { ApplicantProfile, Attendee, Database, ID, UploadedDocument, VettingRequest, WatchlistLevel } from "./types";
@@ -194,6 +194,8 @@ export function submitRegistration(db: Database, s: Submission): IntakeResult {
     reg.eventId,
     settings.blacklistScreening ? Object.values(db.blacklist) : [],
     settings.watchlistScreening ? Object.values(db.watchlist) : [],
+    new Set(),
+    thresholdsOf(db),
   );
   const addMatch = (listType: "blacklist" | "watchlist", m: MatchCandidate, status: "open" | "confirmed" = "open") =>
     tx.put("matches", {

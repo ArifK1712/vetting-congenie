@@ -1,6 +1,7 @@
 import type {
   ApplicantProfile,
   BlacklistEntry,
+  Database,
   ID,
   ListIdentity,
   MatchType,
@@ -143,6 +144,9 @@ export interface MatchThresholds {
 }
 export const DEFAULT_THRESHOLDS: MatchThresholds = { nameWithDob: 90, nameOnly: 85 };
 
+/** The thresholds set on the Settings page (spec defaults if none). */
+export const thresholdsOf = (db: Pick<Database, "config">): MatchThresholds => db.config?.matching ?? DEFAULT_THRESHOLDS;
+
 export interface MatchCandidate {
   entryId: ID;
   matchType: MatchType;
@@ -205,12 +209,13 @@ export function screenProfile(
   blacklist: BlacklistEntry[],
   watchlist: WatchlistEntry[],
   suppressed: Set<string> = new Set(),
+  thresholds: MatchThresholds = DEFAULT_THRESHOLDS,
 ): { blacklist: MatchCandidate[]; watchlist: MatchCandidate[] } {
   const run = (entries: (BlacklistEntry | WatchlistEntry)[]) =>
     entries
       .filter((e) => e.status === "active" && inScope(e.eventScope, eventId) && !suppressed.has(e.id))
       .flatMap((e) => {
-        const m = matchIdentity(profile, e.identity);
+        const m = matchIdentity(profile, e.identity, thresholds);
         return m ? [{ ...m, entryId: e.id }] : [];
       });
   return { blacklist: run(blacklist), watchlist: run(watchlist) };

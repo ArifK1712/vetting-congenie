@@ -1,6 +1,6 @@
 import { canUseInVetting, DEFAULT_ID_FIELDS } from "@/domain/registrations";
 import { routeStage } from "@/domain/routing";
-import { screenProfile, type MatchCandidate } from "@/domain/screening";
+import { DEFAULT_THRESHOLDS, screenProfile, type MatchCandidate } from "@/domain/screening";
 import { nodeById, requestPath, type StageNode } from "@/domain/workflow";
 import type {
   Attendee,
@@ -27,7 +27,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -150,6 +150,16 @@ export function createSeed(now: number = Date.now()): Database {
     matches: {},
     allocations: {},
     rejectReasons: byId(rejectReasons),
+    config: {
+      matching: { ...DEFAULT_THRESHOLDS },
+      moreInfo: { linkDays: 7, reminderHours: 24 },
+      senderAddress: "events@congenie.com",
+      revision: 1,
+      updatedAt: null,
+      updatedBy: null,
+    },
+    emailTemplates: {},
+    settingsHistory: {},
     outbox: {},
   };
 

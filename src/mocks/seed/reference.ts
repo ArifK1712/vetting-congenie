@@ -207,11 +207,11 @@ export const registrations: Registration[] = [
 ];
 
 export const rejectReasons: RejectReason[] = [
-  { id: "rr_docs", label: t("Documents missing or wrong", "مستندات ناقصة أو غير صحيحة") },
-  { id: "rr_identity", label: t("Identity not confirmed", "تعذّر التحقق من الهوية") },
-  { id: "rr_security", label: t("Security concern", "مخاوف أمنية") },
-  { id: "rr_eligibility", label: t("Not eligible for this badge", "غير مؤهل لهذه الشارة") },
-  { id: "rr_duplicate", label: t("Duplicate registration", "تسجيل مكرر") },
-  { id: "rr_blacklisted", label: t("Blacklisted", "مدرج في القائمة السوداء") },
-  { id: "rr_other", label: t("Other", "أخرى") },
+  { id: "rr_docs", label: t("Documents missing or wrong", "مستندات ناقصة أو غير صحيحة"), active: true, order: 1 },
+  { id: "rr_identity", label: t("Identity not confirmed", "تعذّر التحقق من الهوية"), active: true, order: 2 },
+  { id: "rr_security", label: t("Security concern", "مخاوف أمنية"), active: true, order: 3 },
+  { id: "rr_eligibility", label: t("Not eligible for this badge", "غير مؤهل لهذه الشارة"), active: true, order: 4 },
+  { id: "rr_duplicate", label: t("Duplicate registration", "تسجيل مكرر"), active: true, order: 5 },
+  { id: "rr_blacklisted", label: t("Blacklisted", "مدرج في القائمة السوداء"), active: true, order: 6, system: true },
+  { id: "rr_other", label: t("Other", "أخرى"), active: true, order: 7 },
 ];

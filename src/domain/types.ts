@@ -679,6 +679,43 @@ export interface CapacityAllocation {
 export interface RejectReason {
   id: ID;
   label: LocalizedText;
+  /** Inactive reasons stay on past decisions but can't be chosen. */
+  active: boolean;
+  order: number;
+  /** Used by the system itself (Blacklisted): can be renamed, never removed. */
+  system?: boolean;
+}
+
+/** Company-wide vetting settings (Settings page). */
+export interface VettingConfig {
+  /** 9.4 name matching: Name + DOB is strong at nameWithDob %, Name only is possible at nameOnly %. */
+  matching: { nameWithDob: number; nameOnly: number };
+  /** 8.5 More Information: link lifetime and the reminder before it ends. */
+  moreInfo: { linkDays: number; reminderHours: number };
+  /** 16: the sender address emails go from. */
+  senderAddress: string;
+  revision: number;
+  updatedAt: ISODate | null;
+  updatedBy: ID | null;
+}
+
+/** An edited email template; templates without one use the built-in text. */
+export interface EmailTemplateOverride {
+  key: string;
+  subject: LocalizedText;
+  body: LocalizedText;
+  updatedAt: ISODate;
+  updatedBy: ID;
+}
+
+export interface SettingsHistoryEvent {
+  id: ID;
+  area: "matching" | "moreInfo" | "sender" | "rejectReasons" | "emailTemplates";
+  action: "changed" | "added" | "deactivated" | "reactivated" | "reordered" | "reset";
+  /** What changed, e.g. "nameOnly: 85 → 88", a reason or template key. */
+  changes: string[];
+  actorId: ID;
+  at: ISODate;
 }
 
 export interface EmailOutboxItem {
@@ -720,6 +757,9 @@ export interface Database {
   matches: Record<ID, ScreeningMatch>;
   allocations: Record<ID, CapacityAllocation>;
   rejectReasons: Record<ID, RejectReason>;
+  config: VettingConfig;
+  emailTemplates: Record<string, EmailTemplateOverride>;
+  settingsHistory: Record<ID, SettingsHistoryEvent>;
   outbox: Record<ID, EmailOutboxItem>;
   /** Every report download (14.2: "Every download is logged"). */
   reportDownloads: Record<ID, ReportDownload>;

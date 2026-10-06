@@ -1,5 +1,5 @@
-import { Placeholder } from "@/components/shell/Placeholder";
+import { SettingsPage } from "@/features/settings/SettingsPage";
 
 export default function Page() {
-  return <Placeholder area="settings" />;
+  return <SettingsPage />;
 }

@@ -1,0 +1,229 @@
+{
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Company-wide vetting settings: list matching, More Information links, reject reasons and email wording. Every change is logged.",
+    "noAccessTitle": "You can't open Settings",
+    "noAccessBody": "Settings need the Vetting Settings permission. Ask a vetting administrator if something needs to change.",
+    "updated": "Last changed {time} by {name}",
+    "neverUpdated": "Using the spec defaults — never changed",
+    "tabs": {
+      "general": "General",
+      "reasons": "Reject reasons",
+      "emails": "Email templates",
+      "history": "History"
+    },
+    "save": {
+      "unsaved": "You have unsaved changes",
+      "unsavedHint": "Saved settings apply from now on.",
+      "fixFirst": "{count, plural, one {Fix {n} problem before saving} other {Fix {n} problems before saving}}",
+      "discard": "Discard",
+      "save": "Save settings",
+      "saving": "Saving…",
+      "saved": "Settings saved",
+      "stale": "Someone else changed these settings since you opened them. Load the latest version before saving.",
+      "loadLatest": "Load latest",
+      "errors": {
+        "forbidden": "You don't have permission to change these settings.",
+        "stale": "These settings were changed by someone else. Load the latest version and try again.",
+        "invalid": "Some values aren't valid. Check the highlighted fields.",
+        "notFound": "The settings couldn't be found.",
+        "duplicate": "That name is already used.",
+        "system": "This item is used by the system and can't be turned off."
+      }
+    },
+    "issues": {
+      "thresholdRange": "Use a whole number from {min} to {max} %.",
+      "dobBelowName": "Name + date of birth must be at least the Name only threshold.",
+      "linkDaysRange": "Use a whole number of days from {min} to {max}.",
+      "reminderRange": "Use a whole number of hours from {min} to {max}.",
+      "reminderAfterExpiry": "The reminder must come before the link ends — use fewer hours than the link lasts ({hours} hours).",
+      "senderInvalid": "Enter a valid email address, for example events@congenie.com.",
+      "matchingNeedsApprove": "Only someone with Blacklist Approve can change the matching thresholds."
+    },
+    "general": {
+      "matching": {
+        "title": "List matching",
+        "subtitle": "How closely a name must match a blacklist or watchlist entry before it's flagged.",
+        "nameWithDob": "Name + date of birth",
+        "nameWithDobHint": "Strong match at or above this score",
+        "nameOnly": "Name only",
+        "nameOnlyHint": "Possible match at or above this score",
+        "specDefault": "Spec default {n} %",
+        "reset": "Reset to spec defaults",
+        "exactNote": "ID number, passport and company matches are always exact and aren't affected by these thresholds.",
+        "locked": "Only someone with Blacklist Approve can change the thresholds, because they change who gets matched.",
+        "lockedShort": "Needs Blacklist Approve",
+        "strong": "Strong",
+        "possible": "Possible"
+      },
+      "impact": {
+        "title": "Impact preview",
+        "badge": "Preview only",
+        "checking": "Checking…",
+        "summary": "{count, plural, one {On today's {n} live request:} other {On today's {n} live requests:}}",
+        "requests": "{count, plural, =0 {no request would have a name match} one {{n} request would have a name match} other {{n} requests would have a name match}}",
+        "now": "(now {n})",
+        "delta": "+{added} / −{removed}",
+        "deltaHint": "{added} newly matched, {removed} no longer matched",
+        "strongCount": "Strong matches",
+        "possibleCount": "Possible matches",
+        "note": "Saved thresholds apply to checks from now on. They never change matches already made."
+      },
+      "moreInfo": {
+        "title": "More Information link",
+        "subtitle": "The private link an attendee gets when a reviewer asks for more information.",
+        "linkDays": "Link lasts",
+        "linkDaysHint": "{min}–{max} days · default {d}",
+        "days": "{count, plural, one {day} other {days}}",
+        "reminderHours": "Reminder before it ends",
+        "reminderHoursHint": "{min}–{max} hours · default {d}",
+        "hours": "{count, plural, one {hour} other {hours}}",
+        "sent": "Link sent",
+        "reminder": "Reminder",
+        "ends": "Link ends",
+        "note": "Applies to links sent from now on. Links already sent keep their end date."
+      },
+      "emails": {
+        "title": "Emails",
+        "subtitle": "The address every vetting email is sent from.",
+        "sender": "Sender address",
+        "senderHint": "Default {address}",
+        "note": "Attendees see this as the sender. Use an address your event team reads."
+      }
+    },
+    "reasons": {
+      "title": "Reject reasons",
+      "subtitle": "The reasons a reviewer chooses from when rejecting a request, in this order.",
+      "add": "Add reason",
+      "count": "{count, plural, one {{n} reason} other {{n} reasons}} · {active} active",
+      "system": "System — used by Match Review",
+      "systemHint": "Set only when a blacklist match is confirmed. It can be renamed but never turned off.",
+      "inactive": "Hidden from reviewers; stays on past decisions",
+      "used": "{count, plural, =0 {Not used yet} one {Used on {n} request} other {Used on {n} requests}}",
+      "activeLabel": "Active: {name}",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "rename": "Rename",
+      "renameLabel": "Rename {name}",
+      "addTitle": "Add a reject reason",
+      "addDescription": "New reasons are active straight away and appear at the end of the list.",
+      "renameTitle": "Rename reject reason",
+      "renameDescription": "The new name also shows on past decisions that used this reason.",
+      "labelEn": "Name in English",
+      "labelAr": "Name in Arabic",
+      "labelArHint": "Uses the English name if left empty",
+      "placeholderEn": "e.g. Late application",
+      "placeholderAr": "مثال: طلب متأخر",
+      "confirmAdd": "Add reason",
+      "confirmRename": "Save name",
+      "added": "“{name}” added",
+      "renamed": "Reason renamed",
+      "activated": "“{name}” is active again",
+      "deactivated": "“{name}” is hidden from reviewers",
+      "moved": "Order saved",
+      "errors": {
+        "duplicate": "A reason with this English name already exists.",
+        "invalid": "Enter a name in English.",
+        "lastActive": "Keep at least one active reason for reviewers to choose.",
+        "system": "Blacklisted is used by Match Review and can't be turned off.",
+        "forbidden": "You don't have permission to change reject reasons.",
+        "notFound": "This reason no longer exists.",
+        "stale": "Someone else changed this. Try again."
+      }
+    },
+    "emails": {
+      "title": "Email templates",
+      "subtitle": "The wording of every email the vetting module sends. Values in braces are filled in for each email.",
+      "sender": "Emails go from the event's sender address: {address}",
+      "toAttendees": "To attendees",
+      "toAttendeesHint": "Never mention the blacklist or watchlist.",
+      "toStaff": "To staff",
+      "toStaffHint": "Sent to reviewers, approvers and administrators.",
+      "edited": "Edited",
+      "builtIn": "Built-in",
+      "editedOn": "Edited {time} by {name}",
+      "edit": "Edit",
+      "editLabel": "Edit {name}",
+      "editorTitle": "Edit email: {name}",
+      "editorDescription": "Change the subject and wording in both languages. The preview uses sample values.",
+      "language": "Language",
+      "subject": "Subject",
+      "body": "Body",
+      "placeholders": "Insert a value",
+      "insert": "Insert {placeholder}",
+      "preview": "Preview",
+      "sampleNote": "Sample values",
+      "from": "From",
+      "save": "Save template",
+      "saving": "Saving…",
+      "reset": "Reset to built-in",
+      "resetDone": "“{name}” uses the built-in wording again",
+      "saved": "“{name}” saved",
+      "noIssues": "Ready to save",
+      "issues": {
+        "empty": "{field} ({locale}) is empty.",
+        "unknownPlaceholder": "{field} ({locale}): {placeholder} isn't available in this email.",
+        "mentionsLists": "{field} ({locale}): Attendee emails must never mention the blacklist or watchlist."
+      },
+      "fields": {
+        "subject": "Subject",
+        "body": "Body"
+      },
+      "locales": {
+        "en": "English",
+        "ar": "Arabic"
+      },
+      "params": {
+        "name": "Attendee name",
+        "date": "Link end date",
+        "id": "Request ID",
+        "entry": "List entry",
+        "level": "Watchlist level",
+        "registration": "Registration",
+        "question": "Question",
+        "report": "Report",
+        "frequency": "Frequency",
+        "rows": "Rows",
+        "format": "File format"
+      },
+      "samples": {
+        "name": "Layla Hassan",
+        "level": "High",
+        "question": "Purpose of visit",
+        "frequency": "weekly",
+        "format": "Excel"
+      }
+    },
+    "history": {
+      "empty": "No changes yet",
+      "emptyBody": "Every change to these settings will be listed here with who made it and when.",
+      "unknownUser": "Someone",
+      "areas": {
+        "matching": "List matching",
+        "moreInfo": "More Information link",
+        "sender": "Sender address",
+        "rejectReasons": "Reject reasons",
+        "emailTemplates": "Email templates"
+      },
+      "events": {
+        "matching_changed": "changed the list matching thresholds",
+        "moreInfo_changed": "changed the More Information link timing",
+        "sender_changed": "changed the sender address",
+        "rejectReasons_added": "added a reject reason",
+        "rejectReasons_changed": "renamed a reject reason",
+        "rejectReasons_deactivated": "turned off a reject reason",
+        "rejectReasons_reactivated": "turned a reject reason back on",
+        "rejectReasons_reordered": "changed the order of reject reasons",
+        "emailTemplates_changed": "edited an email template",
+        "emailTemplates_reset": "reset an email template to the built-in wording",
+        "other": "changed the settings"
+      },
+      "keys": {
+        "nameWithDob": "Name + date of birth",
+        "nameOnly": "Name only",
+        "linkDays": "Link lasts (days)",
+        "reminderHours": "Reminder (hours before)"
+      }
+    }
+  }
+}
