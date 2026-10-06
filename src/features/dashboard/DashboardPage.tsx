@@ -2,10 +2,11 @@
 
 import { BadgeCheck, ChevronRight, Clock, Eye, Gauge, Hourglass, Layers, Lock, ShieldAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { QueueSkeleton } from "@/components/ui/Skeleton";
 import { MultiFilter, SingleFilter } from "@/components/ui/FilterMenu";
 import { BadgeTypeChip } from "@/components/ui/Status";
 import { SERIES } from "@/design/chart";
@@ -53,8 +54,14 @@ export function DashboardPage() {
     };
   }, [db, eventScope, viewer, fmt]);
 
+  // The dashboard is the home page. People without reporting access (e.g.
+  // reviewers) go to their queue instead; anyone else sees a no-access note.
   if (!viewer.can("reports.view")) {
-    return <EmptyState icon={Lock} title={t("noAccessTitle")} body={t("noAccessBody")} />;
+    return viewer.can("queue.access") || viewer.can("queue.reviewAll") ? (
+      <GoToQueue />
+    ) : (
+      <EmptyState icon={Lock} title={t("noAccessTitle")} body={t("noAccessBody")} />
+    );
   }
 
   const { totals } = data;
@@ -473,4 +480,12 @@ export function DashboardPage() {
       </div>
     </div>
   );
+}
+
+function GoToQueue() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/queue");
+  }, [router]);
+  return <QueueSkeleton />;
 }

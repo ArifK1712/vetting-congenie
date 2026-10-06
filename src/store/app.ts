@@ -96,7 +96,7 @@ interface SessionState {
 export const useSession = create<SessionState>()(
   persist(
     (set) => ({
-      personaId: "u_omar",
+      personaId: "u_sara",
       eventScope: "all",
       sidebarCollapsed: false,
       setPersona: (personaId) => set({ personaId }),
