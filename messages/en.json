@@ -1238,6 +1238,12 @@
         "subject": "New question on {registration}",
         "body": "The question “{question}” was added to {registration}. It's hidden from every team until you grant access in Teams → Field access.",
         "button": "Open the registration"
+      },
+      "report_scheduled": {
+        "name": "Scheduled report",
+        "subject": "Your {frequency} report: {report}",
+        "body": "Your scheduled report is attached ({rows} rows, {format}). It uses your current access, so IDs stay masked if you can't see the blacklist.",
+        "button": "Open Reports"
       }
     }
   }

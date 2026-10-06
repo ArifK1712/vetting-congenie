@@ -608,6 +608,64 @@ export interface ScreeningMatch {
   decisionNote: string | null;
 }
 
+// ─── Reports (14.2) ─────────────────────────────────────────────────────
+
+export type ReportKey =
+  | "vettingStatus"
+  | "timePerStage"
+  | "lateRequests"
+  | "reviewerActivity"
+  | "automation"
+  | "listMatches"
+  | "listEntries"
+  | "activityLog";
+
+export type ReportFormat = "csv" | "xlsx" | "pdf";
+
+/** The filters every report shares. Dates are YYYY-MM-DD in the event time zone. */
+export interface ReportFilters {
+  from: string;
+  to: string;
+  registrationIds: ID[];
+  badgeTypeIds: ID[];
+  workflowIds: ID[];
+  teamIds: ID[];
+  /** Activity log only: one request's full history. */
+  requestId?: string;
+}
+
+export interface ReportDownload {
+  id: ID;
+  report: ReportKey;
+  format: ReportFormat;
+  filters: ReportFilters;
+  eventScope: ID | "all";
+  rows: number;
+  /** IDs were masked because the user lacks Blacklist View (AC25). */
+  masked: boolean;
+  actorId: ID;
+  at: ISODate;
+}
+
+export interface ReportSchedule {
+  id: ID;
+  report: ReportKey;
+  format: ReportFormat;
+  filters: ReportFilters;
+  eventScope: ID | "all";
+  frequency: "daily" | "weekly";
+  /** Hour of day (event time zone) it is sent. */
+  hour: number;
+  /** Weekly only: 0 = Sunday … 6 = Saturday. */
+  weekday: number;
+  /** Runs with this user's access, and is emailed to them. */
+  ownerId: ID;
+  active: boolean;
+  createdAt: ISODate;
+  lastRunAt: ISODate | null;
+  nextRunAt: ISODate;
+}
+
 // ─── Capacity, reasons, outbox ──────────────────────────────────────────
 
 export interface CapacityAllocation {
@@ -663,6 +721,10 @@ export interface Database {
   allocations: Record<ID, CapacityAllocation>;
   rejectReasons: Record<ID, RejectReason>;
   outbox: Record<ID, EmailOutboxItem>;
+  /** Every report download (14.2: "Every download is logged"). */
+  reportDownloads: Record<ID, ReportDownload>;
+  /** Reports emailed daily or weekly (Reports Export). */
+  reportSchedules: Record<ID, ReportSchedule>;
   /** When each user last opened their alerts; newer alerts count as unread. */
   notificationReads: Record<ID, ISODate>;
 }

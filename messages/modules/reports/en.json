@@ -1,0 +1,328 @@
+{
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Ready-made reports for your events and teams. Download them as Excel, CSV or PDF, or have them emailed to you.",
+    "noAccessTitle": "No reports available to you",
+    "noAccessBody": "Your role can't open any report. Ask a vetting administrator for Reports View.",
+    "picker": {
+      "label": "Choose a report",
+      "available": "{count, plural, one {{n} of {total} report available to you} other {{n} of {total} reports available to you}}",
+      "locked": "Locked",
+      "lockedHint": "You can't open this report. Who can open it: {access}",
+      "phase2": "Phase 2"
+    },
+    "names": {
+      "vettingStatus": "Vetting status",
+      "timePerStage": "Time per stage",
+      "lateRequests": "Late requests",
+      "reviewerActivity": "Reviewer activity",
+      "automation": "Automation",
+      "listMatches": "List matches",
+      "listEntries": "List entries",
+      "activityLog": "Activity log"
+    },
+    "descriptions": {
+      "vettingStatus": "Every request with its registration, payment, vetting and badge status.",
+      "timePerStage": "Time spent at each stage, per team and reviewer.",
+      "lateRequests": "Open requests past their time limit, with who has them.",
+      "reviewerActivity": "Requests claimed and decisions made by each reviewer.",
+      "automation": "Requests approved by rule, fast-tracked or rejected by rule.",
+      "listMatches": "Blacklist and watchlist matches, with how each was decided.",
+      "listEntries": "Blacklist and watchlist entries, soonest end date first.",
+      "activityLog": "Every action on every request, or the full history of one."
+    },
+    "access": {
+      "vettingStatus": "Reports View",
+      "timePerStage": "Reports View",
+      "lateRequests": "Reports View",
+      "reviewerActivity": "Reports View and Assign Requests",
+      "automation": "Reports View",
+      "listMatches": "Blacklist View or Watchlist View",
+      "listEntries": "Blacklist View or Watchlist View",
+      "activityLog": "Review All"
+    },
+    "filters": {
+      "label": "Report filters",
+      "range": "Dates",
+      "last7": "Last 7 days",
+      "last30": "Last 30 days",
+      "last90": "Last 90 days",
+      "custom": "Custom",
+      "from": "From",
+      "to": "To",
+      "registration": "Registration",
+      "badgeType": "Badge type",
+      "workflow": "Workflow",
+      "team": "Team",
+      "requestId": "Request ID",
+      "requestIdPlaceholder": "One request, e.g. VR-1024",
+      "requestIdHint": "Showing the full history of {id}, whatever the dates.",
+      "reset": "Reset filters",
+      "event": "Event",
+      "allEvents": "All events",
+      "dates": "{from} – {to}",
+      "noDates": "Dates don't apply to this report: it shows entries as they are today.",
+      "noDatesLate": "Dates don't apply to this report: it shows requests that are late right now."
+    },
+    "view": {
+      "rows": "{count, plural, one {{n} row} other {{n} rows}}",
+      "generated": "Generated {time}",
+      "masked": "ID and passport numbers are partly hidden and Screening Hold shows as Under review, because you don't have Blacklist View.",
+      "maskedShort": "IDs masked",
+      "sort": "Sort by {column}",
+      "range": "{from}–{to} of {total}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "openRequest": "Open request {id}"
+    },
+    "empty": {
+      "title": "Nothing to show",
+      "filtered": "Try a wider date range or fewer filters.",
+      "vettingStatus": "No requests were submitted in these dates.",
+      "timePerStage": "No request entered a stage in these dates.",
+      "lateRequests": "No open request is past its time limit. Everything is on time.",
+      "reviewerActivity": "No reviewer claimed or decided a request in these dates.",
+      "automation": "Nothing was decided by rule.",
+      "listMatches": "No list matches were found in these dates.",
+      "listEntries": "There are no list entries for this event.",
+      "activityLog": "No activity in these dates.",
+      "activityLogOne": "No history found for {id}. Check the request ID."
+    },
+    "phase2": {
+      "title": "Automation comes in Phase 2",
+      "body": "Auto-approval rules and fast-track are part of Phase 2, so no request is decided by rule yet. Once they are switched on, this report will show what was approved by rule, fast-tracked or rejected by rule.",
+      "badge": "Phase 2"
+    },
+    "download": {
+      "button": "Download",
+      "menu": "Download as",
+      "xlsx": "Excel (.xlsx)",
+      "xlsxHint": "Opens in Excel or Google Sheets",
+      "csv": "CSV (.csv)",
+      "csvHint": "A plain table, UTF-8",
+      "pdf": "PDF",
+      "pdfHint": "Opens the print dialog: choose Save as PDF",
+      "needsExport": "Needs Reports Export",
+      "phase2": "Nothing to download until Phase 2",
+      "logged": "Every download is logged.",
+      "done": "{count, plural, one {{report} downloaded: {n} row} other {{report} downloaded: {n} rows}}",
+      "printReady": "{report} is ready to print. Choose Save as PDF.",
+      "working": "Preparing…"
+    },
+    "print": {
+      "generatedBy": "Generated {time} by {name}",
+      "filters": "Filters"
+    },
+    "schedule": {
+      "button": "Email this report",
+      "title": "Email this report",
+      "description": "{report} will be emailed to {email} with the filters you have now.",
+      "frequency": "How often",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "weekday": "Day",
+      "hour": "Time (event time zone)",
+      "format": "File",
+      "ownerNote": "It runs with your access at the time it's sent. If you lose access to this report, the schedule pauses.",
+      "rangeNote": "Each email covers the same number of days as your date range, ending on the day it's sent.",
+      "save": "Save schedule",
+      "saved": "{report} will be emailed {when}.",
+      "dailyAt": "daily at {time}",
+      "weeklyAt": "every {day} at {time}"
+    },
+    "schedules": {
+      "title": "Scheduled reports",
+      "subtitle": "Reports emailed to you. They run with your access.",
+      "emptyTitle": "No scheduled reports",
+      "emptyBody": "Use Email this report to get a report daily or weekly.",
+      "next": "Next",
+      "last": "Last sent",
+      "never": "Not sent yet",
+      "active": "Active",
+      "paused": "Paused",
+      "pausedHint": "Paused because you no longer have access to this report.",
+      "delete": "Delete schedule for {report}",
+      "deleted": "Schedule deleted."
+    },
+    "emailFrequency": {
+      "daily": "daily",
+      "weekly": "weekly"
+    },
+    "formatShort": {
+      "csv": "CSV",
+      "xlsx": "Excel",
+      "pdf": "PDF"
+    },
+    "downloads": {
+      "title": "Downloads log",
+      "subtitle": "Every download is logged, including scheduled emails.",
+      "empty": "No downloads yet.",
+      "who": "Who",
+      "report": "Report",
+      "format": "File",
+      "rows": "Rows",
+      "ids": "IDs",
+      "when": "When",
+      "masked": "Masked",
+      "full": "Full",
+      "count": "{count, plural, one {Latest {n} download} other {Latest {n} downloads}}"
+    },
+    "errors": {
+      "forbidden": "You can't open this report.",
+      "noExport": "You need Reports Export to download or schedule reports.",
+      "invalid": "Check the schedule settings and try again.",
+      "notFound": "That schedule no longer exists."
+    },
+    "cell": {
+      "system": "System",
+      "attendee": "Attendee",
+      "hours": "{n} h"
+    },
+    "outcome": {
+      "approve": "Approved",
+      "reject": "Rejected",
+      "moreInfo": "More info asked",
+      "escalate": "Escalated",
+      "returned": "Returned"
+    },
+    "list": {
+      "blacklist": "Blacklist",
+      "watchlist": "Watchlist"
+    },
+    "matchStatus": {
+      "open": "Waiting for decision",
+      "confirmed": "Confirmed",
+      "cleared": "Cleared"
+    },
+    "strength": {
+      "strong": "Strong",
+      "possible": "Possible"
+    },
+    "field": {
+      "fullName": "Full name",
+      "nationalId": "National ID / Iqama",
+      "passportNo": "Passport number",
+      "nationality": "Nationality",
+      "dob": "Date of birth",
+      "email": "Email",
+      "mobile": "Mobile",
+      "company": "Company"
+    },
+    "action": {
+      "submitted": "Registration submitted",
+      "screened": "Screening completed",
+      "routed": "Routed to a team",
+      "claimed": "Claimed",
+      "released": "Released",
+      "approved_stage": "Stage approved",
+      "rejected": "Rejected",
+      "more_info_requested": "More information asked",
+      "more_info_received": "More information received",
+      "escalated": "Escalated",
+      "reassigned": "Reassigned",
+      "commented": "Comment added",
+      "screening_hold": "Placed on screening hold",
+      "match_cleared": "Match cleared",
+      "match_confirmed": "Blacklist match confirmed",
+      "final_approved": "Final approval",
+      "limit_reached": "Registration limit reached",
+      "badge_issued": "Badge issued",
+      "badge_suspended": "Badge suspended",
+      "document_downloaded": "Document downloaded",
+      "withdrawn": "Withdrawn",
+      "watchlist_marked": "Marked by the watchlist",
+      "field_corrected": "Field corrected",
+      "reopened": "Reopened",
+      "configuration_error": "Configuration error",
+      "badge_printed": "Badge produced",
+      "badge_blocked": "Badge refused",
+      "place_released": "Place freed"
+    },
+    "columns": {
+      "vettingStatus": {
+        "request": "Request",
+        "attendee": "Attendee",
+        "registration": "Registration",
+        "badgeType": "Badge type",
+        "registrationStatus": "Registration status",
+        "payment": "Payment",
+        "vettingStatus": "Vetting status",
+        "badgeStatus": "Badge status",
+        "nationalId": "National ID",
+        "passportNo": "Passport",
+        "submitted": "Submitted",
+        "decided": "Decided"
+      },
+      "timePerStage": {
+        "request": "Request",
+        "stage": "Stage",
+        "team": "Team",
+        "reviewer": "Reviewer",
+        "entered": "Entered",
+        "completed": "Completed",
+        "hours": "Hours",
+        "outcome": "Outcome"
+      },
+      "lateRequests": {
+        "request": "Request",
+        "attendee": "Attendee",
+        "status": "Status",
+        "stage": "Stage",
+        "team": "Team",
+        "owner": "Claimed by",
+        "timeLimit": "Time limit (h)",
+        "waiting": "Waiting (h)",
+        "overdue": "Overdue (h)"
+      },
+      "reviewerActivity": {
+        "reviewer": "Reviewer",
+        "claims": "Claimed",
+        "decisions": "Decisions",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "moreInfo": "More info",
+        "escalated": "Escalated",
+        "avgHours": "Average hours"
+      },
+      "automation": {
+        "request": "Request",
+        "rule": "Rule",
+        "result": "Result",
+        "at": "When"
+      },
+      "listMatches": {
+        "request": "Request",
+        "list": "List",
+        "entry": "Entry",
+        "matchType": "Match type",
+        "field": "Matched field",
+        "score": "Score",
+        "strength": "Strength",
+        "status": "Status",
+        "found": "Found",
+        "decidedBy": "Decided by",
+        "decided": "Decided"
+      },
+      "listEntries": {
+        "entry": "Entry",
+        "list": "List",
+        "name": "Name",
+        "idNumber": "ID number",
+        "reason": "Reason",
+        "level": "Level",
+        "status": "Status",
+        "starts": "Starts",
+        "ends": "Ends"
+      },
+      "activityLog": {
+        "at": "When",
+        "request": "Request",
+        "actor": "By",
+        "action": "Action",
+        "from": "From status",
+        "to": "To status",
+        "remarks": "Remarks"
+      }
+    }
+  }
+}

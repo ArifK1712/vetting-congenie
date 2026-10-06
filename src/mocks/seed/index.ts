@@ -27,7 +27,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 12;
+export const SCHEMA_VERSION = 13;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -129,6 +129,8 @@ export function createSeed(now: number = Date.now()): Database {
       ]),
     ),
     registrationHistory: {},
+    reportDownloads: {},
+    reportSchedules: {},
     teams: byId(teams),
     teamHistory: byId(teamHistory),
     workflows: byId(workflows),

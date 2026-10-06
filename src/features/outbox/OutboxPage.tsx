@@ -6,15 +6,19 @@ import { useMemo, useState } from "react";
 import { PAGE } from "@/design/layout";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SingleFilter } from "@/components/ui/FilterMenu";
-import type { EmailOutboxItem } from "@/domain/types";
+import { REPORT_KEYS } from "@/domain/reports";
+import type { EmailOutboxItem, ReportFormat, ReportKey } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useDb } from "@/store/app";
 
-const TEMPLATES = ["submitted", "more_info", "more_info_reminder", "approved", "rejected", "watchlist_match", "blacklist_entry_waiting", "blacklist_match", "badge_suspended", "configuration_error", "new_question"] as const;
+const TEMPLATES = ["submitted", "more_info", "more_info_reminder", "approved", "rejected", "watchlist_match", "blacklist_entry_waiting", "blacklist_match", "badge_suspended", "configuration_error", "new_question", "report_scheduled"] as const;
 type Template = (typeof TEMPLATES)[number];
 const known = (t: string): t is Template => (TEMPLATES as readonly string[]).includes(t);
+const isReportKey = (v: string | undefined): v is ReportKey => !!v && (REPORT_KEYS as string[]).includes(v);
+const isFrequency = (v: string | undefined): v is "daily" | "weekly" => v === "daily" || v === "weekly";
+const isFormat = (v: string | undefined): v is ReportFormat => v === "csv" || v === "xlsx" || v === "pdf";
 
 /** Where the email's button leads: the attendee portal for attendees, the app for staff. */
 function linkOf(m: EmailOutboxItem): string | null {
@@ -26,6 +30,8 @@ function linkOf(m: EmailOutboxItem): string | null {
     case "approved":
     case "rejected":
       return m.requestId ? `/portal/status/${m.requestId}` : null;
+    case "report_scheduled":
+      return "/reports";
     case "new_question":
       return m.params.registrationId ? `/registrations/${m.params.registrationId}` : "/registrations";
     case "blacklist_entry_waiting":
@@ -123,8 +129,11 @@ export function OutboxPage() {
 
 function Preview({ m, isStaff }: { m: EmailOutboxItem; isStaff: boolean }) {
   const t = useTranslations("outbox");
+  const tr = useTranslations("reports");
   const fmt = useFormat();
   const link = linkOf(m);
+  // Scheduled reports: report and frequency are codes, worded here.
+  const report = m.template === "report_scheduled" ? m.params : null;
   const tpl = known(m.template) ? m.template : null;
   const params = {
     name: m.params.name ?? "",
@@ -134,6 +143,10 @@ function Preview({ m, isStaff }: { m: EmailOutboxItem; isStaff: boolean }) {
     level: m.params.level ?? "",
     registration: m.params.registration ?? "",
     question: m.params.question ?? "",
+    report: report && isReportKey(report.report) ? tr(`names.${report.report}`) : (m.params.report ?? ""),
+    frequency: report && isFrequency(report.frequency) ? tr(`emailFrequency.${report.frequency}`) : (m.params.frequency ?? ""),
+    format: report && isFormat(report.format) ? tr(`formatShort.${report.format}`) : (m.params.format ?? ""),
+    rows: m.params.rows ? fmt.number(Number(m.params.rows)) : "",
   };
   const external = !isStaff;
   return (
