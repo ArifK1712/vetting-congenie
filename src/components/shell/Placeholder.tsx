@@ -4,7 +4,9 @@ import { Construction } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PAGE } from "@/design/layout";
 import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/cn";
 
 /** Stand-in for areas scheduled in later build steps. */
 export type PlaceholderArea =
@@ -15,7 +17,7 @@ export function Placeholder({ area }: { area: PlaceholderArea }) {
   const t = useTranslations("placeholder");
   const nav = useTranslations("navigation");
   return (
-    <div className="mx-auto max-w-3xl px-8 pt-16">
+    <div className={cn(PAGE, "max-w-3xl pb-12")}>
       <EmptyState
         icon={Construction}
         title={t("title", { area: nav(area) })}

@@ -1,5 +1,5 @@
-import { Placeholder } from "@/components/shell/Placeholder";
+import { SimulatePage } from "@/features/simulate/SimulatePage";
 
 export default function Page() {
-  return <Placeholder area="simulate" />;
+  return <SimulatePage />;
 }

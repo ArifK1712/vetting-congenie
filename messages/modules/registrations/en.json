@@ -1,0 +1,243 @@
+{
+  "registrations": {
+    "title": "Registrations",
+    "subtitle": "Turn vetting on per registration, check that every badge type has a workflow, and link the form questions vetting relies on.",
+    "noAccessTitle": "You can't manage registration vetting",
+    "noAccessBody": "Ask a vetting administrator for the Registration vetting settings permission.",
+    "summary": {
+      "registrations": "Registrations",
+      "registrationsHint": "{count, plural, one {Across {n} event} other {Across {n} events}}",
+      "vettingOn": "Vetting on",
+      "vettingOnHint": "{count, plural, =0 {All registrations vetted} one {{n} with vetting off} other {{n} with vetting off}}",
+      "attention": "Need setup",
+      "attentionHint": "Uncovered badge types or no strong identifier",
+      "attentionNone": "Every registration is ready",
+      "hidden": "Hidden new questions",
+      "hiddenHint": "Not visible to any team yet",
+      "hiddenNone": "No new questions waiting"
+    },
+    "search": "Search registrations",
+    "filters": {
+      "vetting": "Vetting",
+      "any": "Any",
+      "on": "On",
+      "off": "Off",
+      "reset": "Reset"
+    },
+    "showing": "{shown} of {total}",
+    "columns": {
+      "registration": "Registration",
+      "badgeTypes": "Badge types",
+      "vetting": "Vetting",
+      "coverage": "Coverage",
+      "checks": "Checks",
+      "requests": "Requests"
+    },
+    "vettingOn": "Vetting on",
+    "vettingOff": "Vetting off",
+    "coverage": {
+      "covered": "{count, plural, one {{covered} of {n} badge type covered} other {{covered} of {n} badge types covered}}",
+      "needsChoice": "{count, plural, one {{n} needs a choice} other {{n} need a choice}}",
+      "noVetting": "{count, plural, one {{n} without vetting} other {{n} without vetting}}",
+      "blocked": "{count, plural, one {{n} blocked} other {{n} blocked}}"
+    },
+    "idsOk": "ID check ready",
+    "noStrongId": "No strong identifier",
+    "newHidden": "{count, plural, one {{n} new question hidden} other {{n} new questions hidden}}",
+    "requests": "{count, plural, =0 {No requests} one {{n} request} other {{n} requests}}",
+    "empty": {
+      "title": "No registrations match",
+      "body": "Try another search or clear the filters.",
+      "scopeTitle": "No registrations in this event",
+      "scopeBody": "Choose another event, or All events, in the header."
+    },
+    "footnote": "Open a registration to change its vetting settings and form questions.",
+    "detail": {
+      "back": "Registrations",
+      "notFound": "This registration doesn't exist",
+      "event": "Event",
+      "requests": "{count, plural, =0 {No vetting requests yet} one {{n} vetting request} other {{n} vetting requests}}",
+      "updated": "Settings saved {time} by {name}",
+      "neverUpdated": "Settings unchanged since the registration was set up",
+      "tabs": {
+        "vetting": "Vetting",
+        "questions": "Form questions",
+        "history": "History"
+      }
+    },
+    "save": {
+      "unsaved": "Unsaved changes",
+      "unsavedHint": "Saving affects new registrations only.",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "discard": "Discard",
+      "fixFirst": "{count, plural, one {Fix {n} issue to save} other {Fix {n} issues to save}}",
+      "saved": "Vetting settings saved",
+      "stale": "Someone changed these settings in another session. Load the latest version before saving.",
+      "loadLatest": "Load latest",
+      "errors": {
+        "notAllowed": "You no longer have permission to change these settings.",
+        "stale": "These settings changed in another session. Load the latest version and try again.",
+        "invalid": "Some settings need fixing before they can be saved.",
+        "notFound": "This registration no longer exists.",
+        "emptyLabel": "Enter the question in English.",
+        "noOptions": "Add at least two options."
+      }
+    },
+    "issues": {
+      "title": "Before you can save",
+      "noFullName": "Link Full name to a form question before saving.",
+      "noStrongId": "Link Full name and one ID (National ID / Iqama, or Passport + Nationality) before saving.",
+      "noDob": "Date of birth isn't linked. List checks will be less precise.",
+      "uncoveredBadge": "Choose No vetting or Block for {badgeType}: it has no workflow allotted.",
+      "duplicateIdField": "{field} is linked to a question that already holds another identifier.",
+      "blacklistOffNotAllowed": "Only users with Blacklist approval can turn blacklist screening off.",
+      "goTo": "Go to {tab}"
+    },
+    "vetting": {
+      "status": {
+        "title": "Vetting",
+        "subtitle": "When vetting is on, every new registration becomes a vetting request before a badge is issued.",
+        "enabled": "Vetting enabled",
+        "onHint": "New registrations go through the allotted workflow.",
+        "offHint": "Off keeps the current registration and badge process.",
+        "note": "Changes here affect only new registrations. Requests already submitted are never changed."
+      },
+      "coverage": {
+        "title": "Badge type coverage",
+        "subtitle": "Each request uses exactly one workflow: the one allotted to its registration and badge type.",
+        "badgeType": "Badge type",
+        "workflow": "Allotted workflow",
+        "version": "{name} (Version {n})",
+        "none": "No workflow allotted",
+        "allot": "Allot workflow",
+        "choice": "Without a workflow",
+        "noVetting": "No vetting",
+        "block": "Block submissions until a workflow is allotted",
+        "noVettingHint": "The badge follows the normal process.",
+        "blockHint": "Attendees can't submit this badge type until a workflow is allotted.",
+        "required": "Required choice"
+      },
+      "screening": {
+        "title": "List screening",
+        "subtitle": "Every new request is checked against the blacklist and watchlist before review.",
+        "blacklist": "Blacklist screening",
+        "blacklistHint": "On by default when vetting is on.",
+        "blacklistLocked": "Only users with Blacklist approval can turn blacklist screening off.",
+        "matchAction": "Blacklist match action",
+        "hold": "Hold for confirmation",
+        "holdHint": "The request waits in Screening Hold until a compliance officer confirms or clears the match.",
+        "autoReject": "Auto-reject on exact identifier match",
+        "autoRejectHint": "Rejected straight away only when the National ID / Iqama or passport number matches exactly. Name matches are still held.",
+        "default": "Default",
+        "watchlist": "Watchlist screening",
+        "watchlistHint": "On by default. Matches are flagged for reviewers and the request carries on as normal.",
+        "inactive": "These settings apply once vetting is on."
+      },
+      "message": {
+        "title": "Applicant message on rejection",
+        "subtitle": "The email the attendee receives when their registration is rejected.",
+        "template": "Template",
+        "preview": "Preview",
+        "safe": "Never reveals blacklist or watchlist details, or which stage rejected the registration.",
+        "templates": {
+          "tpl_reject_default": "Standard rejection message",
+          "tpl_reject_brief": "Brief notice"
+        },
+        "bodies": {
+          "tpl_reject_default": "Dear {name},\n\nThank you for registering for {event}. After reviewing your application, we are unable to issue a badge for this event.\n\nIf you have any questions, please contact the organising team.\n\nKind regards,\nThe {event} team",
+          "tpl_reject_brief": "Dear {name},\n\nYour registration for {event} could not be approved.\n\nThe {event} team"
+        },
+        "sampleName": "Attendee name"
+      }
+    },
+    "questions": {
+      "mapping": {
+        "title": "ID fields for the list check",
+        "rule": "Vetting can't be saved until Full name and one ID are linked: National ID / Iqama, or Passport number together with Nationality. Date of birth is recommended.",
+        "linked": "Linked",
+        "missing": "Not linked",
+        "off": "Turn vetting on in the Vetting tab to choose which questions are used in vetting and which hold identifiers.",
+        "openVetting": "Open Vetting"
+      },
+      "title": "Form questions",
+      "subtitle": "Vetting uses the answers from the registration form directly. There is no separate vetting form.",
+      "add": "Add question",
+      "standard": "Attendee details",
+      "standardHint": "Standard questions on every form. They fill the attendee profile.",
+      "custom": "Registration questions",
+      "customHint": "Questions this registration asks. Use them in team and workflow conditions.",
+      "noCustom": "This registration has no questions of its own yet.",
+      "required": "Required",
+      "useInVetting": "Use in vetting",
+      "useInVettingFor": "Use {question} in vetting",
+      "profileDetail": "Always available",
+      "notForVetting": "Not for conditions",
+      "idField": "ID field for list check",
+      "idFieldFor": "ID field for {question}",
+      "idNone": "Not an ID field",
+      "idUnavailable": "Can't hold an ID",
+      "visibleTo": "{count, plural, =0 {Hidden from every team} one {Visible to {n} team} other {Visible to {n} teams}}",
+      "newHidden": "New · hidden from every team",
+      "grantAccess": "Grant access in Teams → Field access",
+      "added": "Added {date}",
+      "types": {
+        "text": "Short text",
+        "longText": "Long text",
+        "number": "Number",
+        "date": "Date",
+        "singleChoice": "Single choice",
+        "multiChoice": "Multiple choice",
+        "upload": "File upload"
+      },
+      "fields": {
+        "fullName": "Full name",
+        "nationalId": "National ID / Iqama",
+        "passportNo": "Passport number",
+        "nationality": "Nationality",
+        "dob": "Date of birth",
+        "email": "Email",
+        "mobile": "Mobile",
+        "company": "Company"
+      },
+      "dialog": {
+        "title": "Add a question",
+        "description": "The question is added to the live registration form.",
+        "labelEn": "Question (English)",
+        "labelAr": "Question (Arabic)",
+        "optional": "Optional",
+        "labelPlaceholder": "e.g. Purpose of visit",
+        "type": "Answer type",
+        "options": "Options",
+        "optionsHint": "At least two",
+        "optionEn": "Option {n} (English)",
+        "optionAr": "Option {n} (Arabic)",
+        "addOption": "Add option",
+        "removeOption": "Remove option {n}",
+        "hiddenNote": "New questions are hidden from every team until you grant access in Teams → Field access. Vetting administrators are alerted.",
+        "confirm": "Add question",
+        "added": "Question added. It is hidden from every team until access is granted."
+      }
+    },
+    "history": {
+      "empty": "No changes yet",
+      "emptyBody": "Changes to vetting settings and new form questions appear here.",
+      "vetting_enabled": "turned vetting on",
+      "vetting_disabled": "turned vetting off",
+      "settings_saved": "saved the vetting settings",
+      "question_added": "added the question {question}",
+      "keys": {
+        "enabled": "Vetting enabled",
+        "uncoveredBadgeBehaviour": "Badge types with no workflow",
+        "blacklistScreening": "Blacklist screening",
+        "blacklistMatchAction": "Blacklist match action",
+        "watchlistScreening": "Watchlist screening",
+        "rejectionTemplateId": "Rejection message",
+        "idFields": "ID fields",
+        "vettingQuestions": "Use in vetting"
+      },
+      "unknownQuestion": "a question that no longer exists",
+      "unknownUser": "Someone"
+    }
+  }
+}

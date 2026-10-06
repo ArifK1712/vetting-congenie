@@ -1,6 +1,7 @@
 import { Tx } from "./actions";
 import { can, teamsOfUser } from "./permissions";
 import { isLate } from "./queue";
+import { hiddenNewQuestions } from "./registrations";
 import { OPEN_STATUSES } from "./status";
 import type { Database, ID } from "./types";
 
@@ -19,7 +20,9 @@ export type AlertKind =
   | "entryWaiting" // blacklist approver: entry or change waiting (not mine)
   | "blacklistMatch" // blacklist approver: new open match
   | "watchlistMatch" // chosen on a watchlist entry
-  | "badgeSuspended"; // event admins
+  | "badgeSuspended" // event admins
+  | "configError" // vetting admins: a registration found no valid workflow
+  | "newQuestion"; // vetting admins: a form question no team can see yet (AC29)
 
 export interface Alert {
   id: string;
@@ -28,6 +31,7 @@ export interface Alert {
   requestId?: ID;
   entryId?: ID;
   teamId?: ID;
+  registrationId?: ID;
   actorId?: ID | "system" | "attendee";
   count?: number;
   /** Where clicking the alert goes (app path, without locale). */
@@ -65,6 +69,9 @@ export function alertsFor(db: Database, userId: ID, now: number): Alert[] {
     if (h.action === "more_info_received" && r.currentTeamId && myTeams.has(r.currentTeamId)) {
       out.push({ id: `answers:${h.id}`, kind: "answers", at: h.at, requestId: r.id, teamId: r.currentTeamId, href: `/requests/${r.id}` });
     }
+    if (h.action === "configuration_error" && admin) {
+      out.push({ id: `config:${h.id}`, kind: "configError", at: h.at, requestId: r.id, href: `/requests/${r.id}` });
+    }
     if (h.action === "badge_suspended" && admin) {
       out.push({ id: `badge:${h.id}`, kind: "badgeSuspended", at: h.at, requestId: r.id, entryId: h.remarks, href: `/requests/${r.id}` });
     }
@@ -88,6 +95,13 @@ export function alertsFor(db: Database, userId: ID, now: number): Alert[] {
     if (!e || e.onMatch !== "markEmail") continue;
     if (e.notify.includes(userId) || e.notify.some((id) => myTeams.has(id))) {
       out.push({ id: `wl:${m.id}`, kind: "watchlistMatch", at: m.foundAt, requestId: m.requestId, entryId: m.entryId, href: `/requests/${m.requestId}` });
+    }
+  }
+
+  if (admin) {
+    for (const { registrationId, question } of hiddenNewQuestions(db)) {
+      if (!question.addedAt || Date.parse(question.addedAt) < since) continue;
+      out.push({ id: `q:${registrationId}:${question.id}`, kind: "newQuestion", at: question.addedAt, registrationId, actorId: question.addedBy, href: `/registrations/${registrationId}?tab=questions` });
     }
   }
 

@@ -1,3 +1,4 @@
+import { canUseInVetting, DEFAULT_ID_FIELDS } from "@/domain/registrations";
 import { routeStage } from "@/domain/routing";
 import { screenProfile, type MatchCandidate } from "@/domain/screening";
 import { nodeById, requestPath, type StageNode } from "@/domain/workflow";
@@ -26,7 +27,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -112,15 +113,22 @@ export function createSeed(now: number = Date.now()): Database {
         r.id,
         {
           registrationId: r.id,
-          enabled: true,
+          // REF Visitor shows a registration not yet set up: vetting off, only name and email linked (AC23).
+          enabled: r.id !== "reg_ref_visitor",
           uncoveredBadgeBehaviour: {},
           blacklistScreening: true,
           blacklistMatchAction: "hold",
           watchlistScreening: true,
           rejectionTemplateId: "tpl_reject_default",
+          idFields: r.id === "reg_ref_visitor" ? { fullName: DEFAULT_ID_FIELDS.fullName, email: DEFAULT_ID_FIELDS.email } : { ...DEFAULT_ID_FIELDS },
+          vettingQuestions: r.questions.filter(canUseInVetting).map((q) => q.id),
+          revision: 1,
+          updatedAt: null,
+          updatedBy: null,
         },
       ]),
     ),
+    registrationHistory: {},
     teams: byId(teams),
     teamHistory: byId(teamHistory),
     workflows: byId(workflows),

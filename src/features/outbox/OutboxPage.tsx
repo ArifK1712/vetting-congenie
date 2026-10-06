@@ -3,6 +3,7 @@
 import { ExternalLink, Inbox, Mail, Search, UserRound, UsersRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { PAGE } from "@/design/layout";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SingleFilter } from "@/components/ui/FilterMenu";
 import type { EmailOutboxItem } from "@/domain/types";
@@ -11,7 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useDb } from "@/store/app";
 
-const TEMPLATES = ["more_info", "more_info_reminder", "approved", "rejected", "watchlist_match", "blacklist_entry_waiting", "blacklist_match", "badge_suspended"] as const;
+const TEMPLATES = ["submitted", "more_info", "more_info_reminder", "approved", "rejected", "watchlist_match", "blacklist_entry_waiting", "blacklist_match", "badge_suspended", "configuration_error", "new_question"] as const;
 type Template = (typeof TEMPLATES)[number];
 const known = (t: string): t is Template => (TEMPLATES as readonly string[]).includes(t);
 
@@ -21,9 +22,12 @@ function linkOf(m: EmailOutboxItem): string | null {
     case "more_info":
     case "more_info_reminder":
       return m.params.token ? `/portal/info/${m.params.token}` : null;
+    case "submitted":
     case "approved":
     case "rejected":
       return m.requestId ? `/portal/status/${m.requestId}` : null;
+    case "new_question":
+      return m.params.registrationId ? `/registrations/${m.params.registrationId}` : "/registrations";
     case "blacklist_entry_waiting":
       return m.params.entry ? `/screening/blacklist/${m.params.entry}` : null;
     case "blacklist_match":
@@ -60,7 +64,7 @@ export function OutboxPage() {
   const name = (m: EmailOutboxItem) => (known(m.template) ? t(`templates.${m.template}.name`) : m.template);
 
   return (
-    <div className="mx-auto max-w-[96rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-12">
+    <div className={cn(PAGE, "pb-12")}>
       <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>
       <p className="mt-1.5 text-sm text-ink-2">{t("subtitle")}</p>
 
@@ -128,6 +132,8 @@ function Preview({ m, isStaff }: { m: EmailOutboxItem; isStaff: boolean }) {
     id: m.requestId ?? "",
     entry: m.params.entry ?? "",
     level: m.params.level ?? "",
+    registration: m.params.registration ?? "",
+    question: m.params.question ?? "",
   };
   const external = !isStaff;
   return (

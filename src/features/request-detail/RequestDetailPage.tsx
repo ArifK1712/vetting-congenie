@@ -3,6 +3,7 @@
 import { ChevronRight, ClipboardList, CornerDownLeft, ExternalLink, Eye, Gauge, Layers, RefreshCw, SearchX, ShieldAlert, UsersRound, Workflow, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
+import { PAGE } from "@/design/layout";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { DirIcon } from "@/components/ui/DirIcon";
@@ -109,7 +110,7 @@ export function RequestDetailPage({ id }: { id: ID }) {
   const stageName = view.stage ? fmt.text(view.stage.name) : null;
 
   return (
-    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-6 pb-16">
+    <div className={cn(PAGE, "pb-16")}>
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/queue" className="hover:text-accent-text">
           {t("backToQueue")}

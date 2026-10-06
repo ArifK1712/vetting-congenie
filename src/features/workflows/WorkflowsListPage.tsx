@@ -4,6 +4,7 @@ import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-tab
 import { CircleCheck, Copy, Eye, Lock, MoreHorizontal, Pencil, Plus, Power, Rocket, Search, SearchX, Share2, TriangleAlert, Workflow as WorkflowIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { PAGE } from "@/design/layout";
 import { Button } from "@/components/ui/Button";
 import { ActionDialog, DialogIcon } from "@/components/ui/Dialog";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -362,7 +363,7 @@ export function WorkflowsListPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-12">
+    <div className={cn(PAGE, "pb-12")}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">{t("list.title")}</h1>

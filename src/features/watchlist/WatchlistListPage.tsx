@@ -3,6 +3,7 @@
 import { CalendarClock, Eye, FileUp, Flag, Lock, MailCheck, MoreHorizontal, Pencil, Plus, Search, SearchX, ShieldBan, Trash2, TriangleAlert, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { PAGE } from "@/design/layout";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MultiFilter, SingleFilter } from "@/components/ui/FilterMenu";
@@ -108,7 +109,7 @@ export function WatchlistListPage() {
   const addStage = active.filter((e) => e.onMatch === "markStage").length;
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-7 pb-12">
+    <div className={cn(PAGE, "pb-12")}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">{tl("title")}</h1>

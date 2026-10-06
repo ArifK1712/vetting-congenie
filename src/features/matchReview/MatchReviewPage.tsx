@@ -4,6 +4,7 @@ import { BadgeX, Check, CheckCircle2, Clock, FileText, Hourglass, Inbox, Loader2
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, type ReactNode } from "react";
+import { PAGE } from "@/design/layout";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -338,7 +339,7 @@ export function MatchReviewPage() {
   const columns = [t("decided.colRequest"), t("decided.colApplicant"), t("decided.colEntry"), t("decided.colMatch"), t("decided.colDecision"), t("decided.colBy"), t("decided.colNote")];
 
   return (
-    <div className="mx-auto max-w-[96rem] px-7 pt-7 pb-12">
+    <div className={cn(PAGE, "pb-12")}>
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>
         <p className="mt-1.5 text-sm text-ink-2">{t("subtitle")}</p>

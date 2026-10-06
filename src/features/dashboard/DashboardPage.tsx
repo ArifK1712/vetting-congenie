@@ -3,6 +3,7 @@
 import { BadgeCheck, ChevronRight, Clock, Eye, Gauge, Hourglass, Layers, Lock, ShieldAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { PAGE } from "@/design/layout";
 import { Avatar } from "@/components/ui/Avatar";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -72,7 +73,7 @@ export function DashboardPage() {
   const shownStatuses = STATUS_ORDER.filter((s) => s !== "configuration_error" && (s !== "screening_hold" || viewer.can("blacklist.view")));
 
   return (
-    <div className="mx-auto max-w-[96rem] space-y-5 px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-16">
+    <div className={cn(PAGE, "space-y-5 pb-16")}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>

@@ -4,6 +4,8 @@ import { ChevronLeft, ChevronRight, Inbox, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { PAGE } from "@/design/layout";
+import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -115,7 +117,7 @@ export function QueuePage() {
 
   return (
     <div className="flex min-h-full lg:h-full lg:min-h-0">
-      <div className="flex min-w-0 flex-1 flex-col gap-4 px-4 sm:gap-5 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-6">
+      <div className={cn(PAGE, "flex min-w-0 flex-1 flex-col gap-4 pb-6 sm:gap-5")}>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink">{t("title")}</h1>

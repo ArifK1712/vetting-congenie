@@ -365,7 +365,8 @@
         "screening_review": "Screening review",
         "watchlist_marked": "Marked by the watchlist ({level})",
         "field_corrected": "Corrected {field}",
-        "reopened": "Reopened the request"
+        "reopened": "Reopened the request",
+        "configuration_error": "No valid workflow found: Configuration Error"
       },
       "screenedDetail": "{blacklist, plural, =0 {No blacklist matches} one {1 blacklist match} other {{b} blacklist matches}}, {watchlist, plural, =0 {no watchlist matches} one {1 watchlist match} other {{w} watchlist matches}}",
       "reassignedTo": "Assigned to {name}",
@@ -1126,7 +1127,9 @@
       "entryWaiting": "{entry} from {name} is waiting for your approval",
       "blacklistMatch": "Blacklist match on {id} ({entry}): decide in Match Review",
       "watchlistMatch": "Watchlist match on {id} ({entry})",
-      "badgeSuspended": "Badge suspended for {id} after {entry} was approved"
+      "badgeSuspended": "Badge suspended for {id} after {entry} was approved",
+      "configError": "{id} is in Configuration Error: no valid workflow",
+      "newQuestion": "New question on {registration}: hidden from every team until access is granted"
     }
   },
   "outbox": {
@@ -1199,6 +1202,24 @@
         "subject": "Badge suspended for {id}",
         "body": "Blacklist entry {entry} matched an approved attendee. Their badge is suspended until the match is decided in Match Review.",
         "button": "Open Match Review"
+      },
+      "submitted": {
+        "name": "Submitted for review",
+        "subject": "Your registration has been submitted for review",
+        "body": "Hello {name}, thank you for registering. Your registration has been submitted for review. We'll email you when there's an update.",
+        "button": "View my registration"
+      },
+      "configuration_error": {
+        "name": "Configuration error",
+        "subject": "Request {id} can't be routed",
+        "body": "A registration for {registration} was saved, but no valid workflow was found for its badge type, so request {id} is in Configuration Error. Allot a workflow to continue.",
+        "button": "Open the request"
+      },
+      "new_question": {
+        "name": "New form question",
+        "subject": "New question on {registration}",
+        "body": "The question “{question}” was added to {registration}. It's hidden from every team until you grant access in Teams → Field access.",
+        "button": "Open the registration"
       }
     }
   }

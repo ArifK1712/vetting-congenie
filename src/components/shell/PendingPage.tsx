@@ -12,7 +12,7 @@ export function skeletonFor(path: string): ReactNode {
   if (p === "/queue") return <QueueSkeleton />;
   if (/^\/workflows\/[^/]+$/.test(p)) return <BuilderSkeleton />;
   if (/\/(new|edit|import)$/.test(p) || p === "/settings" || p === "/dev/simulate") return <FormSkeleton />;
-  if (/^\/(requests|teams|screening\/blacklist|screening\/watchlist)\/[^/]+$/.test(p)) return <DetailSkeleton />;
+  if (/^\/(requests|teams|registrations|screening\/blacklist|screening\/watchlist)\/[^/]+$/.test(p)) return <DetailSkeleton />;
   return <ListSkeleton />;
 }
 

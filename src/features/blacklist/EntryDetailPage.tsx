@@ -3,6 +3,7 @@
 import { CheckCircle2, ChevronRight, FileText, History, Hourglass, Lock, MoreHorizontal, Pencil, ScanSearch, SearchX, ShieldBan, Trash2, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
+import { PAGE } from "@/design/layout";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
@@ -177,7 +178,7 @@ export function EntryDetailPage({ id }: { id: ID }) {
   const name = displayName(entry);
 
   return (
-    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-6 pb-16">
+    <div className={cn(PAGE, "pb-16")}>
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/screening/blacklist" className="hover:text-accent-text">
           {t("breadcrumb")}

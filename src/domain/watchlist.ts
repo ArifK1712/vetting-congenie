@@ -192,14 +192,14 @@ function markRequests(tx: Tx, entry: WatchlistEntry, actorId: ID, now: number) {
     });
     refreshLevel(tx, hit.requestId);
     tx.log({ requestId: hit.requestId, action: "watchlist_marked", actorId, remarks: entry.id, meta: { level: entry.level } });
-    if (entry.onMatch === "markEmail") notify(tx, entry, hit.requestId);
+    if (entry.onMatch === "markEmail") notifyWatchers(tx, entry, hit.requestId);
     marked++;
   }
   return marked;
 }
 
 /** "Mark and send email": internal alert to the chosen users and every member of the chosen teams. */
-function notify(tx: Tx, entry: WatchlistEntry, requestId: ID) {
+export function notifyWatchers(tx: Tx, entry: WatchlistEntry, requestId: ID) {
   const people = new Set<ID>();
   for (const id of entry.notify) {
     if (tx.db.users[id]) people.add(id);

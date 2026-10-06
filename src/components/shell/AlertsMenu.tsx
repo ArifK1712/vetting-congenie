@@ -1,7 +1,7 @@
 "use client";
 
 import * as Popover from "@radix-ui/react-popover";
-import { AlarmClock, ArrowUpRight, BadgeX, Bell, CheckCheck, Eye, Inbox, MessageSquareReply, ShieldAlert, ShieldBan, UserRoundCog, type LucideIcon } from "lucide-react";
+import { AlarmClock, ArrowUpRight, BadgeX, Bell, CheckCheck, Eye, FilePlus2, Inbox, MessageSquareReply, ShieldAlert, ShieldBan, TriangleAlert, UserRoundCog, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { usePortalContainer } from "@/components/ui/portal";
@@ -23,6 +23,8 @@ const ICON: Record<AlertKind, { icon: LucideIcon; tone: string }> = {
   blacklistMatch: { icon: ShieldAlert, tone: "bg-rose-50 text-rose-600" },
   watchlistMatch: { icon: Eye, tone: "bg-amber-50 text-amber-600" },
   badgeSuspended: { icon: BadgeX, tone: "bg-rose-50 text-rose-600" },
+  configError: { icon: TriangleAlert, tone: "bg-orange-50 text-orange-600" },
+  newQuestion: { icon: FilePlus2, tone: "bg-violet-50 text-violet-600" },
 };
 
 /** The header bell: alerts for the current persona (spec 16, in-app). */
@@ -42,7 +44,7 @@ export function AlertsMenu() {
     const name = a.actorId && a.actorId !== "system" && a.actorId !== "attendee" ? (db.users[a.actorId]?.name ?? "") : "";
     // IDs are Latin: isolate them so Arabic punctuation around them stays in place.
     const iso = (v?: string) => (v ? `⁨${v}⁩` : "");
-    return t(`kinds.${a.kind}`, { id: iso(a.requestId), team, name: iso(name), entry: iso(a.entryId), count: a.count ?? 0, n: fmt.number(a.count ?? 0) });
+    return t(`kinds.${a.kind}`, { id: iso(a.requestId), team, name: iso(name), entry: iso(a.entryId), count: a.count ?? 0, n: fmt.number(a.count ?? 0), registration: a.registrationId ? fmt.text(db.registrations[a.registrationId]?.name) : "" });
   };
 
   const markRead = () => {

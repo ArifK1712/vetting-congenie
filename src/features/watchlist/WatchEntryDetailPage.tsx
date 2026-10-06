@@ -3,6 +3,7 @@
 import { ChevronRight, CircleSlash, Eye, FileText, Flag, History, Lock, MailCheck, MessageSquareText, MoreHorizontal, Pencil, SearchX, ShieldBan, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
+import { PAGE } from "@/design/layout";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
@@ -137,7 +138,7 @@ export function WatchEntryDetailPage({ id }: { id: ID }) {
     };
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-6 pb-16">
+    <div className={cn(PAGE, "pb-16")}>
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/screening/watchlist" className="hover:text-accent-text">
           {t("breadcrumb")}

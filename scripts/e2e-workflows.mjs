@@ -101,13 +101,15 @@ check("other tab sees the stale banner", true);
 check("other tab cannot save", await a.getByRole("button", { name: "Save draft" }).isDisabled());
 await b.close();
 
-// ─── 7. View only, and English in the Arabic app ────────────────────────
+// ─── 7. View only, and Workflows in Arabic ──────────────────────────────
 await setPersona(a, "u_daniel");
 await open(a, "/en/workflows/wf_vip", ".react-flow__node");
 check("view-only: no Edit button", (await a.getByRole("button", { name: "Edit workflow" }).count()) === 0);
 await open(a, "/ar/workflows");
 check("Workflows is in Arabic", /[؀-ۿ]/.test(await a.locator("main h1").innerText()));
-check("Workflows area is left-to-right", (await a.locator(".locale-en").first().getAttribute("dir")) === "ltr");
+check("Workflows page is right-to-left", (await a.locator("html").getAttribute("dir")) === "rtl");
+await open(a, "/ar/workflows/wf_vip", ".react-flow__node");
+check("builder canvas stays left-to-right", (await a.locator(".react-flow").first().getAttribute("dir")) === "ltr");
 
 console.log(results.join("\n"));
 console.log(errors.length ? `Page errors:\n${[...new Set(errors)].join("\n")}` : "No page errors");

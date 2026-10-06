@@ -4,6 +4,7 @@ import { Building2, ChevronRight, CircleAlert, CircleCheck, FileText, Info, Load
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useDeferredValue, useMemo, useRef, useState, type ReactNode } from "react";
+import { PAGE } from "@/design/layout";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -180,7 +181,7 @@ export function WatchEntryFormPage({ id }: { id: ID | null }) {
   };
 
   return (
-    <div className="mx-auto max-w-[88rem] px-7 pt-6 pb-16">
+    <div className={cn(PAGE, "pb-16")}>
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/screening/watchlist" className="hover:text-accent-text">
           {t("breadcrumb")}

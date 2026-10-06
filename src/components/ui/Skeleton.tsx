@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { CSSProperties, ReactNode } from "react";
+import { PAGE } from "@/design/layout";
 import { cn } from "@/lib/cn";
 
 /**
@@ -13,13 +14,13 @@ export function Bone({ className, style }: { className?: string; style?: CSSProp
   return <span aria-hidden style={style} className={cn("block animate-pulse bg-active", !className?.includes("rounded") && "rounded-md", className)} />;
 }
 
-function Frame({ wide, children }: { wide?: boolean; children: ReactNode }) {
+function Frame({ children }: { wide?: boolean; children: ReactNode }) {
   const t = useTranslations("common");
   return (
     <div
       role="status"
       aria-busy="true"
-      className={cn("mx-auto px-4 pt-5 pb-12 sm:px-6 lg:px-7 lg:pt-7", wide ? "max-w-[96rem]" : "max-w-[88rem]")}
+      className={cn(PAGE, "pb-12")}
     >
       <span className="sr-only">{t("loading")}</span>
       {children}

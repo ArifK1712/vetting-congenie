@@ -3,6 +3,7 @@
 import { ChevronRight, CircleAlert, CircleCheck, Download, FileSpreadsheet, FileUp, Loader2, Lock, RotateCcw, Sparkles, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
+import { PAGE } from "@/design/layout";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -122,7 +123,7 @@ export function ImportPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-6 pb-16">
+    <div className={cn(PAGE, "pb-16")}>
       <nav className="flex items-center gap-1.5 text-xs font-medium text-ink-3">
         <Link href="/screening/blacklist" className="hover:text-accent-text">
           {t("breadcrumb")}

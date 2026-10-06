@@ -76,6 +76,12 @@ export interface FormQuestion {
   label: LocalizedText;
   type: QuestionType;
   options?: { value: string; label: LocalizedText }[];
+  /** Standard attendee details (name, ID, email…) that fill the attendee profile. */
+  profileField?: keyof ApplicantProfile;
+  required?: boolean;
+  /** Added after the registration opened (AC29): hidden from every team until granted. */
+  addedAt?: ISODate;
+  addedBy?: ID;
 }
 
 export interface Registration {
@@ -107,6 +113,24 @@ export interface RegistrationVettingSettings {
   blacklistMatchAction: "hold" | "autoRejectExact";
   watchlistScreening: boolean;
   rejectionTemplateId: ID;
+  /** 15.1 "ID field for list check": which question holds each identifier. */
+  idFields: Partial<Record<ScreeningField, ID>>;
+  /** 15.1 "Use in vetting": questions usable in team/workflow conditions. */
+  vettingQuestions: ID[];
+  revision: number;
+  updatedAt: ISODate | null;
+  updatedBy: ID | null;
+}
+
+/** Who changed a registration's vetting settings or form, and what (spec 16 history). */
+export interface RegistrationHistoryEvent {
+  id: ID;
+  registrationId: ID;
+  action: "settings_saved" | "vetting_enabled" | "vetting_disabled" | "question_added";
+  actorId: ID;
+  at: ISODate;
+  /** Setting keys that changed, or the new question id. */
+  changes: string[];
 }
 
 // ─── Teams ───────────────────────────────────────────────────────────────
@@ -307,6 +331,8 @@ export interface Attendee {
   payment: Payment;
   registrationStatus: "submitted" | "confirmed" | "cancelled";
   submittedAt: ISODate;
+  /** Idempotency key of the form submission (AC05: a double submit creates one request). */
+  submissionKey?: string;
 }
 
 export type RequestStatus =
@@ -389,7 +415,8 @@ export type HistoryAction =
   | "withdrawn"
   | "watchlist_marked"
   | "field_corrected"
-  | "reopened";
+  | "reopened"
+  | "configuration_error";
 
 export interface HistoryEvent {
   id: ID;
@@ -613,6 +640,7 @@ export interface Database {
   badgeTypes: Record<ID, BadgeType>;
   registrations: Record<ID, Registration>;
   vettingSettings: Record<ID, RegistrationVettingSettings>;
+  registrationHistory: Record<ID, RegistrationHistoryEvent>;
   teams: Record<ID, Team>;
   teamHistory: Record<ID, TeamHistoryEvent>;
   workflows: Record<ID, Workflow>;

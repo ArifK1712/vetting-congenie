@@ -4,6 +4,7 @@ import { CalendarClock, CheckCircle2, Eye, FileUp, Hourglass, Inbox, Lock, MoreH
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { PAGE } from "@/design/layout";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -177,7 +178,7 @@ export function BlacklistListPage() {
   const decidingEntry = deciding ? db.blacklist[deciding.id] : null;
 
   return (
-    <div className="mx-auto max-w-[88rem] px-4 pt-5 sm:px-6 lg:px-7 lg:pt-7 pb-12">
+    <div className={cn(PAGE, "pb-12")}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink">{t("list.title")}</h1>
