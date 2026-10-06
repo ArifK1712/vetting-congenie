@@ -26,7 +26,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 11;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -134,6 +134,7 @@ export function createSeed(now: number = Date.now()): Database {
     comments: {},
     blacklist: {},
     blacklistHistory: {},
+    notificationReads: {},
     watchlist: {},
     watchlistHistory: {},
     matches: {},
@@ -750,6 +751,28 @@ export function createSeed(now: number = Date.now()): Database {
     if (e.status === "not_approved") logList({ entryId: e.id, action: "not_approved", actorId: e.proposedBy === "u_arif" ? "u_tariq" : "u_arif", at: iso(Date.parse(e.proposedAt) + DAY), note: e.decisionNote ?? undefined });
     if (e.removedBy && e.removedAt) logList({ entryId: e.id, action: "removed", actorId: e.removedBy, at: e.removedAt, note: e.removalReason ?? undefined });
     if (e.pendingChange) logList({ entryId: e.id, action: "change_proposed", actorId: e.pendingChange.proposedBy, at: e.pendingChange.proposedAt });
+  }
+
+  // ─── 5b. Email outbox: what the past decisions would have sent ───────
+  let mailSeq = 0;
+  const mail = (to: string, template: string, requestId: ID | null, at: string, params: Record<string, string>) => {
+    const mid = `mail_seed_${(++mailSeq).toString(36)}`;
+    db.outbox[mid] = { id: mid, to, template, requestId, sentAt: at, params };
+  };
+  for (const r of Object.values(db.requests)) {
+    const a = db.attendees[r.attendeeId];
+    if (!r.decidedAt || now - Date.parse(r.decidedAt) > 21 * DAY) continue;
+    if (r.status === "approved") mail(a.profile.email, "approved", r.id, r.decidedAt, { name: a.profile.fullName, badge: r.badgeStatus === "not_issued" ? "pendingPayment" : "yes" });
+    if (r.status === "rejected") mail(a.profile.email, "rejected", r.id, r.decidedAt, { name: a.profile.fullName });
+  }
+  for (const ir of Object.values(db.infoRequests)) {
+    const a = db.attendees[db.requests[ir.requestId].attendeeId];
+    mail(a.profile.email, "more_info", ir.requestId, ir.sentAt, { name: a.profile.fullName, token: ir.token, expires: ir.tokenExpiresAt });
+  }
+  const approvers = Object.values(db.users).filter((u) => db.roles[u.roleId]?.permissions.includes("blacklist.approve"));
+  for (const e of Object.values(db.blacklist)) {
+    if (e.status !== "pending_approval") continue;
+    for (const u of approvers) if (u.id !== e.proposedBy) mail(u.email, "blacklist_entry_waiting", null, e.proposedAt, { entry: e.id });
   }
 
   // ─── 6. Watchlist: one removed entry, and history for every entry ──

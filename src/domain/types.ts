@@ -632,4 +632,6 @@ export interface Database {
   allocations: Record<ID, CapacityAllocation>;
   rejectReasons: Record<ID, RejectReason>;
   outbox: Record<ID, EmailOutboxItem>;
+  /** When each user last opened their alerts; newer alerts count as unread. */
+  notificationReads: Record<ID, ISODate>;
 }

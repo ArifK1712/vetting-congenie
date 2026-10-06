@@ -23,7 +23,8 @@
     "e2e:matches": "node scripts/e2e-matches.mjs",
     "screens:matches": "node scripts/shot-matches.mjs screens",
     "e2e:corrections": "node scripts/e2e-corrections.mjs screens",
-    "e2e:moreinfo": "node scripts/e2e-moreinfo.mjs screens"
+    "e2e:moreinfo": "node scripts/e2e-moreinfo.mjs screens",
+    "e2e:alerts": "node scripts/e2e-alerts.mjs screens"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.11",

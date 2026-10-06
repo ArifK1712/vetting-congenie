@@ -273,6 +273,7 @@ function holdRequest(tx: Tx, requestId: ID, entryId: ID, hit: Omit<RetroHit, "re
     if (r.badgeStatus === "issued") {
       tx.updateRequest(r, { badgeStatus: "suspended", screening: "blacklist_hit" });
       tx.log({ requestId, action: "badge_suspended", actorId: "system", remarks: entryId });
+      tx.emailStaff("registration.vettingSettings", "badge_suspended", requestId, { entry: entryId });
       return "suspended" as const;
     }
     return null;
@@ -280,6 +281,7 @@ function holdRequest(tx: Tx, requestId: ID, entryId: ID, hit: Omit<RetroHit, "re
   if (canTransition(r.status, "screening_hold")) {
     tx.updateRequest(r, { status: "screening_hold", claimedBy: null, screening: "blacklist_hit", stageEnteredAt: iso(now) });
     tx.log({ requestId, action: "screening_hold", actorId, fromStatus: r.status, toStatus: "screening_hold", remarks: entryId });
+    tx.emailStaff("blacklist.approve", "blacklist_match", requestId, { entry: entryId });
   } else {
     tx.updateRequest(r, { screening: "blacklist_hit" });
   }
@@ -328,6 +330,7 @@ export function proposeEntry(
   };
   tx.put("blacklist", entry);
   log(tx, { entryId: id, action: "proposed", actorId: a.actorId, at, note: a.sourceRequestId ? `From request ${a.sourceRequestId}` : undefined });
+  tx.emailStaff("blacklist.approve", "blacklist_entry_waiting", null, { entry: id }, a.actorId);
 
   // Spec 9 table: Add to Blacklist from a request puts that request on Screening Hold.
   if (a.sourceRequestId && tx.db.requests[a.sourceRequestId]) {
@@ -371,6 +374,7 @@ export function editEntry(db: Database, a: Actor & { entryId: ID; draft: EntryDr
   if (status === "active") {
     tx.put("blacklist", { ...e, pendingChange: { ...content(a.draft), proposedBy: a.actorId, proposedAt: at }, decisionNote: null, revision: e.revision + 1, updatedAt: at });
     log(tx, { entryId: e.id, action: "change_proposed", actorId: a.actorId, at });
+    tx.emailStaff("blacklist.approve", "blacklist_entry_waiting", null, { entry: e.id, change: "yes" }, a.actorId);
   } else {
     tx.put("blacklist", { ...e, ...content(a.draft), status: "pending_approval", proposedBy: a.actorId, proposedAt: at, decisionNote: null, revision: e.revision + 1, updatedAt: at });
     log(tx, { entryId: e.id, action: "edited", actorId: a.actorId, at });

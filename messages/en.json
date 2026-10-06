@@ -1100,5 +1100,95 @@
       "invalidTitle": "Link not valid",
       "invalid": "This link is not valid. It may have been replaced by a newer one; please use the most recent email."
     }
+  },
+  "alerts": {
+    "title": "Alerts",
+    "unread": "{count, plural, =0 {All caught up} one {{n} new} other {{n} new}}",
+    "empty": "Nothing new. Alerts about your teams and lists appear here.",
+    "markAllRead": "Mark all as read",
+    "kinds": {
+      "newRequest": "{id} arrived in {team}",
+      "escalated": "{id} was escalated to {team}",
+      "assigned": "{name} assigned {id} to you",
+      "answers": "The attendee answered the questions on {id}",
+      "late": "{count, plural, one {{n} request is late in your team} other {{n} requests are late in your teams}}",
+      "entryWaiting": "{entry} from {name} is waiting for your approval",
+      "blacklistMatch": "Blacklist match on {id} ({entry}): decide in Match Review",
+      "watchlistMatch": "Watchlist match on {id} ({entry})",
+      "badgeSuspended": "Badge suspended for {id} after {entry} was approved"
+    }
+  },
+  "outbox": {
+    "title": "Email outbox",
+    "subtitle": "Every email the system would have sent. In the prototype nothing leaves the browser.",
+    "search": "Search recipient or request",
+    "audience": "Audience",
+    "audiences": {
+      "all": "Everyone",
+      "attendee": "Attendees",
+      "staff": "Staff"
+    },
+    "template": "Email",
+    "count": "{shown} of {total}",
+    "empty": "No emails match.",
+    "select": "Select an email to preview it.",
+    "to": "To",
+    "sent": "Sent",
+    "from": "From",
+    "sender": "events@congenie.com",
+    "request": "Request",
+    "openLink": "Open the link",
+    "templates": {
+      "more_info": {
+        "name": "More information needed",
+        "subject": "We need more information about your registration",
+        "body": "Hello {name}, the event team needs a little more information before they can continue with your registration. Please answer using the button below by {date}. The link works once.",
+        "button": "Provide information"
+      },
+      "more_info_reminder": {
+        "name": "Link ends in 24 hours",
+        "subject": "Reminder: your answers are due soon",
+        "body": "Hello {name}, this is a reminder that the link for your answers expires on {date}.",
+        "button": "Provide information"
+      },
+      "approved": {
+        "name": "Approved",
+        "subject": "Your registration is approved",
+        "body": "Hello {name}, good news: your registration is approved.",
+        "badgeYes": "Your badge is ready to download.",
+        "badgeLater": "Your badge will be issued once payment is complete.",
+        "button": "View my registration"
+      },
+      "rejected": {
+        "name": "Rejected",
+        "subject": "About your registration",
+        "body": "Hello {name}, we're sorry, your registration was not approved. For questions, please contact the event team.",
+        "button": "View my registration"
+      },
+      "watchlist_match": {
+        "name": "Watchlist match",
+        "subject": "Watchlist match on {id}",
+        "body": "A request matched watchlist entry {entry} (level {level}). Please check it carefully.",
+        "button": "Open the request"
+      },
+      "blacklist_entry_waiting": {
+        "name": "Blacklist entry waiting",
+        "subject": "Blacklist entry {entry} needs your approval",
+        "body": "A new or changed blacklist entry ({entry}) is waiting for a second person to approve it.",
+        "button": "Review the entry"
+      },
+      "blacklist_match": {
+        "name": "Blacklist match",
+        "subject": "Blacklist match on {id}",
+        "body": "Request {id} matched blacklist entry {entry} and is on hold until someone decides.",
+        "button": "Open Match Review"
+      },
+      "badge_suspended": {
+        "name": "Badge suspended",
+        "subject": "Badge suspended for {id}",
+        "body": "Blacklist entry {entry} matched an approved attendee. Their badge is suspended until the match is decided in Match Review.",
+        "button": "Open Match Review"
+      }
+    }
   }
 }

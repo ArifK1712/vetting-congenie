@@ -7,6 +7,7 @@ import { canTransition, FINAL_STATUSES } from "./status";
 import { resolveAccess } from "./fieldAccess";
 import type {
   Database,
+  Permission,
   HistoryEvent,
   ID,
   RequestStatus,
@@ -73,7 +74,7 @@ export class Tx {
   id(prefix: string) {
     return `${prefix}_${this.now.toString(36)}${(++this.seq).toString(36)}`;
   }
-  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory" | "attendees" | "infoRequests">(
+  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory" | "attendees" | "infoRequests" | "notificationReads">(
     key: K,
     record: Database[K][string],
   ) {
@@ -93,8 +94,14 @@ export class Tx {
   log(e: Omit<HistoryEvent, "id" | "at">) {
     this.put("history", { ...e, id: this.id("h"), at: new Date(this.now).toISOString() });
   }
-  email(to: string, template: string, requestId: ID, params: Record<string, string> = {}) {
+  email(to: string, template: string, requestId: ID | null, params: Record<string, string> = {}) {
     this.put("outbox", { id: this.id("mail"), to, template, requestId, sentAt: new Date(this.now).toISOString(), params });
+  }
+  /** Spec 16 staff emails: everyone active with a permission (e.g. blacklist approvers), minus `except`. */
+  emailStaff(permission: Permission, template: string, requestId: ID | null, params: Record<string, string> = {}, except?: ID) {
+    for (const u of Object.values(this.db.users)) {
+      if (u.id !== except && can(this.db, u.id, permission)) this.email(u.email, template, requestId, params);
+    }
   }
 }
 
@@ -343,6 +350,7 @@ function runFinalApproval(tx: Tx, r: VettingRequest, actorId: ID, now: number): 
   }
   const newBlacklist = hits.blacklist.filter((m) => !known.has(m.entryId));
   if (newBlacklist.length) {
+    tx.emailStaff("blacklist.approve", "blacklist_match", r.id, { entry: newBlacklist[0].entryId });
     tx.updateRequest(r, { status: "screening_hold", screening: "blacklist_hit", claimedBy: null, awaitingCapacity: false, stageEnteredAt: iso(now) });
     tx.log({ requestId: r.id, action: "screening_hold", actorId: "system", fromStatus: r.status, toStatus: "screening_hold", meta: { stagePoint: "final" } });
     return "screeningHold";
@@ -508,6 +516,7 @@ export function correctField(db: Database, a: Base & { field: string; value: str
       const exec = openExecution(tx.db, r.id);
       if (exec) tx.put("stageExecutions", { ...exec, status: "open", assignedUserId: null, claimedAt: null });
       tx.log({ requestId: r.id, action: "screening_hold", actorId: "system", fromStatus: current.status, toStatus: "screening_hold" });
+      tx.emailStaff("blacklist.approve", "blacklist_match", r.id, { entry: hits.blacklist[0].entryId });
       current = tx.updateRequest(current, { status: "screening_hold", screening: "blacklist_hit", claimedBy: null, stageEnteredAt: iso(a.now) });
       return { ok: true, db: tx.db, outcome: "screeningHold" };
     }

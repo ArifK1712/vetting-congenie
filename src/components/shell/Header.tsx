@@ -1,18 +1,18 @@
 "use client";
 
-import { Bell, CalendarDays, ChevronDown, Globe, RotateCcw, Search } from "lucide-react";
+import { CalendarDays, ChevronDown, Globe, RotateCcw, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuRadioGroup, MenuRadioItem, MenuSeparator, MenuTrigger } from "@/components/ui/Menu";
 import { toast } from "@/components/ui/Toast";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { useFormat } from "@/i18n/format";
 import { localeConfig } from "@/i18n/locales";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { PERSONA_IDS } from "@/mocks/seed/reference";
+import { AlertsMenu } from "./AlertsMenu";
 import { useAppStore, useDb, useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 
@@ -23,23 +23,12 @@ export function Header() {
       <HeaderSearch />
       <div className="ms-auto flex items-center gap-1">
         <LanguageMenu />
-        <Tooltip content={<NotificationsLabel />}>
-          <button type="button" className="relative inline-flex size-9 items-center justify-center rounded-lg text-ink-2 hover:bg-hover hover:text-ink">
-            <Bell className="size-[18px]" strokeWidth={1.75} />
-            <span aria-hidden className="absolute end-2 top-2 size-2 rounded-full bg-rose-500 ring-2 ring-surface" />
-            <span className="sr-only"><NotificationsLabel /></span>
-          </button>
-        </Tooltip>
+        <AlertsMenu />
         <div className="mx-1.5 h-5 w-px bg-line" />
         <PersonaMenu />
       </div>
     </header>
   );
-}
-
-function NotificationsLabel() {
-  const t = useTranslations("header");
-  return <>{t("notifications")}</>;
 }
 
 function EventScope() {

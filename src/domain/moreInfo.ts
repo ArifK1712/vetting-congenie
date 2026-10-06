@@ -234,6 +234,7 @@ export function submitAnswers(db: Database, a: { token: string; answers: Record<
     const exec = openExecution(tx.db, r.id);
     if (exec) tx.put("stageExecutions", { ...exec, status: "open", assignedUserId: null, claimedAt: null });
     tx.log({ requestId: r.id, action: "screening_hold", actorId: "system", fromStatus: "pending_review", toStatus: "screening_hold" });
+    tx.emailStaff("blacklist.approve", "blacklist_match", r.id, { entry: hits.blacklist[0].entryId });
     tx.updateRequest(current, { status: "screening_hold", screening: "blacklist_hit" });
   } else if (hits.watchlist.length) {
     const levels = [...hits.watchlist.map((m) => db.watchlist[m.entryId].level), ...(current.watchlistLevel ? [current.watchlistLevel] : [])];

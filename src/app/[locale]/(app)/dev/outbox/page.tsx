@@ -1,5 +1,5 @@
-import { Placeholder } from "@/components/shell/Placeholder";
+import { OutboxPage } from "@/features/outbox/OutboxPage";
 
 export default function Page() {
-  return <Placeholder area="outbox" />;
+  return <OutboxPage />;
 }

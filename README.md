@@ -59,6 +59,10 @@ emails, a lead clearing a match, move to blacklist, removal, import) and `npm ru
   (up to 10 questions, 3 rounds). On the More information tab, "Open the attendee's form" opens
   the one-time link from the email (prototype shortcut); "Attendee's view" in the request header
   opens the attendee status page (/portal/status/<request id>). Both are bilingual.
+- **Alerts and Email outbox**: the header bell lists alerts for the current persona (new,
+  escalated and assigned requests, answers received, late requests for team leads, blacklist
+  entries waiting and matches for approvers, watchlist alerts, suspended badges for admins).
+  Prototype → Email outbox shows every email the system would have sent, with a preview.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 
