@@ -253,6 +253,13 @@
     direction: ltr;
     unicode-bidi: isolate;
   }
+  /* Scrollable, but without a visible scrollbar (card and chip strips). */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
   .tabular {
     font-variant-numeric: tabular-nums;
   }

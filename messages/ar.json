@@ -75,7 +75,9 @@
     "selected": "{n} محدد",
     "searchOptions": "ابحث في الخيارات",
     "sizeMb": "{n} م.ب",
-    "sizeKb": "{n} ك.ب"
+    "sizeKb": "{n} ك.ب",
+    "scrollBack": "التمرير للخلف",
+    "scrollForward": "التمرير للأمام"
   },
   "duration": {
     "justNow": "الآن",

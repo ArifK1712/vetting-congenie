@@ -207,7 +207,7 @@ export function AttendeesPage() {
       <CapacityStrip db={db} scope={scope} canManage={caps.manage} onChangeLimit={(reg) => setDialog({ kind: "limit", reg })} />
 
       <section className="mt-4 flex flex-col overflow-hidden rounded-xl bg-surface shadow-card ring-1 ring-line">
-        <div className="flex items-center gap-2 overflow-x-auto px-4 py-3.5 sm:px-5 [&>*]:shrink-0">
+        <div className="no-scrollbar flex items-center gap-2 overflow-x-auto px-4 py-3.5 sm:px-5 [&>*]:shrink-0">
           <div className="relative w-60">
             <Search className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
             <input

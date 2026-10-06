@@ -107,7 +107,7 @@ export function StatusTiles({
   };
 
   return (
-    <div role="tablist" aria-label={tq("tilesLabel")} className="flex overflow-x-auto rounded-xl bg-surface shadow-card ring-1 ring-line">
+    <div role="tablist" aria-label={tq("tilesLabel")} className="no-scrollbar flex overflow-x-auto rounded-xl bg-surface shadow-card ring-1 ring-line">
       <KpiButton selected={active === "open"} onClick={() => onSelect("open")} tone="indigo" className="min-w-52 flex-[1.3] bg-indigo-50/40">
         <KpiHeader icon={Layers} tone="indigo" label={tq("openTile")} />
         <div className="mt-2.5 flex items-center gap-2.5">

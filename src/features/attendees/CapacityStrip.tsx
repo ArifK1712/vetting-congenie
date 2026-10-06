@@ -2,6 +2,7 @@
 
 import { Hourglass, SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { HScroll } from "@/components/ui/HScroll";
 import { useMemo } from "react";
 import { capacityOf } from "@/domain/attendees";
 import type { Database, ID, Registration } from "@/domain/types";
@@ -38,7 +39,7 @@ export function CapacityStrip({
   return (
     <section aria-label={t("title")} className="mt-6">
       <h2 className="eyebrow mb-2.5">{t("title")}</h2>
-      <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-7 lg:px-7">
+      <HScroll label={t("title")} className="gap-3 py-1">
         {cards.map(({ reg, cap }) => {
           const pct = cap.limit ? Math.min(100, Math.round((cap.used / cap.limit) * 100)) : 100;
           const full = cap.used >= cap.limit;
@@ -94,7 +95,7 @@ export function CapacityStrip({
             </li>
           );
         })}
-      </ul>
+      </HScroll>
     </section>
   );
 }

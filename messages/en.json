@@ -75,7 +75,9 @@
     "selected": "{n} selected",
     "searchOptions": "Search options",
     "sizeMb": "{n} MB",
-    "sizeKb": "{n} KB"
+    "sizeKb": "{n} KB",
+    "scrollBack": "Scroll back",
+    "scrollForward": "Scroll forward"
   },
   "duration": {
     "justNow": "just now",

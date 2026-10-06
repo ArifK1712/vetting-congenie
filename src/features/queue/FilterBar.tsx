@@ -69,7 +69,7 @@ export function FilterBar({
   }, [db, rows, viewerId, reviewAll, fmt]);
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto px-5 py-3.5 [&>*]:shrink-0">
+    <div className="no-scrollbar flex items-center gap-2 overflow-x-auto px-5 py-3.5 [&>*]:shrink-0">
       <div className="relative w-52">
         <Search className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
         <input
