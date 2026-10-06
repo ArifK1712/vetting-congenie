@@ -1,8 +1,8 @@
 "use client";
 
-import { Download, Eye, FileText, ImageIcon, Lock, PenLine, ShieldAlert, UserRound, Workflow } from "lucide-react";
+import { Download, ExternalLink, Eye, FileText, ImageIcon, Lock, PenLine, RefreshCw, ShieldAlert, UserRound, Workflow } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { toast } from "@/components/ui/Toast";
 import { PROFILE_FIELDS } from "@/domain/fieldAccess";
@@ -12,6 +12,8 @@ import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { StageProgress } from "@/features/requests/parts";
+import { linkState } from "@/domain/moreInfo";
+import { nodeById } from "@/domain/workflow";
 import { requestService } from "@/services/requests";
 import { useFieldLabel } from "./CorrectDialog";
 import type { RequestView } from "./useRequestView";
@@ -177,7 +179,7 @@ export function DocumentsTab({ view }: { view: RequestView }) {
                 <span className="ltr-data">{d.fileName}</span>
               </p>
               <p className="truncate text-xs text-ink-3">
-                {fmt.text(question?.label)} ·{" "}
+                {question ? fmt.text(question.label) : view.infoRequests.flatMap((i) => i.questions.map((q) => ({ key: `info.${i.id}.${q.id}`, label: q.label }))).find((x) => x.key === d.questionId)?.label ?? ""} ·{" "}
                 <span className="tabular">
                   {d.sizeKb >= 1024 ? tc("sizeMb", { n: fmt.number(Math.round(d.sizeKb / 102.4) / 10) }) : tc("sizeKb", { n: fmt.number(d.sizeKb) })}
                 </span>{" "}
@@ -309,49 +311,111 @@ export function ProgressTab({ view, now }: { view: RequestView; now: number }) {
   );
 }
 
-export function MoreInfoTab({ view, now }: { view: RequestView; now: number }) {
+export function MoreInfoTab({ view, now, revision, canAct }: { view: RequestView; now: number; revision: number; canAct: boolean }) {
   const t = useTranslations("requestDetail.moreInfo");
+  const tf = useTranslations("requestDetail.fields");
+  const tt = useTranslations("actions.toasts");
+  const te = useTranslations("actions.errors");
   const fmt = useFormat();
+  const [busy, setBusy] = useState(false);
   if (!view.infoRequests.length) return <p className="py-6 text-sm text-ink-3">{t("empty")}</p>;
+  const graph = view.version?.graph;
+  const inTeam = !!view.request.currentTeamId && !!view.db.teams[view.request.currentTeamId]?.members.some((m) => m.userId === view.viewer.id);
+  const mayResend = canAct && view.request.status === "more_info_required" && (inTeam || view.viewer.can("queue.reviewAll"));
+
+  const resend = async (infoRequestId: string) => {
+    setBusy(true);
+    const r = await requestService.resendInfo({ requestId: view.request.id, actorId: view.viewer.id, expectedRevision: revision, infoRequestId });
+    setBusy(false);
+    toast(r.ok ? tt("linkResent") : te(r.error));
+  };
 
   return (
     <div className="space-y-8 pt-4">
-      {view.infoRequests.map((ir) => {
+      {[...view.infoRequests].reverse().map((ir) => {
         const by = view.db.users[ir.requestedBy];
-        const expired = ir.status === "expired" || (ir.status === "sent" && Date.parse(ir.tokenExpiresAt) < now);
+        const state = linkState(ir, now);
+        const back = graph ? nodeById(graph, ir.returnToNodeId) : undefined;
         return (
-          <section key={ir.id}>
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h3 className="text-sm font-medium text-ink">{t("round", { n: ir.round })}</h3>
+          <section key={ir.id} className="rounded-xl ring-1 ring-line">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line bg-subtle px-4 py-3">
+              <h3 className="text-sm font-bold text-ink">{t("round", { n: ir.round })}</h3>
               <span className="text-xs text-ink-3">
                 {t("requestedBy", { name: by?.name ?? "" })} · {fmt.dateTime(ir.sentAt)}
+                {back?.type === "stage" && <> · {t("returnTo", { stage: fmt.text(back.stage.name) })}</>}
               </span>
-              <span className={cn("ms-auto text-xs", ir.status === "answered" ? "text-positive" : expired ? "text-danger" : "text-attention")}>
-                {ir.status === "answered" && ir.answeredAt
+              <span className={cn("ms-auto text-xs font-medium", state === "answered" ? "text-positive" : state === "expired" ? "text-danger" : "text-attention")}>
+                {state === "answered" && ir.answeredAt
                   ? t("answered", { date: fmt.dateTime(ir.answeredAt) })
-                  : expired
+                  : state === "expired"
                     ? t("expired")
                     : `${t("awaiting")} · ${t("expires", { date: fmt.dateTime(ir.tokenExpiresAt) })}`}
               </span>
             </div>
-            <p className="eyebrow mt-4">{t("instructions")}</p>
-            <p dir="auto" className="mt-1 text-sm text-ink">
-              {ir.instructions}
-            </p>
-            <dl className="mt-3">
-              {ir.questions.map((q) => {
-                const a = ir.answers?.[q.id];
-                return (
-                  <Row
-                    key={q.id}
-                    label={q.label}
-                    hint={q.required ? <span className="shrink-0 text-xs text-ink-3">{t("required")}</span> : undefined}
-                  >
-                    {a ? <span dir="auto">{Array.isArray(a) ? a.join(", ") : a}</span> : <span className="text-ink-3">{t("noAnswer")}</span>}
-                  </Row>
-                );
-              })}
-            </dl>
+            <div className="px-4 pb-4">
+              <p className="eyebrow mt-4">{t("instructions")}</p>
+              <p dir="auto" className="mt-1 text-sm text-ink">
+                {ir.instructions}
+              </p>
+              <dl className="mt-3">
+                {ir.questions.map((q) => {
+                  const a = ir.answers?.[q.id];
+                  return (
+                    <Row
+                      key={q.id}
+                      label={q.label}
+                      hint={
+                        <span className="shrink-0 text-end text-xs text-ink-3">
+                          {q.required && t("required")}
+                          {q.mapsTo && <span className="block text-accent-text">{t("updates", { field: tf(q.mapsTo as "email") })}</span>}
+                        </span>
+                      }
+                    >
+                      {a ? (
+                        q.type === "upload" ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <FileText className="size-3.5 text-ink-3" />
+                            <span className="ltr-data">{String(a)}</span>
+                          </span>
+                        ) : (
+                          <span dir="auto">{Array.isArray(a) ? a.join(", ") : a}</span>
+                        )
+                      ) : (
+                        <span className="text-ink-3">{t("noAnswer")}</span>
+                      )}
+                    </Row>
+                  );
+                })}
+              </dl>
+              {ir.remindedAt && state !== "answered" && <p className="mt-2 text-xs text-ink-3">{t("reminded", { date: fmt.dateTime(ir.remindedAt) })}</p>}
+              {state !== "answered" && view.request.status === "more_info_required" && (
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {state === "open" && (
+                    <a
+                      href={`/${fmt.locale}/portal/info/${ir.token}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={t("openFormHint")}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-accent-text ring-1 ring-indigo-200 ring-inset hover:bg-accent-soft"
+                    >
+                      <ExternalLink className="size-3.5" />
+                      {t("openForm")}
+                    </a>
+                  )}
+                  {mayResend && (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void resend(ir.id)}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-surface px-3 text-xs font-semibold text-ink ring-1 ring-line-strong ring-inset hover:bg-subtle disabled:opacity-60"
+                    >
+                      <RefreshCw className="size-3.5" />
+                      {t("resend")}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </section>
         );
       })}

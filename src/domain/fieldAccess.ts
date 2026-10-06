@@ -112,8 +112,8 @@ export function projectAttendee(attendee: Attendee, resolve: AccessResolver): Pr
         editable: resolve(fieldKey.answer(questionId)) === "edit",
       })),
     documents: attendee.documents
-      .filter((d) => resolve(fieldKey.document(d.questionId)) !== "hidden")
-      .map((d) => ({ ...d, downloadable: resolve(fieldKey.document(d.questionId)) === "download" })),
+      .filter((d) => (d.questionId.startsWith("info.") ? resolve(fieldKey.moreInfo) !== "hidden" : resolve(fieldKey.document(d.questionId)) !== "hidden"))
+      .map((d) => ({ ...d, downloadable: d.questionId.startsWith("info.") ? resolve(fieldKey.moreInfo) !== "hidden" : resolve(fieldKey.document(d.questionId)) === "download" })),
     payment: resolve(fieldKey.payment) === "hidden" ? null : attendee.payment,
     moreInfoVisible: resolve(fieldKey.moreInfo) !== "hidden",
   };

@@ -26,7 +26,7 @@ import { DAY, HOUR, createRng, iso, type Rng } from "./rng";
 import { teamHistory, teams } from "./teams";
 import { allotments, workflowVersions, workflows } from "./workflows";
 
-export const SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = 9;
 const SEED = 20261005;
 
 const byId = <T extends { id: ID }>(list: T[]) => Object.fromEntries(list.map((x) => [x.id, x])) as Record<ID, T>;
@@ -658,11 +658,15 @@ export function createSeed(now: number = Date.now()): Database {
             { id: "iq2", label: "Comments for the reviewer", type: "longText", required: false },
           ],
           answers: null,
+          token: "",
+          returnToNodeId: current.id,
+          remindedAt: null,
           status: now - sentAt > 7 * DAY ? "expired" : "sent",
           tokenExpiresAt: iso(sentAt + 7 * DAY),
           sentAt: iso(sentAt),
           answeredAt: null,
         };
+        info.token = `tok-${requestId.toLowerCase()}-r1`;
         db.infoRequests[info.id] = info;
         log({ requestId, action: "more_info_requested", actorId: who, at: iso(sentAt), stageNodeId: current.id, fromStatus: "under_review", toStatus: "more_info_required" });
         if (goal === "info") {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, ClipboardList, CornerDownLeft, Eye, Gauge, Layers, RefreshCw, SearchX, ShieldAlert, UsersRound, Workflow, type LucideIcon } from "lucide-react";
+import { ChevronRight, ClipboardList, CornerDownLeft, ExternalLink, Eye, Gauge, Layers, RefreshCw, SearchX, ShieldAlert, UsersRound, Workflow, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
@@ -136,7 +136,13 @@ export function RequestDetailPage({ id }: { id: ID }) {
             )}
             <RequestFlags late={view.late} timeLimitHours={view.timeLimitHours} responseReceived={false} awaitingCapacity={false} />
           </div>
-          <span className="ltr-data rounded-lg bg-subtle px-2.5 py-1 font-mono text-xs font-medium text-ink-2 ring-1 ring-line">{request.id}</span>
+          <div className="flex flex-col items-end gap-2">
+            <span className="ltr-data rounded-lg bg-subtle px-2.5 py-1 font-mono text-xs font-medium text-ink-2 ring-1 ring-line">{request.id}</span>
+            <a href={`/${fmt.locale}/portal/status/${request.id}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-accent-text hover:underline">
+              <ExternalLink className="size-3.5" />
+              {t("attendeeView")}
+            </a>
+          </div>
         </div>
 
         <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-5 md:grid-cols-4">
@@ -186,7 +192,7 @@ export function RequestDetailPage({ id }: { id: ID }) {
             <TabsContent value="documents"><DocumentsTab view={view} /></TabsContent>
             <TabsContent value="screening"><ScreeningTab view={view} /></TabsContent>
             <TabsContent value="progress"><ProgressTab view={view} now={now} /></TabsContent>
-            <TabsContent value="moreInfo"><MoreInfoTab view={view} now={now} /></TabsContent>
+            <TabsContent value="moreInfo"><MoreInfoTab view={view} now={now} revision={currentRevision} canAct={!stale} /></TabsContent>
             <TabsContent value="history"><HistoryTab view={view} /></TabsContent>
           </div>
         </Tabs>

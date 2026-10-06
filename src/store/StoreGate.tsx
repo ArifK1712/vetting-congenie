@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { sendDueReminders } from "@/domain/moreInfo";
 import { STORE_KEY, useAppStore, useSession } from "./app";
 
 /**
@@ -22,5 +23,17 @@ export function useStoreHydration() {
 
 export function StoreGate({ children, fallback }: { children: ReactNode; fallback: ReactNode }) {
   const ready = useAppStore((s) => s.hydrated && s.db !== null);
+  // Time-based jobs the server would run: the 24-hour reminder for More Information links.
+  useEffect(() => {
+    if (!ready) return;
+    const run = () => {
+      const db = useAppStore.getState().db;
+      const next = db && sendDueReminders(db, Date.now());
+      if (next) useAppStore.getState().setDb(next);
+    };
+    run();
+    const id = setInterval(run, 60_000);
+    return () => clearInterval(id);
+  }, [ready]);
   return <>{ready ? children : fallback}</>;
 }

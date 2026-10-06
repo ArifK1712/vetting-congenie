@@ -25,6 +25,7 @@ export function ActionDialog({
   error,
   onConfirm,
   confirmDisabled,
+  wide,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -38,6 +39,8 @@ export function ActionDialog({
   error?: string | null;
   onConfirm: () => void;
   confirmDisabled?: boolean;
+  /** Wider dialog with a scrolling body, for longer forms. */
+  wide?: boolean;
 }) {
   const container = usePortalContainer();
   const t = useTranslations("actions.dialogs");
@@ -52,7 +55,10 @@ export function ActionDialog({
       <RD.Portal container={container}>
         <RD.Overlay className="anim-fade fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-[2px]" />
         <RD.Content
-          className="anim-pop fixed top-[12vh] left-1/2 z-50 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 rounded-2xl bg-surface shadow-pop ring-1 ring-line outline-none"
+          className={cn(
+            "anim-pop fixed left-1/2 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl bg-surface shadow-pop ring-1 ring-line outline-none",
+            wide ? "top-[5vh] max-w-2xl" : "top-[12vh] max-w-lg",
+          )}
           onOpenAutoFocus={(e) => {
             // Focus the first field rather than the close button.
             const first = (e.currentTarget as HTMLElement).querySelector<HTMLElement>("textarea, input, [role=radio]");
@@ -82,7 +88,7 @@ export function ActionDialog({
               </RD.Close>
             </div>
 
-            {children && <div className="space-y-5 px-6 pt-5">{children}</div>}
+            {children && <div className={cn("space-y-5 px-6 pt-5", wide && "max-h-[68vh] overflow-y-auto pb-1")}>{children}</div>}
 
             {error && (
               <p role="alert" className="mx-6 mt-5 flex items-start gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-700 ring-1 ring-rose-600/15 ring-inset">

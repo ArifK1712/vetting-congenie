@@ -55,6 +55,10 @@ emails, a lead clearing a match, move to blacklist, removal, import) and `npm ru
   applicant / entry comparison. Confirm rejects the request as Blacklisted (or revokes a
   suspended badge); Not the same person sends it back to its stage (or restores the badge) and
   the pair never matches again. Arif and Sara decide.
+- **More Information**: a reviewer who has claimed a request uses "Ask for more information"
+  (up to 10 questions, 3 rounds). On the More information tab, "Open the attendee's form" opens
+  the one-time link from the email (prototype shortcut); "Attendee's view" in the request header
+  opens the attendee status page (/portal/status/<request id>). Both are bilingual.
 - **Reset demo data**: in the persona menu. Data is deterministic, so a reset
   always gives the same requests.
 

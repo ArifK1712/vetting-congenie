@@ -13,7 +13,7 @@ import { requestService } from "@/services/requests";
 import { useRequestAction } from "@/features/requests/useRequestAction";
 import type { RequestView } from "./useRequestView";
 
-export type DialogKind = "approve" | "reject" | "escalate" | "reassign" | "reopen" | null;
+export type DialogKind = "approve" | "reject" | "escalate" | "reassign" | "reopen" | "ask" | null;
 
 interface Props {
   view: RequestView;

@@ -73,7 +73,7 @@ export class Tx {
   id(prefix: string) {
     return `${prefix}_${this.now.toString(36)}${(++this.seq).toString(36)}`;
   }
-  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory" | "attendees">(
+  put<K extends "requests" | "stageExecutions" | "history" | "comments" | "allocations" | "outbox" | "matches" | "teams" | "teamHistory" | "blacklist" | "blacklistHistory" | "watchlist" | "watchlistHistory" | "attendees" | "infoRequests">(
     key: K,
     record: Database[K][string],
   ) {
@@ -110,7 +110,7 @@ export function graphOf(db: Database, r: VettingRequest): WorkflowGraph | null {
   return r.workflowVersionId ? (db.workflowVersions[r.workflowVersionId]?.graph ?? null) : null;
 }
 
-function guard(db: Database, a: Base): { r: VettingRequest } | { error: ActionError } {
+export function guard(db: Database, a: Base): { r: VettingRequest } | { error: ActionError } {
   const r = db.requests[a.requestId];
   if (!r) return { error: "notFound" };
   if (r.revision !== a.expectedRevision) return { error: "stale" };
@@ -119,7 +119,7 @@ function guard(db: Database, a: Base): { r: VettingRequest } | { error: ActionEr
 }
 
 /** The claimer may decide; everyone else is refused with a precise reason. */
-function guardDecision(db: Database, a: Base) {
+export function guardDecision(db: Database, a: Base) {
   const g = guard(db, a);
   if ("error" in g) return g;
   const { r } = g;
@@ -525,7 +525,8 @@ export function logDownload(db: Database, a: { requestId: ID; actorId: ID; docum
   if (!r) return { ok: false, error: "notFound" };
   const doc = db.attendees[r.attendeeId].documents.find((d) => d.id === a.documentId);
   if (!doc) return { ok: false, error: "notFound" };
-  if (resolveAccess(db, a.actorId, r).resolve(`document.${doc.questionId}`) !== "download") return { ok: false, error: "forbidden" };
+  const level = resolveAccess(db, a.actorId, r).resolve(doc.questionId.startsWith("info.") ? "moreInfo" : `document.${doc.questionId}`);
+  if (level !== "download" && !(doc.questionId.startsWith("info.") && level !== "hidden")) return { ok: false, error: "forbidden" };
   const tx = new Tx(db, a.now);
   tx.log({ requestId: r.id, action: "document_downloaded", actorId: a.actorId, meta: { file: doc.fileName } });
   return { ok: true, db: tx.db };

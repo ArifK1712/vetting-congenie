@@ -411,6 +411,8 @@ export interface InfoQuestion {
   type: Exclude<QuestionType, never>;
   required: boolean;
   options?: string[];
+  /** 15.2: the answer updates this registration field (profile key), and the change is logged. */
+  mapsTo?: string | null;
 }
 
 export interface InfoRequest {
@@ -423,6 +425,12 @@ export interface InfoRequest {
   questions: InfoQuestion[];
   answers: Record<ID, string | string[]> | null;
   status: "sent" | "answered" | "expired";
+  /** One-time link token; replaced (old one invalid) when the link is resent. */
+  token: string;
+  /** Stage the request goes back to when the attendee answers. */
+  returnToNodeId: ID;
+  /** When the 24-hours-left reminder was emailed. */
+  remindedAt: ISODate | null;
   tokenExpiresAt: ISODate;
   sentAt: ISODate;
   answeredAt: ISODate | null;

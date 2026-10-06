@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/Menu";
 import { BadgeStatusLabel } from "@/components/ui/Status";
-import { toast } from "@/components/ui/Toast";
 import { canReassign } from "@/domain/actions";
 import { FINAL_STATUSES } from "@/domain/status";
 import { useFormat } from "@/i18n/format";
@@ -18,6 +17,7 @@ import { TextArea } from "@/components/ui/Field";
 import { requestService } from "@/services/requests";
 import { useQuickAction, useRequestAction } from "@/features/requests/useRequestAction";
 import { ApproveDialog, EscalateDialog, ReassignDialog, RejectDialog, ReopenDialog, type DialogKind } from "./ActionDialogs";
+import { AskInfoDialog } from "./AskInfoDialog";
 import type { RequestView } from "./useRequestView";
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
@@ -46,7 +46,6 @@ export function DecisionPanel({
   const { request, viewer, stage, db } = view;
   const [dialog, setDialog] = useState<DialogKind>(null);
   const quick = useQuickAction();
-  const soon = () => toast(t("comingNext"));
   const router = useRouter();
   const ref = { requestId: request.id, actorId: viewer.id, expectedRevision: revision };
 
@@ -164,7 +163,7 @@ export function DecisionPanel({
                 </Button>
               </div>
               {allowed.includes("moreInfo") && (
-                <Button className="w-full" disabled={byOther || disabled} onClick={soon}>
+                <Button className="w-full" disabled={byOther || disabled} onClick={() => setDialog("ask")}>
                   {t("moreInfo")}
                 </Button>
               )}
@@ -184,6 +183,7 @@ export function DecisionPanel({
       {dialog === "escalate" && <EscalateDialog {...dialogProps} />}
       {dialog === "reassign" && <ReassignDialog {...dialogProps} />}
       {dialog === "reopen" && <ReopenDialog {...dialogProps} />}
+      {dialog === "ask" && <AskInfoDialog {...dialogProps} />}
     </section>
   );
 }

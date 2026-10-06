@@ -317,7 +317,14 @@
       "answered": "Answered {date}",
       "instructions": "Instructions",
       "required": "Required",
-      "noAnswer": "No answer"
+      "noAnswer": "No answer",
+      "resend": "Send a new link",
+      "openForm": "Open the attendee's form",
+      "openFormHint": "Prototype shortcut: the link from the attendee's email.",
+      "returnTo": "Returns to {stage}",
+      "updates": "Updates {field}",
+      "reminded": "Reminder sent {date}",
+      "file": "File: {file}"
     },
     "history": {
       "system": "System",
@@ -409,7 +416,51 @@
       "reasonPlaceholder": "Why is the request being reopened?",
       "confirm": "Reopen",
       "hint": "Only people with Review All can reopen a rejected request."
-    }
+    },
+    "ask": {
+      "title": "Ask for more information",
+      "description": "The attendee gets an email with a secure link that works once and lasts 7 days.",
+      "roundOf": "Round {n} of 3",
+      "instructions": "Instructions for the attendee",
+      "instructionsPlaceholder": "Explain what you need and why, in plain words.",
+      "questions": "Questions",
+      "questionsHint": "{n} of 10",
+      "label": "Question",
+      "labelPlaceholder": "e.g. Upload your organisation's authorisation letter",
+      "type": "Answer type",
+      "required": "Required",
+      "options": "Choices",
+      "optionsHint": "One per line, at least two",
+      "mapsTo": "Update registration field",
+      "mapsToNone": "Don't update the registration",
+      "mapsToHint": "The answer replaces this field on the registration; the change is logged.",
+      "add": "Add question",
+      "remove": "Remove question",
+      "returnTo": "When answered, send the request to",
+      "returnSame": "{stage} (this stage)",
+      "uploadNote": "Uploads: PDF, JPG or PNG, up to 5 MB each.",
+      "confirm": "Send to attendee",
+      "maxRounds": "This request already had 3 rounds of questions.",
+      "issues": {
+        "instructionsRequired": "Write instructions for the attendee.",
+        "noQuestions": "Add at least one question.",
+        "tooManyQuestions": "Use up to 10 questions.",
+        "labelRequired": "Every question needs a label.",
+        "optionsRequired": "Choice questions need at least two choices.",
+        "maxRounds": "This request already had 3 rounds of questions.",
+        "badReturnStage": "Choose the stage the request returns to."
+      },
+      "types": {
+        "text": "Short text",
+        "longText": "Long text",
+        "number": "Number",
+        "date": "Date",
+        "singleChoice": "Single choice",
+        "multiChoice": "Multiple choice",
+        "upload": "Document upload"
+      }
+    },
+    "attendeeView": "Attendee's view"
   },
   "placeholder": {
     "title": "{area} is part of a later build step",
@@ -453,7 +504,9 @@
       "corrected": "{field} corrected and logged.",
       "correctedHold": "{field} corrected. The new value matched the blacklist, so {id} is on hold.",
       "downloaded": "{file}: download logged in the request history. (Files are simulated in the prototype.)",
-      "reopened": "{id} reopened and back with its team."
+      "reopened": "{id} reopened and back with its team.",
+      "infoRequested": "Questions sent. {id} is waiting for the attendee.",
+      "linkResent": "A new link was emailed. The old link no longer works."
     },
     "dialogs": {
       "cancel": "Cancel",
@@ -983,6 +1036,69 @@
         "deactivateInUse": "This team can't be made inactive while it has open requests or is used in a live workflow.",
         "lastReviewerInUse": "Keep at least one member with Review Queue Access while the team is in use."
       }
+    }
+  },
+  "portal": {
+    "brand": "Event registration",
+    "statusTitle": "Your registration",
+    "requestId": "Reference {id}",
+    "steps": {
+      "submitted": "Submitted",
+      "review": "Under review",
+      "info": "Information required",
+      "decision": "Decision"
+    },
+    "phase": {
+      "review": "Your registration has been submitted for review. We'll email you when there is a decision.",
+      "info": "We need a little more information before we can continue.",
+      "approved": "Your registration is approved.",
+      "rejected": "We're sorry, your registration was not approved. Please check your email for details.",
+      "withdrawn": "This registration was withdrawn."
+    },
+    "badge": {
+      "issued": "Your badge is ready.",
+      "not_issued": "Your badge will be issued once payment is complete.",
+      "suspended": "Badge suspended, please contact the organiser.",
+      "revoked": "Your badge is no longer valid. Please contact the organiser."
+    },
+    "provide": "Provide information",
+    "provideBy": "Please reply by {date}.",
+    "expiredContact": "The link for your answers has expired. Please contact the event team for a new one.",
+    "noBadgeYet": "No badge is generated until your registration is approved.",
+    "details": {
+      "event": "Event",
+      "registration": "Registration",
+      "badgeType": "Badge type",
+      "submitted": "Submitted"
+    },
+    "notFound": "We couldn't find this registration.",
+    "form": {
+      "title": "More information needed",
+      "intro": "Hello {name}, the event team needs some more information about your registration for {event}.",
+      "deadline": "This link works once and expires on {date}.",
+      "required": "Required",
+      "optional": "Optional",
+      "chooseFile": "Choose file",
+      "noFile": "No file chosen",
+      "fileHint": "PDF, JPG or PNG, up to 5 MB",
+      "choose": "Choose an option",
+      "submit": "Send my answers",
+      "sending": "Sending…",
+      "errors": {
+        "missing": "Please answer this question.",
+        "badFile": "Use a PDF, JPG or PNG file of 5 MB or less.",
+        "badValue": "Please check this answer.",
+        "generic": "Something went wrong. Please try again."
+      },
+      "doneTitle": "Thank you",
+      "done": "We've received your answers. Your registration is back under review, and we'll email you when there is a decision.",
+      "viewStatus": "View my registration status",
+      "expiredTitle": "This link has expired",
+      "expired": "This link has expired, please contact the event team.",
+      "usedTitle": "Already submitted",
+      "used": "These answers were already sent. Thank you.",
+      "invalidTitle": "Link not valid",
+      "invalid": "This link is not valid. It may have been replaced by a newer one; please use the most recent email."
     }
   }
 }

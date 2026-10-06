@@ -1,8 +1,9 @@
 "use client";
 
 import * as actions from "@/domain/actions";
+import * as moreInfo from "@/domain/moreInfo";
 import type { ActionResult } from "@/domain/actions";
-import type { Database, ID } from "@/domain/types";
+import type { Database, ID, InfoQuestion } from "@/domain/types";
 import { useAppStore } from "@/store/app";
 
 /**
@@ -49,6 +50,21 @@ export const requestService = {
   comment: (ref: Omit<Ref, "expectedRevision"> & { body: string }) => run((db, now) => actions.addComment(db, { ...ref, now }), ref.requestId),
   correct: (ref: Ref & { field: string; value: string | string[]; reason?: string }) => run((db, now) => actions.correctField(db, { ...ref, now }), ref.requestId),
   reopen: (ref: Ref & { reason: string }) => run((db, now) => actions.reopenRequest(db, { ...ref, now }), ref.requestId),
+  askInfo: (ref: Ref & { instructions: string; questions: InfoQuestion[]; returnToNodeId: ID }) => run((db, now) => moreInfo.askMoreInfo(db, { ...ref, now }), ref.requestId),
+  resendInfo: (ref: Ref & { infoRequestId: ID }) => run((db, now) => moreInfo.resendLink(db, { ...ref, now }), ref.requestId),
   /** Logs a download in the request history (the file itself is simulated). */
   download: (ref: Omit<Ref, "expectedRevision"> & { documentId: ID }) => run((db, now) => actions.logDownload(db, { ...ref, now })),
+};
+
+/** The attendee's side: answers sent through the one-time link (no reviewer, no revision). */
+export const portalService = {
+  submit: async (token: string, answers: Record<ID, moreInfo.AnswerValue>): Promise<moreInfo.SubmitResult> => {
+    await wait(LATENCY_MS);
+    await useAppStore.persist.rehydrate();
+    const db = useAppStore.getState().db;
+    if (!db) return { ok: false, error: "notFound" };
+    const r = moreInfo.submitAnswers(db, { token, answers, now: Date.now() });
+    if (r.ok) useAppStore.getState().setDb(r.db);
+    return r;
+  },
 };

@@ -131,7 +131,7 @@ function HeaderSearch() {
   );
 }
 
-function LanguageMenu() {
+export function LanguageMenu() {
   const t = useTranslations("header");
   const locale = useLocale();
   const router = useRouter();
