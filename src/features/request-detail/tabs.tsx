@@ -426,6 +426,7 @@ export function MoreInfoTab({ view, now, revision, canAct }: { view: RequestView
 export function HistoryTab({ view }: { view: RequestView }) {
   const t = useTranslations("requestDetail.history");
   const tw = useTranslations("screening.level");
+  const tbr = useTranslations("attendees.refusal");
   const fieldLabel = useFieldLabel(view);
   /** Old and new values only when the viewer may see the field. */
   const canSee = (key: string) => {
@@ -476,7 +477,9 @@ export function HistoryTab({ view }: { view: RequestView }) {
                   ? t("changedFrom", { from: String(h.meta.from ?? "—") || "—", to: String(h.meta.to ?? "") })
                   : h.action === "document_downloaded" && h.meta?.file
                     ? t("file", { file: String(h.meta.file) })
-                    : null;
+                    : h.action === "badge_blocked" && h.remarks
+                      ? tbr(h.remarks as "notApproved")
+                      : null;
         return (
           <li key={h.id} className="flex gap-3 border-b border-line py-3 last:border-b-0">
             {actor ? (
@@ -492,7 +495,7 @@ export function HistoryTab({ view }: { view: RequestView }) {
                 <span className="text-ink-2"> · {describe(h)}</span>
               </p>
               {detail && <p className="text-xs text-ink-3">{detail}</p>}
-              {h.remarks && (
+              {h.remarks && h.action !== "badge_blocked" && (
                 <p dir="auto" className="mt-1.5 border-s-2 border-line ps-3 text-sm text-ink-2">
                   {h.remarks}
                 </p>

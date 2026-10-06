@@ -237,7 +237,8 @@
         "vettingQuestions": "Use in vetting"
       },
       "unknownQuestion": "a question that no longer exists",
-      "unknownUser": "Someone"
+      "unknownUser": "Someone",
+      "limit_changed": "changed the registration limit from {from} to {to}"
     }
   }
 }

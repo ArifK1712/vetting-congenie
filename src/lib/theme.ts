@@ -30,6 +30,11 @@ function resolve(pref: ThemePref): Theme {
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
+/** Writes the resolved theme to <html data-theme> (also after <html> is re-created, e.g. a language switch). */
+export function applyTheme() {
+  document.documentElement.dataset.theme = resolve(readPref());
+}
+
 function apply() {
   document.documentElement.dataset.theme = resolve(readPref());
   emit();

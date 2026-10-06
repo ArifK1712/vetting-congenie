@@ -366,7 +366,10 @@
         "watchlist_marked": "Marked by the watchlist ({level})",
         "field_corrected": "Corrected {field}",
         "reopened": "Reopened the request",
-        "configuration_error": "No valid workflow found: Configuration Error"
+        "configuration_error": "No valid workflow found: Configuration Error",
+        "badge_printed": "Badge produced",
+        "badge_blocked": "Badge refused: not allowed yet",
+        "place_released": "Freed the registration place"
       },
       "screenedDetail": "{blacklist, plural, =0 {No blacklist matches} one {1 blacklist match} other {{b} blacklist matches}}, {watchlist, plural, =0 {no watchlist matches} one {1 watchlist match} other {{w} watchlist matches}}",
       "reassignedTo": "Assigned to {name}",
@@ -1084,6 +1087,19 @@
       "submitted": "Submitted"
     },
     "notFound": "We couldn't find this registration.",
+    "status": {
+      "badgeDownload": "Download badge",
+      "badgeDownloading": "Preparing your badge…",
+      "badgeDownloaded": "Your badge has been downloaded. Bring it to the entrance, printed or on your phone.",
+      "badgeRefused": "We can't give you a badge right now.",
+      "badgeRefusal": {
+        "notApproved": "Your badge will be available once your registration is approved.",
+        "suspended": "Badge suspended, please contact the organiser.",
+        "paymentPending": "Your badge will be available once payment is complete.",
+        "revoked": "Your badge is no longer valid. Please contact the organiser.",
+        "cancelled": "This registration was cancelled. Please contact the organiser."
+      }
+    },
     "form": {
       "title": "More information needed",
       "intro": "Hello {name}, the event team needs some more information about your registration for {event}.",

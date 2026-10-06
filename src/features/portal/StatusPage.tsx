@@ -1,13 +1,16 @@
 "use client";
 
-import { BadgeCheck, Check, CircleAlert, Clock, FileQuestion, Info, SearchX, XCircle } from "lucide-react";
+import { BadgeCheck, Check, CircleAlert, Clock, Download, FileQuestion, Info, Loader2, SearchX, ShieldX, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+import type { BadgeBlock } from "@/domain/attendees";
 import { attendeeView } from "@/domain/moreInfo";
 import type { ID } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/useNow";
+import { attendeeService } from "@/services/attendees";
 import { useDb } from "@/store/app";
 
 /**
@@ -85,6 +88,8 @@ export function StatusPage({ id }: { id: ID }) {
           </div>
         </div>
 
+        {v.phase === "approved" && <BadgeDownload attendeeId={v.attendee.id} />}
+
         {v.info && (
           <div className="mt-4 rounded-xl px-4 py-4 ring-1 ring-amber-600/20">
             {v.info.state === "open" ? (
@@ -117,6 +122,54 @@ export function StatusPage({ id }: { id: ID }) {
           </div>
         ))}
       </dl>
+    </div>
+  );
+}
+
+/** 11.2: the attendee downloads their badge; the same gate as every other channel applies. */
+function BadgeDownload({ attendeeId }: { attendeeId: ID }) {
+  const t = useTranslations("portal.status");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ ok: true } | { ok: false; reason: BadgeBlock } | null>(null);
+
+  const download = async () => {
+    setBusy(true);
+    try {
+      const r = await attendeeService.produceBadges({ attendeeIds: [attendeeId], channel: "download", actorId: "attendee" });
+      if (r.ok) setResult(r.printed.length ? { ok: true } : { ok: false, reason: r.blocked[0]?.reason ?? "notApproved" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        onClick={() => void download()}
+        disabled={busy}
+        className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white shadow-accent hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+        {busy ? t("badgeDownloading") : t("badgeDownload")}
+      </button>
+      <div aria-live="polite" className="min-w-0 flex-1">
+        {result?.ok === true && (
+          <p data-badge-result="ok" className="flex items-start gap-2 text-sm text-emerald-700">
+            <BadgeCheck className="mt-0.5 size-4 shrink-0" />
+            {t("badgeDownloaded")}
+          </p>
+        )}
+        {result?.ok === false && (
+          <div data-badge-result="refused" role="alert" className="flex items-start gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-800 ring-1 ring-rose-600/15 ring-inset">
+            <ShieldX className="mt-0.5 size-4 shrink-0" />
+            <span>
+              <span className="block font-semibold">{t("badgeRefused")}</span>
+              {t(`badgeRefusal.${result.reason}`)}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

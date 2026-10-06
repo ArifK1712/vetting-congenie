@@ -1,5 +1,5 @@
-import { Placeholder } from "@/components/shell/Placeholder";
+import { AttendeesPage } from "@/features/attendees/AttendeesPage";
 
 export default function Page() {
-  return <Placeholder area="attendees" />;
+  return <AttendeesPage />;
 }

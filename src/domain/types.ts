@@ -126,7 +126,7 @@ export interface RegistrationVettingSettings {
 export interface RegistrationHistoryEvent {
   id: ID;
   registrationId: ID;
-  action: "settings_saved" | "vetting_enabled" | "vetting_disabled" | "question_added";
+  action: "settings_saved" | "vetting_enabled" | "vetting_disabled" | "question_added" | "limit_changed";
   actorId: ID;
   at: ISODate;
   /** Setting keys that changed, or the new question id. */
@@ -416,7 +416,10 @@ export type HistoryAction =
   | "watchlist_marked"
   | "field_corrected"
   | "reopened"
-  | "configuration_error";
+  | "configuration_error"
+  | "badge_printed"
+  | "badge_blocked"
+  | "place_released";
 
 export interface HistoryEvent {
   id: ID;

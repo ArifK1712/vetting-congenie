@@ -1,0 +1,176 @@
+{
+  "attendees": {
+    "title": "Attendees",
+    "subtitle": "Every registration in one place, with its registration, payment, vetting and badge status. Badges from every channel follow one rule: no badge until the request is Approved.",
+    "noAccessTitle": "You can't open the attendee list",
+    "noAccessBody": "The attendee list needs Review All or Reports access. Ask an administrator if you need it.",
+    "search": "Search name, email or request ID",
+    "range": "{from}–{to} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "kioskButton": "Check-in kiosk",
+    "apiButton": "API check",
+    "filters": {
+      "registrationStatus": "Registration status",
+      "payment": "Payment status",
+      "vetting": "Vetting status",
+      "badge": "Badge status",
+      "registration": "Registration",
+      "badgeType": "Badge type",
+      "reset": "Reset filters"
+    },
+    "columns": {
+      "attendee": "Attendee",
+      "registration": "Registration",
+      "registrationStatus": "Registration status",
+      "payment": "Payment status",
+      "vetting": "Vetting status",
+      "badge": "Badge status",
+      "actions": "Actions",
+      "selectPage": "Select all on this page",
+      "selectRow": "Select {name}"
+    },
+    "registrationStatus": {
+      "submitted": "Submitted",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "vetting": {
+      "notRequired": "Not required",
+      "openRequest": "Open request {id}",
+      "showSummary": "Show vetting summary for {name}",
+      "summaryTitle": "Vetting request",
+      "status": "Status",
+      "submitted": "Submitted",
+      "stage": "Current stage",
+      "decided": "Decided",
+      "none": "—",
+      "summaryNote": "Read-only summary. Reviewers open the full request from the Review Queue."
+    },
+    "capacity": {
+      "title": "Registration places",
+      "used": "{used} of {limit} used",
+      "free": "{count, plural, one {{n} place free} other {{n} places free}}",
+      "full": "Limit reached",
+      "waiting": "{count, plural, one {{n} waiting for a place} other {{n} waiting for a place}}",
+      "changeLimit": "Change limit",
+      "changeLimitFor": "Change limit for {registration}"
+    },
+    "limitDialog": {
+      "title": "Change the registration limit",
+      "description": "{registration} · {used} places used now. The limit can't go below the places already used.",
+      "limit": "New limit",
+      "limitHint": "Currently {limit}",
+      "reason": "Reason",
+      "reasonPlaceholder": "Why is the limit changing? This is logged.",
+      "waitingNote": "{count, plural, one {{n} request is waiting for a place. Raising the limit lets reviewers approve it.} other {{n} requests are waiting for a place. Raising the limit lets reviewers approve them.}}",
+      "confirm": "Save limit"
+    },
+    "actions": {
+      "menu": "Actions for {name}",
+      "badges": "Badge",
+      "download": "Download badge",
+      "generate": "Generate badge",
+      "print": "Print badge",
+      "registration": "Registration place",
+      "freePlace": "Free place",
+      "withdraw": "Withdraw request",
+      "openRequest": "Open request"
+    },
+    "badgeDone": {
+      "download": "Badge downloaded for {name}.",
+      "adminGenerate": "Badge generated for {name}.",
+      "bulkPrint": "Badge sent to the printer for {name}."
+    },
+    "refusal": {
+      "title": "Badge refused",
+      "notApproved": "Not approved yet — no badge until the vetting request is Approved",
+      "suspended": "Badge suspended, please contact the organiser",
+      "paymentPending": "Payment pending",
+      "revoked": "Revoked",
+      "cancelled": "Registration cancelled",
+      "logged": "The attempt has been recorded in the request history.",
+      "ok": "OK"
+    },
+    "bulk": {
+      "selected": "{count, plural, one {{n} attendee selected} other {{n} attendees selected}}",
+      "print": "Print badges ({n})",
+      "clear": "Clear selection",
+      "resultTitle": "Print run finished",
+      "printed": "{n} printed",
+      "refused": "{n} refused",
+      "allPrinted": "Every selected badge was printed.",
+      "refusedList": "Refused badges",
+      "done": "Done"
+    },
+    "kiosk": {
+      "title": "Check-in kiosk",
+      "description": "Simulates a badge scan at the entrance. The kiosk uses the same badge rule as every other channel.",
+      "code": "Request ID or email",
+      "placeholder": "VR-1001 or name@example.com",
+      "scan": "Scan",
+      "samples": "Try one",
+      "welcome": "Welcome, {name}",
+      "welcomeHint": "Badge valid. Enjoy the event.",
+      "notApproved": "Not approved — please see the registration desk",
+      "suspended": "Badge suspended, please contact the organiser",
+      "paymentPending": "Payment pending — please see the registration desk",
+      "revoked": "Badge revoked — please see the registration desk",
+      "cancelled": "Registration cancelled — please see the registration desk",
+      "notFound": "No registration found for this code.",
+      "close": "Close"
+    },
+    "api": {
+      "title": "Read-only API",
+      "description": "What other systems receive for one attendee. The API gives vetting and badge status only and never shows list details.",
+      "code": "Request ID, attendee ID or email",
+      "send": "Send request",
+      "response": "Response",
+      "notFound": "No attendee found for this code.",
+      "close": "Close"
+    },
+    "freePlace": {
+      "title": "Free the place of {name}",
+      "description": "Use this when an approved attendee cancels or withdraws. Their place goes back to {registration}.",
+      "effects": "What happens",
+      "revoke": "The badge is revoked and can no longer be printed or scanned.",
+      "cancel": "The registration is cancelled.",
+      "keep": "The request keeps its Approved decision in the history.",
+      "log": "The reason is logged.",
+      "reason": "Reason",
+      "reasonPlaceholder": "For example: the attendee cancelled by email",
+      "confirm": "Free place"
+    },
+    "withdraw": {
+      "title": "Withdraw request {id}",
+      "description": "{name} will no longer be reviewed. The registration is cancelled and any open stage work is closed.",
+      "reason": "Reason",
+      "reasonPlaceholder": "Why is this request being withdrawn? This is logged.",
+      "confirm": "Withdraw request"
+    },
+    "toasts": {
+      "limitSaved": "Limit for {registration} set to {limit}.",
+      "limitSavedWaiting": "Limit for {registration} set to {limit}. {count, plural, one {{n} waiting request can now be approved.} other {{n} waiting requests can now be approved.}}",
+      "placeFreed": "Place freed for {name}. The badge is revoked.",
+      "placeFreedWaiting": "Place freed for {name}. {count, plural, one {{n} waiting request can now be approved.} other {{n} waiting requests can now be approved.}}",
+      "withdrawn": "Request {id} withdrawn."
+    },
+    "errors": {
+      "forbidden": "You don't have permission to do this.",
+      "notFound": "This item no longer exists.",
+      "reasonRequired": "Please give a reason.",
+      "noPlace": "This attendee doesn't hold a place.",
+      "stale": "Someone changed this request in the meantime. Please try again.",
+      "belowUsed": "The limit can't be lower than the places already used.",
+      "invalidLimit": "Enter a whole number of 1 or more.",
+      "notWithdrawable": "Only requests that are Pending review or More info required can be withdrawn.",
+      "empty": "Select at least one attendee."
+    },
+    "empty": {
+      "title": "No attendees match",
+      "body": "Try another search or clear some filters.",
+      "scopeTitle": "No attendees yet",
+      "scopeBody": "Registrations for this event will appear here."
+    }
+  }
+}

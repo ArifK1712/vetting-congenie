@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { Providers } from "@/components/shell/Providers";
+import { ThemeScript } from "@/components/shell/ThemeScript";
 import { localeConfig } from "@/i18n/locales";
 import { routing } from "@/i18n/routing";
-import { THEME_SCRIPT } from "@/lib/themeScript";
 import "@/design/globals.css";
 
 const latin = Plus_Jakarta_Sans({
@@ -49,13 +49,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       lang={locale}
       dir={dir}
       className={`${latin.variable} ${plexArabic.variable} ${plexMono.variable} h-full`}
-      data-theme="light"
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-      </head>
       <body className="h-full">
+        <ThemeScript />
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Riyadh">
           <Providers dir={dir}>{children}</Providers>
         </NextIntlClientProvider>

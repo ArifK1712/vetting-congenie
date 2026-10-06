@@ -1,6 +1,6 @@
 "use client";
 
-import { History, ListPlus, Settings2, ShieldCheck, ShieldOff, type LucideIcon } from "lucide-react";
+import { Gauge, History, ListPlus, Settings2, ShieldCheck, ShieldOff, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { Avatar } from "@/components/ui/Avatar";
@@ -17,6 +17,7 @@ const ACTION: Record<RegistrationHistoryEvent["action"], { icon: LucideIcon; ton
   vetting_disabled: { icon: ShieldOff, tone: "bg-slate-100 text-slate-600" },
   settings_saved: { icon: Settings2, tone: "bg-indigo-100 text-indigo-600" },
   question_added: { icon: ListPlus, tone: "bg-violet-100 text-violet-600" },
+  limit_changed: { icon: Gauge, tone: "bg-amber-100 text-amber-700" },
 };
 
 const SETTING_KEYS: (keyof SettingsDraft)[] = [
@@ -71,8 +72,15 @@ export function HistoryTab({ registrationId }: { registrationId: ID }) {
             <div className="min-w-0 flex-1">
               <p className="text-sm text-ink-2">
                 <span className="font-semibold text-ink">{actor}</span>{" "}
-                {h.action === "question_added" ? t("question_added", { question: `“${question ? fmt.text(question.label) : t("unknownQuestion")}”` }) : t(h.action)}
+                {h.action === "question_added"
+                  ? t("question_added", { question: `“${question ? fmt.text(question.label) : t("unknownQuestion")}”` })
+                  : h.action === "limit_changed"
+                    ? t("limit_changed", { from: fmt.number(Number(h.changes[0]?.split("→")[0])), to: fmt.number(Number(h.changes[0]?.split("→")[1])) })
+                    : t(h.action)}
               </p>
+              {h.action === "limit_changed" && h.changes[1] && (
+                <p dir="auto" className="mt-1.5 rounded-md bg-subtle px-2.5 py-1.5 text-xs text-ink-2 ring-1 ring-line ring-inset">{h.changes[1]}</p>
+              )}
               {keys.length > 0 && (
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {keys.map((k) => (

@@ -237,7 +237,8 @@
         "vettingQuestions": "الاستخدام في التدقيق"
       },
       "unknownQuestion": "سؤالًا لم يعد موجودًا",
-      "unknownUser": "مستخدم"
+      "unknownUser": "مستخدم",
+      "limit_changed": "غيّر حد التسجيل من {from} إلى {to}"
     }
   }
 }
