@@ -35,7 +35,10 @@
     "expand": "Expand sidebar",
     "mainNavigation": "Main navigation",
     "close": "Close menu",
-    "open": "Open menu"
+    "open": "Open menu",
+    "pin": "Keep the menu open",
+    "unpin": "Let the menu close",
+    "appearance": "Appearance"
   },
   "header": {
     "eventScope": "Event",
@@ -57,7 +60,8 @@
     },
     "openSearch": "Search",
     "closeSearch": "Close search",
-    "preferences": "Display"
+    "preferences": "Display",
+    "appearance": "Appearance"
   },
   "common": {
     "cancel": "Cancel",

@@ -23,8 +23,8 @@
   --c-overlay: rgb(4 7 66 / 0.36);
 
   /* Lines — border-subtle, border-control */
-  --c-line: #DDE0EA;
-  --c-line-strong: #C3C7D6;
+  --c-line-base: #DDE0EA;
+  --c-line-strong-base: #C3C7D6;
   --c-control: #8D92B8;
 
   /* Text — text-primary, text-secondary, text-muted, text-on-brand */
@@ -107,8 +107,8 @@
   --c-active: #2A2163;
   --c-overlay: rgb(2 4 42 / 0.66);
 
-  --c-line: #2C3168;
-  --c-line-strong: #3B4180;
+  --c-line-base: #2C3168;
+  --c-line-strong-base: #3B4180;
   --c-control: #7479B5;
 
   --c-ink: #F1F2FA;
@@ -172,6 +172,55 @@
   --fs-base: 14.5px;
   --lh-tight: 1.45;
   --lh-normal: 1.7;
+}
+
+/*
+ * Admin layout preferences (Settings → Appearance), applied as attributes on
+ * <html> by the AppShell. Pages need no changes: spacing, density and
+ * surfaces come through these variables.
+ */
+:root {
+  --c-line: var(--c-line-base);
+  --c-line-strong: var(--c-line-strong-base);
+  /* Page gutters (the PAGE class): base sizes per breakpoint × the spacing scale */
+  --page-x: 1rem;
+  --page-top: 1.25rem;
+  --page-scale: 1;
+  --content-max: 90rem;
+}
+@media (min-width: 640px) {
+  :root { --page-x: 1.5rem; }
+}
+@media (min-width: 1024px) {
+  :root { --page-x: 1.75rem; --page-top: 1.75rem; }
+}
+:root[data-spacing="tight"] { --page-scale: 0.65; }
+:root[data-spacing="relaxed"] { --page-scale: 1.4; }
+
+/* Density: compact scales spacing (rem) and type a step down. */
+:root[data-density="compact"] {
+  font-size: 15px;
+  --fs-2xs: 10.5px;
+  --fs-xs: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-base: 13.5px;
+  --fs-lg: 15px;
+}
+:root[dir="rtl"][data-density="compact"] {
+  --fs-2xs: 11.5px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+}
+
+/* Border intensity */
+:root[data-borders="subtle"] {
+  --c-line: color-mix(in oklab, var(--c-line-base) 55%, var(--c-surface));
+  --c-line-strong: color-mix(in oklab, var(--c-line-strong-base) 60%, var(--c-surface));
+}
+:root[data-borders="strong"] {
+  --c-line: color-mix(in oklab, var(--c-line-base) 70%, var(--c-ink-3));
+  --c-line-strong: color-mix(in oklab, var(--c-line-strong-base) 65%, var(--c-ink-3));
 }
 
 @theme inline {
@@ -281,6 +330,11 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+  /* Page gutters — used through the PAGE constant (design/layout.ts). */
+  .page-pad {
+    padding-inline: calc(var(--page-x) * var(--page-scale));
+    padding-top: calc(var(--page-top) * var(--page-scale));
+  }
   .tabular {
     font-variant-numeric: tabular-nums;
   }
@@ -352,4 +406,19 @@
 
 @media (prefers-reduced-motion: reduce) {
   .anim-fade, .anim-pop, .anim-pane, .anim-drawer { animation: none; }
+}
+
+/* Shadow intensity (after the theme blocks so it wins in both themes). */
+:root[data-shadows="flat"] {
+  --shadow-xs: 0 0 #0000;
+  --shadow-card: 0 0 #0000;
+  --shadow-raised: 0 0 0 1px var(--c-line);
+}
+:root[data-shadows="raised"] {
+  --shadow-card: 0 1px 2px rgb(4 7 66 / 0.06), 0 4px 12px -2px rgb(4 7 66 / 0.12);
+  --shadow-raised: 0 2px 4px rgb(4 7 66 / 0.06), 0 12px 28px -6px rgb(4 7 66 / 0.18);
+}
+:root[data-theme="dark"][data-shadows="raised"] {
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 16px -4px rgb(0 0 0 / 0.55);
+  --shadow-raised: 0 2px 4px rgb(0 0 0 / 0.4), 0 14px 30px -6px rgb(0 0 0 / 0.65);
 }

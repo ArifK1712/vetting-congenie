@@ -97,6 +97,8 @@ await a.screenshot({ path: `${out}/reports-ac25-daniel.png`, fullPage: false });
 
 const before = Object.keys(db.reportDownloads).length;
 const csv = await downloadAs(a, /CSV/);
+// The toast shows for 4 s, so check it before the slower file checks below.
+check("toast after download", await a.getByText(/Vetting status downloaded/).first().isVisible().catch(() => false));
 const csvText = csv.buf.toString("utf8");
 check("CSV file name", /^vetting-status_\d{4}-\d{2}-\d{2}\.csv$/.test(csv.name), csv.name);
 check("CSV starts with a UTF-8 BOM", csv.buf[0] === 0xef && csv.buf[1] === 0xbb && csv.buf[2] === 0xbf);
@@ -109,7 +111,6 @@ await a.waitForTimeout(400);
 db = await readDb(a);
 const logs = Object.values(db.reportDownloads).sort((x, y) => y.at.localeCompare(x.at));
 check("AC25 download logged", logs.length === before + 1 && logs[0].actorId === "u_daniel" && logs[0].report === "vettingStatus" && logs[0].format === "csv" && logs[0].masked === true, JSON.stringify(logs[0] ?? {}));
-check("toast after download", await a.getByText(/Vetting status downloaded/).first().isVisible().catch(() => false));
 
 const xlsx = await downloadAs(a, /Excel/);
 check("Excel file is a real .xlsx (PK zip)", xlsx.name.endsWith(".xlsx") && xlsx.buf.subarray(0, 2).toString() === "PK", xlsx.name);

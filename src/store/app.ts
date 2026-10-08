@@ -105,10 +105,8 @@ export const SESSION_KEY = "vetting-prototype-session";
 interface SessionState {
   personaId: ID;
   eventScope: ID | "all";
-  sidebarCollapsed: boolean;
   setPersona: (id: ID) => void;
   setEventScope: (id: ID | "all") => void;
-  toggleSidebar: () => void;
   /** Phones: the navigation drawer. Not persisted. */
   navOpen: boolean;
   setNavOpen: (open: boolean) => void;
@@ -119,10 +117,8 @@ export const useSession = create<SessionState>()(
     (set) => ({
       personaId: "u_sara",
       eventScope: "all",
-      sidebarCollapsed: false,
       setPersona: (personaId) => set({ personaId }),
       setEventScope: (eventScope) => set({ eventScope }),
-      toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       navOpen: false,
       setNavOpen: (navOpen) => set({ navOpen }),
     }),
@@ -130,7 +126,7 @@ export const useSession = create<SessionState>()(
       name: SESSION_KEY,
       storage: createJSONStorage(() => safeStorage),
       skipHydration: true,
-      partialize: ({ personaId, eventScope, sidebarCollapsed }) => ({ personaId, eventScope, sidebarCollapsed }),
+      partialize: ({ personaId, eventScope }) => ({ personaId, eventScope }),
     },
   ),
 );

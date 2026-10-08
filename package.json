@@ -29,7 +29,8 @@
     "e2e:simulate": "node scripts/e2e-simulate.mjs",
     "e2e:attendees": "node scripts/e2e-attendees.mjs",
     "e2e:reports": "node scripts/e2e-reports.mjs",
-    "e2e:settings": "node scripts/e2e-settings.mjs"
+    "e2e:settings": "node scripts/e2e-settings.mjs",
+    "e2e:appearance": "node scripts/e2e-appearance.mjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.11",

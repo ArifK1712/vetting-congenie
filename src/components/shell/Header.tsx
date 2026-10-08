@@ -1,9 +1,9 @@
 "use client";
 
-import { CalendarDays, ChevronDown, Menu as MenuIcon, Monitor, Moon, RotateCcw, Search, Sun, X } from "lucide-react";
+import { CalendarDays, ChevronDown, Menu as MenuIcon, Monitor, Moon, Palette, RotateCcw, Search, Sun, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuRadioGroup, MenuRadioItem, MenuSeparator, MenuTrigger } from "@/components/ui/Menu";
 import { toast } from "@/components/ui/Toast";
@@ -15,16 +15,23 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { PERSONA_IDS } from "@/mocks/seed/reference";
 import { AlertsMenu } from "./AlertsMenu";
+import { Brand } from "./nav/Brand";
 import { useAppStore, useDb, useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 
-export function Header() {
+/**
+ * The top header. Layout presets without a start-side rail at the top pass
+ * `brand` (the mark moves here) and `nav` (a second row with the main
+ * navigation, shown from tablet width; phones always use the drawer).
+ */
+export function Header({ brand, nav }: { brand?: boolean; nav?: ReactNode }) {
   const t = useTranslations("header");
   const tNav = useTranslations("navigation");
   const setNavOpen = useSession((s) => s.setNavOpen);
   const [searching, setSearching] = useState(false);
   return (
-    <header className="relative flex h-14 shrink-0 items-center gap-2 border-b border-line bg-surface px-3 sm:gap-3 sm:px-4 md:h-16 lg:gap-4 lg:px-6">
+    <header className="shrink-0 border-b border-line bg-surface">
+    <div className="relative flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-4 md:h-16 lg:gap-4 lg:px-6">
       <button
         type="button"
         onClick={() => setNavOpen(true)}
@@ -33,6 +40,13 @@ export function Header() {
       >
         <MenuIcon className="size-5" strokeWidth={1.75} />
       </button>
+      {brand && (
+        <>
+          <Brand iconOnly className="hidden md:flex lg:hidden" />
+          <Brand className="hidden shrink-0 lg:flex" />
+          <div className="mx-1 hidden h-6 w-px bg-line md:block" />
+        </>
+      )}
       <EventScope />
       <div className="hidden min-w-0 flex-1 md:block md:max-w-md">
         <HeaderSearch />
@@ -67,6 +81,8 @@ export function Header() {
           </button>
         </div>
       )}
+    </div>
+    {nav && <div className="hidden border-t border-line md:block">{nav}</div>}
     </header>
   );
 }
@@ -248,6 +264,7 @@ function PersonaMenu() {
   const viewer = useViewer();
   const setPersona = useSession((s) => s.setPersona);
   const resetDemo = useAppStore((s) => s.resetDemo);
+  const router = useRouter();
 
   return (
     <Menu>
@@ -282,6 +299,10 @@ function PersonaMenu() {
           })}
         </MenuRadioGroup>
         <MenuSeparator />
+        <MenuItem onSelect={() => router.push("/appearance")}>
+          <Palette className="size-4 text-ink-3" />
+          {t("appearance")}
+        </MenuItem>
         <MenuItem
           onSelect={() => {
             resetDemo();

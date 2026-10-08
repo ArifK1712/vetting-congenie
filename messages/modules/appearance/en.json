@@ -1,0 +1,123 @@
+{
+  "appearance": {
+    "title": "Appearance",
+    "subtitle": "Choose how the admin workspace is laid out for you. It's a personal preference: it's saved for your account and, for now, applies on this browser.",
+    "savedFor": "Saved for {name}",
+    "layout": {
+      "title": "Admin layout",
+      "body": "Pick a starting layout, fine-tune it, and try it live before you keep it."
+    },
+    "presetsLabel": "Layout preset",
+    "current": "In use",
+    "preview": {
+      "title": "Preview",
+      "body": "Your navigation, in miniature. Try it live to use the whole app with this layout.",
+      "label": "Preview of the {name} layout",
+      "tryLive": "Try it live",
+      "live": "Live in the app",
+      "liveHint": "Changes you make now apply to the app straight away. Keep or go back from the bar at the bottom.",
+      "sameAsSaved": "This is the layout you're using."
+    },
+    "options": {
+      "title": "Options",
+      "body": "Only the settings that apply to {name} are shown.",
+      "sidebarState": {
+        "label": "Sidebar at start",
+        "hint": "How the sidebar opens when you sign in. You can still collapse it any time.",
+        "expanded": "Expanded",
+        "collapsed": "Collapsed"
+      },
+      "sidebarWidth": {
+        "label": "Sidebar width",
+        "hint": "Width of the open sidebar.",
+        "narrow": "Narrow",
+        "regular": "Regular",
+        "wide": "Wide"
+      },
+      "sidebarSticky": {
+        "label": "Sticky sidebar",
+        "hint": "The sidebar stays in place while the page scrolls."
+      },
+      "labels": {
+        "label": "Navigation labels",
+        "hint": "Show names next to the icons, or only when you point at them.",
+        "show": "Show",
+        "tooltip": "On hover"
+      },
+      "headerSticky": {
+        "label": "Sticky header",
+        "hint": "The header stays at the top while the page scrolls."
+      },
+      "contentWidth": {
+        "label": "Content width",
+        "hint": "Use the full screen, or keep pages to a comfortable reading width.",
+        "full": "Full",
+        "constrained": "Constrained"
+      },
+      "spacing": {
+        "label": "Content spacing",
+        "hint": "Space around the page content.",
+        "tight": "Tight",
+        "normal": "Normal",
+        "relaxed": "Relaxed"
+      },
+      "density": {
+        "label": "Density",
+        "hint": "Compact fits more on screen with slightly smaller text.",
+        "compact": "Compact",
+        "comfortable": "Comfortable"
+      },
+      "borders": {
+        "label": "Borders",
+        "hint": "How visible lines and card edges are.",
+        "subtle": "Subtle",
+        "standard": "Standard",
+        "strong": "Strong"
+      },
+      "shadows": {
+        "label": "Shadows",
+        "hint": "How much cards and menus lift off the page.",
+        "flat": "Flat",
+        "soft": "Soft",
+        "raised": "Raised"
+      }
+    },
+    "actions": {
+      "unsaved": "Your layout has unsaved changes",
+      "unsavedHint": "Save to use it every time you sign in.",
+      "save": "Save layout",
+      "discard": "Discard",
+      "reset": "Reset to default",
+      "saved": "Layout saved."
+    },
+    "presets": {
+      "default": {
+        "name": "Default",
+        "description": "Full sidebar with page names, header across the top."
+      },
+      "compact": {
+        "name": "Compact sidebar",
+        "description": "Icon rail that opens on hover; pin it to keep it open."
+      },
+      "mini": {
+        "name": "Mini sidebar",
+        "description": "Small fixed rail with icons and short names. More room for content."
+      },
+      "topnav": {
+        "name": "Top navigation",
+        "description": "No sidebar. Modules open as menus in the header."
+      },
+      "hybrid": {
+        "name": "Hybrid",
+        "description": "Modules in the header, the current module's pages in a slim side menu."
+      }
+    },
+    "previewBar": {
+      "title": "Previewing {name}.",
+      "body": "Look around, then keep it or go back.",
+      "save": "Keep this layout",
+      "cancel": "Go back",
+      "saved": "Layout saved."
+    }
+  }
+}

@@ -35,7 +35,10 @@
     "expand": "توسيع الشريط الجانبي",
     "mainNavigation": "التنقل الرئيسي",
     "close": "إغلاق القائمة",
-    "open": "فتح القائمة"
+    "open": "فتح القائمة",
+    "pin": "إبقاء القائمة مفتوحة",
+    "unpin": "السماح بإغلاق القائمة",
+    "appearance": "المظهر"
   },
   "header": {
     "eventScope": "الفعالية",
@@ -57,7 +60,8 @@
     },
     "openSearch": "بحث",
     "closeSearch": "إغلاق البحث",
-    "preferences": "العرض"
+    "preferences": "العرض",
+    "appearance": "المظهر"
   },
   "common": {
     "cancel": "إلغاء",
