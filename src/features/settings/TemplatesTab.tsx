@@ -360,7 +360,7 @@ function TemplateEditor({ templateKey, onClose }: { templateKey: string; onClose
                 <p className="mt-3 text-sm leading-relaxed break-words whitespace-pre-line text-ink-2" data-preview-body>
                   {filledBody}
                 </p>
-                {builtIn.button[lang] && <span className="mt-5 inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-sm font-semibold text-ink-inverse">{builtIn.button[lang]}</span>}
+                {builtIn.button[lang] && <span className="mt-5 inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-sm font-semibold text-on-accent">{builtIn.button[lang]}</span>}
               </div>
             </figure>
           </div>

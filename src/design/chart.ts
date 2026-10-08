@@ -1,11 +1,13 @@
 /**
  * Chart series colours, as CSS variables so they follow the theme (values in
- * globals.css). Validated with the dataviz palette validator, all pairs:
- * light (surface #ffffff) CVD ΔE ≥ 10.5, normal-vision ΔE ≥ 18; dark
- * (surface #141726) all checks pass for open/approved/rejected and for the
- * open/unclaimed pair. Approved green sits below 3:1 contrast in light mode,
- * so every chart that uses it also carries a legend plus tooltips or a table
- * view. Hues match the status pills.
+ * globals.css), taken from the Congenie brand ramps: Spark Violet for open
+ * work, the brand Success and Error colours for decisions, and Info blue for
+ * unclaimed. Validated with the dataviz palette validator (all pairs):
+ * light (surface #FFFFFF) and dark (surface #141743) pass every check; the
+ * green/red pair is in the colour-blind 6–8 ΔE band, which is allowed only
+ * with secondary encoding — every chart that uses it has a legend plus
+ * tooltips or a table view, as the brand guideline asks ("always add an icon
+ * or a word").
  */
 export const SERIES = {
   open: "var(--chart-open)", // indigo — submitted / open work

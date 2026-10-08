@@ -73,7 +73,7 @@ export function InfoFormPage({ token }: { token: string }) {
         title={t("doneTitle")}
         body={t("done")}
         action={
-          <Link href={`/portal/status/${done}`} className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:bg-accent-hover">
+          <Link href={`/portal/status/${done}`} className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent hover:bg-accent-hover">
             {t("viewStatus")}
           </Link>
         }
@@ -184,7 +184,7 @@ export function InfoFormPage({ token }: { token: string }) {
           );
         })}
         {problem && !problem.questionId && <p className="text-sm text-rose-600">{t("errors.generic")}</p>}
-        <button type="submit" disabled={busy} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent text-sm font-semibold text-white shadow-accent hover:bg-accent-hover disabled:opacity-60">
+        <button type="submit" disabled={busy} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent text-sm font-semibold text-on-accent shadow-accent hover:bg-accent-hover disabled:opacity-60">
           {busy && <Loader2 className="size-4 animate-spin" />}
           {busy ? t("sending") : t("submit")}
         </button>

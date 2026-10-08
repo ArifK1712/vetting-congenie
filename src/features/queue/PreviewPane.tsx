@@ -2,14 +2,15 @@
 
 import { ArrowUpRight, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { BadgeTypeChip, StatusPill } from "@/components/ui/Status";
-import { buildProgress } from "@/domain/progress";
 import { canClaim, type QueueRow } from "@/domain/queue";
-import type { Database, ID } from "@/domain/types";
+import type { ID } from "@/domain/types";
+import type { Lookups } from "@/queries/lookups";
+import { useRequestPreview } from "@/queries/queue";
 import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { RequestFlags, ScreeningIndicator, StageProgress } from "@/features/requests/parts";
@@ -24,7 +25,7 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function PreviewPane({
-  db,
+  lookups: db,
   row,
   viewerId,
   now,
@@ -32,7 +33,7 @@ export function PreviewPane({
   onClaim,
   claiming,
 }: {
-  db: Database;
+  lookups: Lookups;
   row: QueueRow;
   viewerId: ID;
   now: number;
@@ -46,10 +47,9 @@ export function PreviewPane({
   const tc = useTranslations("common");
   const td = useTranslations("duration");
   const fmt = useFormat();
-  const request = db.requests[row.id];
-  const steps = useMemo(() => buildProgress(db, request), [db, request]);
+  const preview = useRequestPreview(row.id);
   const claimer = row.claimedBy ? db.users[row.claimedBy] : null;
-  const version = request.workflowVersionId ? db.workflowVersions[request.workflowVersionId] : null;
+  const version = preview?.request.workflowVersionId ? db.workflowVersions[preview.request.workflowVersionId] : null;
 
   return (
     <aside
@@ -122,7 +122,7 @@ export function PreviewPane({
 
         <section className="border-t border-line px-5 py-4">
           <h3 className="eyebrow mb-3">{t("progress")}</h3>
-          <StageProgress steps={steps} db={db} now={now} compact />
+          <StageProgress steps={preview?.steps ?? []} users={db.users} now={now} compact />
         </section>
       </div>
 
@@ -133,7 +133,7 @@ export function PreviewPane({
             <DirIcon icon={ArrowUpRight} className="size-3.5" />
           </Button>
         </Link>
-        {canClaim(db, viewerId, request) && (
+        {preview && canClaim(db, viewerId, preview.request) && (
           <Button disabled={claiming} onClick={onClaim}>
             {tq("claim")}
           </Button>

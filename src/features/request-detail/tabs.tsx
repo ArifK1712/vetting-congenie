@@ -16,7 +16,7 @@ import { linkState } from "@/domain/moreInfo";
 import { nodeById } from "@/domain/workflow";
 import { requestService } from "@/services/requests";
 import { useFieldLabel } from "./CorrectDialog";
-import type { RequestView } from "./useRequestView";
+import type { RequestView } from "@/queries/requestView";
 
 const LTR_FIELDS = new Set(["email", "mobile", "nationalId", "passportNo"]);
 
@@ -217,7 +217,7 @@ export function ScreeningTab({ view }: { view: RequestView }) {
   const tl = useTranslations("screening");
   const tf = useTranslations("requestDetail.fields");
   const fmt = useFormat();
-  const { db } = view;
+  const { users } = view.lookups;
 
   if (!view.matches.length && !view.hasHiddenBlacklistHit) {
     return <p className="py-6 text-sm text-ink-3">{t("noMatches")}</p>;
@@ -233,11 +233,11 @@ export function ScreeningTab({ view }: { view: RequestView }) {
       )}
       {view.matches.map((m) => {
         const isBlacklist = m.listType === "blacklist";
-        const entry = isBlacklist ? db.blacklist[m.entryId] : db.watchlist[m.entryId];
-        const wl = !isBlacklist ? db.watchlist[m.entryId] : null;
-        const bl = isBlacklist ? db.blacklist[m.entryId] : null;
+        const entry = isBlacklist ? view.blacklistEntries[m.entryId] : view.watchEntries[m.entryId];
+        const wl = !isBlacklist ? view.watchEntries[m.entryId] : null;
+        const bl = isBlacklist ? view.blacklistEntries[m.entryId] : null;
         const detailAllowed = isBlacklist ? view.seesBlacklist : view.seesWatchlist;
-        const decider = m.decidedBy ? db.users[m.decidedBy] : null;
+        const decider = m.decidedBy ? users[m.decidedBy] : null;
         return (
           <section key={m.id} className="border-b border-line pb-6 last:border-b-0">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -306,7 +306,7 @@ export function ProgressTab({ view, now }: { view: RequestView; now: number }) {
           {t("versionNote", { name: fmt.text(view.workflow.name), n: view.version.versionNo })}
         </p>
       )}
-      <StageProgress steps={view.steps} db={view.db} now={now} />
+      <StageProgress steps={view.steps} users={view.lookups.users} now={now} />
     </div>
   );
 }
@@ -320,7 +320,7 @@ export function MoreInfoTab({ view, now, revision, canAct }: { view: RequestView
   const [busy, setBusy] = useState(false);
   if (!view.infoRequests.length) return <p className="py-6 text-sm text-ink-3">{t("empty")}</p>;
   const graph = view.version?.graph;
-  const inTeam = !!view.request.currentTeamId && !!view.db.teams[view.request.currentTeamId]?.members.some((m) => m.userId === view.viewer.id);
+  const inTeam = view.inCurrentTeam;
   const mayResend = canAct && view.request.status === "more_info_required" && (inTeam || view.viewer.can("queue.reviewAll"));
 
   const resend = async (infoRequestId: string) => {
@@ -333,7 +333,7 @@ export function MoreInfoTab({ view, now, revision, canAct }: { view: RequestView
   return (
     <div className="space-y-8 pt-4">
       {[...view.infoRequests].reverse().map((ir) => {
-        const by = view.db.users[ir.requestedBy];
+        const by = view.lookups.users[ir.requestedBy];
         const state = linkState(ir, now);
         const back = graph ? nodeById(graph, ir.returnToNodeId) : undefined;
         return (
@@ -434,16 +434,16 @@ export function HistoryTab({ view }: { view: RequestView }) {
     return source === "profile" ? k in view.applicant.profile : view.applicant.answers.some((a) => a.questionId === k);
   };
   const fmt = useFormat();
-  const { db } = view;
+  const { users, teams, rejectReasons } = view.lookups;
 
   const describe = (h: HistoryEvent) => {
     const stageName = (nodeId?: string) => {
-      const exec = Object.values(db.stageExecutions).find((e) => e.requestId === h.requestId && e.stageNodeId === nodeId);
-      return exec ? fmt.text(exec.stageName) : "";
+      const name = nodeId ? view.stageNames[nodeId] : undefined;
+      return name ? fmt.text(name) : "";
     };
     switch (h.action) {
       case "routed":
-        return t("actions.routed", { team: h.teamId ? fmt.text(db.teams[h.teamId]?.name) : "" });
+        return t("actions.routed", { team: h.teamId ? fmt.text(teams[h.teamId]?.name) : "" });
       case "approved_stage":
         return t("actions.approved_stage", { stage: stageName(h.stageNodeId) });
       case "field_corrected":
@@ -460,7 +460,7 @@ export function HistoryTab({ view }: { view: RequestView }) {
   return (
     <ol className="pt-2">
       {view.history.map((h) => {
-        const actor = h.actorId === "system" || h.actorId === "attendee" ? null : db.users[h.actorId];
+        const actor = h.actorId === "system" || h.actorId === "attendee" ? null : users[h.actorId];
         const detail =
           h.action === "screened" && h.meta
             ? t("screenedDetail", {
@@ -470,9 +470,9 @@ export function HistoryTab({ view }: { view: RequestView }) {
                 w: Number(h.meta.watchlist ?? 0),
               })
             : h.action === "rejected" && h.meta?.reasonId
-              ? fmt.text(db.rejectReasons[String(h.meta.reasonId)]?.label)
+              ? fmt.text(rejectReasons[String(h.meta.reasonId)]?.label)
               : h.action === "reassigned" && h.meta?.to
-                ? t("reassignedTo", { name: db.users[String(h.meta.to)]?.name ?? "" })
+                ? t("reassignedTo", { name: users[String(h.meta.to)]?.name ?? "" })
                 : h.action === "field_corrected" && h.meta?.field && canSee(String(h.meta.field))
                   ? t("changedFrom", { from: String(h.meta.from ?? "—") || "—", to: String(h.meta.to ?? "") })
                   : h.action === "document_downloaded" && h.meta?.file

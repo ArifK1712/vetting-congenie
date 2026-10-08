@@ -17,13 +17,12 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/useNow";
 import { wroteLocally } from "@/services/requests";
-import { useAppStore } from "@/store/app";
 import { RequestFlags } from "@/features/requests/parts";
 import { FINAL_STATUSES } from "@/domain/status";
 import { CorrectDialog } from "./CorrectDialog";
 import { CommentsPanel, DecisionPanel, FactsPanel } from "./SidePanel";
 import { AnswersTab, ApplicantTab, DocumentsTab, HistoryTab, MoreInfoTab, ProgressTab, ScreeningTab } from "./tabs";
-import { useRequestView, type RequestView } from "./useRequestView";
+import { useRequestView, type RequestView } from "@/queries/requestView";
 
 function Bar({ tone, icon: Icon, children }: { tone: "danger" | "attention" | "accent"; icon: typeof ShieldAlert; children: ReactNode }) {
   return (
@@ -46,7 +45,7 @@ function Bars({ view }: { view: RequestView }) {
   const tl = useTranslations("screening.level");
   const { request } = view;
   const watch = view.matches.find((m) => m.listType === "watchlist" && m.status !== "cleared");
-  const watchEntry = watch ? view.db.watchlist[watch.entryId] : null;
+  const watchEntry = watch ? view.watchEntries[watch.entryId] : null;
   const retro = view.matches.some((m) => m.listType === "blacklist" && m.stagePoint === "retro" && m.status === "open");
 
   const bars: ReactNode[] = [];
@@ -87,8 +86,8 @@ export function RequestDetailPage({ id }: { id: ID }) {
   const [correcting, setCorrecting] = useState<string | null>(null);
   if (seen.id !== id) setSeen({ id, revision: currentRevision });
   const stale = !!view && seen.id === id && currentRevision !== seen.revision && !wroteLocally(id, currentRevision);
-  const acknowledge = () =>
-    setSeen({ id, revision: useAppStore.getState().db?.requests[id]?.revision ?? currentRevision });
+  // The view always reflects the latest data, so its revision is the one to acknowledge.
+  const acknowledge = () => setSeen({ id, revision: currentRevision });
 
   if (!view) {
     return (
@@ -253,7 +252,7 @@ function ChangedBanner({ view, now, onReload }: { view: RequestView; now: number
   const t = useTranslations("actions.live");
   const fmt = useFormat();
   const latest = view.history.find((h) => h.actorId !== view.viewer.id);
-  const actor = latest && latest.actorId !== "system" && latest.actorId !== "attendee" ? view.db.users[latest.actorId] : null;
+  const actor = latest && latest.actorId !== "system" && latest.actorId !== "attendee" ? view.lookups.users[latest.actorId] : null;
   const time = latest ? fmt.ago(latest.at, now) : "";
   return (
     <div role="status" className="anim-pop mt-4 flex items-center gap-3 rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-800 ring-1 ring-indigo-200 ring-inset">

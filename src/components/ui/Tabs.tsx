@@ -9,7 +9,10 @@ export const TabsContent = RTabs.Content;
 
 export function TabsList({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <RTabs.List className={cn("flex items-end gap-6 overflow-x-auto border-b border-line", className)}>
+    // Scrolls sideways on narrow screens (no visible scrollbar). The base line is an
+    // inset shadow inside the row, so the active underline sits on it without
+    // hanging below — which would make the row scroll vertically too.
+    <RTabs.List className={cn("no-scrollbar flex items-end gap-6 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--c-line)]", className)}>
       {children}
     </RTabs.List>
   );
@@ -19,7 +22,7 @@ export function TabsTrigger({ value, children, count }: { value: string; childre
   return (
     <RTabs.Trigger
       value={value}
-      className="group -mb-px inline-flex h-12 shrink-0 items-center gap-1.5 border-b-2 border-transparent text-sm font-medium whitespace-nowrap text-ink-3 transition-colors outline-none hover:text-ink focus-visible:text-ink data-[state=active]:border-accent data-[state=active]:font-semibold data-[state=active]:text-accent-text"
+      className="group inline-flex h-12 shrink-0 items-center gap-1.5 border-b-2 border-transparent text-sm font-medium whitespace-nowrap text-ink-3 transition-colors outline-none hover:text-ink focus-visible:text-ink data-[state=active]:border-accent data-[state=active]:font-semibold data-[state=active]:text-accent-text"
     >
       {children}
       {count !== undefined && count > 0 && (

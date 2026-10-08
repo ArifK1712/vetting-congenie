@@ -361,7 +361,7 @@ export function EntryFormPage({ id }: { id: ID | null }) {
                         onClick={() => setDraft((d) => ({ ...d, eventScope: on ? scope.filter((x) => x !== e.id) : [...scope, e.id] }))}
                         className={cn("inline-flex items-center gap-2 rounded-lg px-3 py-2 text-start text-sm ring-1 ring-inset", on ? "bg-accent-soft text-accent-text ring-indigo-300" : "bg-surface text-ink-2 ring-line hover:bg-subtle")}
                       >
-                        <span className={cn("inline-flex size-4 items-center justify-center rounded-xs border", on ? "border-accent bg-accent text-white" : "border-line-strong")}>{on && <CircleCheck className="size-3" />}</span>
+                        <span className={cn("inline-flex size-4 items-center justify-center rounded-xs border", on ? "border-accent bg-accent text-on-accent" : "border-line-strong")}>{on && <CircleCheck className="size-3" />}</span>
                         <span>
                           <span className="block font-medium">{fmt.text(e.name)}</span>
                           <span className="block font-mono text-xs opacity-75">{e.code}</span>

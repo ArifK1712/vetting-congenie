@@ -102,7 +102,7 @@ function OptionList({
                 className={cn(
                   "inline-flex size-4 shrink-0 items-center justify-center border transition-colors",
                   multi ? "rounded-xs" : "rounded-full",
-                  selected ? "border-accent bg-accent text-ink-inverse" : "border-line-strong bg-surface",
+                  selected ? "border-accent bg-accent text-on-accent" : "border-line-strong bg-surface",
                 )}
               >
                 {selected && (multi ? <Check className="size-3" strokeWidth={3} /> : <span className="size-1.5 rounded-full bg-surface" />)}

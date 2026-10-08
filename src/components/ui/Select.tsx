@@ -72,7 +72,7 @@ function OptionRows({
                   <span
                     className={cn(
                       "inline-flex size-4 shrink-0 items-center justify-center rounded-xs border transition-colors",
-                      selected ? "border-accent bg-accent text-ink-inverse" : "border-line-strong bg-surface",
+                      selected ? "border-accent bg-accent text-on-accent" : "border-line-strong bg-surface",
                     )}
                   >
                     {selected && <Check className="size-3" strokeWidth={3} />}

@@ -3,13 +3,13 @@
 import { ChevronLeft, ChevronRight, Inbox, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { PAGE } from "@/design/layout";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { applyQueueFilters, buildQueueRows, EMPTY_FILTERS, type QueueFilters } from "@/domain/queue";
+import { EMPTY_FILTERS, type QueueFilters } from "@/domain/queue";
 import { STATUS_ORDER } from "@/domain/status";
 import type { ID, RequestStatus } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
@@ -17,7 +17,9 @@ import { useRouter } from "@/i18n/navigation";
 import { useNow } from "@/lib/useNow";
 import { requestService } from "@/services/requests";
 import { useQuickAction } from "@/features/requests/useRequestAction";
-import { useDb, useSession } from "@/store/app";
+import { useLookups } from "@/queries/lookups";
+import { useQueue, useRequestRevisions } from "@/queries/queue";
+import { useSession } from "@/store/app";
 import { useViewer } from "@/store/useViewer";
 import { FilterBar, hasActiveFilters } from "./FilterBar";
 import { PreviewPane } from "./PreviewPane";
@@ -29,7 +31,8 @@ const PAGE_SIZE = 25;
 export function QueuePage() {
   const t = useTranslations("queue");
   const fmt = useFormat();
-  const db = useDb();
+  const lookups = useLookups();
+  const revisionOf = useRequestRevisions();
   const viewer = useViewer();
   const eventScope = useSession((s) => s.eventScope);
   const router = useRouter();
@@ -72,12 +75,10 @@ export function QueuePage() {
   const quick = useQuickAction();
   const tt = useTranslations("actions.toasts");
   const claimRequest = (id: ID) => {
-    const r = db.requests[id];
-    void quick.run(id, () => requestService.claim({ requestId: id, actorId: viewer.id, expectedRevision: r.revision }), tt("claimed", { id }));
+    void quick.run(id, () => requestService.claim({ requestId: id, actorId: viewer.id, expectedRevision: revisionOf(id) }), tt("claimed", { id }));
   };
 
-  const allRows = useMemo(() => buildQueueRows(db, viewer.id, eventScope, now), [db, viewer.id, eventScope, now]);
-  const { rows, counts, late } = useMemo(() => applyQueueFilters(allRows, filters, viewer.id, now), [allRows, filters, viewer.id, now]);
+  const { allRows, rows, counts, late } = useQueue(filters, now);
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
@@ -134,12 +135,12 @@ export function QueuePage() {
         />
 
         <section className="flex min-h-[28rem] flex-1 flex-col overflow-hidden rounded-xl lg:min-h-0 bg-surface shadow-card ring-1 ring-line">
-          <FilterBar db={db} rows={allRows} viewerId={viewer.id} reviewAll={viewer.can("queue.reviewAll")} filters={filters} onChange={update} />
+          <FilterBar lookups={lookups} rows={allRows} viewerId={viewer.id} reviewAll={viewer.can("queue.reviewAll")} filters={filters} onChange={update} />
 
           <div className="min-h-0 flex-1 overflow-auto border-t border-line">
             {pageRows.length ? (
               <QueueTable
-                db={db}
+                lookups={lookups}
                 rows={pageRows}
                 viewerId={viewer.id}
                 now={now}
@@ -187,7 +188,7 @@ export function QueuePage() {
       )}
       {selected && (
         <PreviewPane
-          db={db}
+          lookups={lookups}
           row={selected}
           viewerId={viewer.id}
           now={now}

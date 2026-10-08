@@ -279,7 +279,7 @@ export function ResultCard({ db, run }: { db: Database; run: SimRun }) {
 
         {request && (
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link href={`/requests/${request.id}`} className={cn(linkBase, "bg-accent text-ink-inverse hover:bg-accent-hover")}>
+            <Link href={`/requests/${request.id}`} className={cn(linkBase, "bg-accent text-on-accent hover:bg-accent-hover")}>
               {t("openRequest")}
               <DirIcon icon={ArrowRight} className="size-3.5" />
             </Link>

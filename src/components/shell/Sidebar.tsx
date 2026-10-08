@@ -279,9 +279,10 @@ function NavLinks({ collapsed }: { collapsed: boolean }) {
 function LogoMark() {
   return (
     <svg viewBox="0 0 32 32" className="size-8 shrink-0" aria-hidden>
-      <rect width="32" height="32" rx="9" className="fill-accent" />
-      <path d="M10 11l6 10 6-10" fill="none" stroke="white" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="22.5" cy="9.5" r="2.6" fill="#a5f3fc" />
+      {/* Brand guideline: navy tile with a white mark and a Spark Violet sparkle (inverted in dark mode). */}
+      <rect width="32" height="32" rx="9" style={{ fill: "var(--c-ink)" }} />
+      <path d="M10 11l6 10 6-10" fill="none" style={{ stroke: "var(--c-ink-inverse)" }} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="22.5" cy="9.5" r="2.6" style={{ fill: "var(--c-accent)" }} />
     </svg>
   );
 }

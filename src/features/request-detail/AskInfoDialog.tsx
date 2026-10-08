@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { ActionDialog, DialogIcon } from "@/components/ui/Dialog";
 import { Field, TextArea, TextInput } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
-import { MAPPABLE_FIELDS, MAX_QUESTIONS, QUESTION_TYPES, roundsOf, validateAsk } from "@/domain/moreInfo";
+import { MAPPABLE_FIELDS, MAX_QUESTIONS, QUESTION_TYPES } from "@/domain/moreInfo";
 import type { InfoQuestion, QuestionType } from "@/domain/types";
 import { useFormat } from "@/i18n/format";
 import { requestService } from "@/services/requests";
 import { useRequestAction } from "@/features/requests/useRequestAction";
-import type { RequestView } from "./useRequestView";
+import type { RequestView } from "@/queries/requestView";
 
 let seq = 0;
 const blank = (): InfoQuestion & { optionsText: string } => ({ id: `q${Date.now().toString(36)}${++seq}`, label: "", type: "text", required: true, mapsTo: null, optionsText: "" });
@@ -33,13 +33,13 @@ export function AskInfoDialog({ view, revision, onClose, onDone }: { view: Reque
   const defaultReturn = view.stage?.afterMoreInfoReturnTo && view.stage.afterMoreInfoReturnTo !== "same" ? view.stage.afterMoreInfoReturnTo : stageId;
   const [returnTo, setReturnTo] = useState(defaultReturn);
   const stages = (graph?.nodes ?? []).filter((n) => n.type === "stage");
-  const round = roundsOf(view.db, view.request.id).length + 1;
+  const round = view.infoRoundCount + 1;
 
   const payload = useMemo(
     () => questions.map(({ optionsText, ...q }) => ({ ...q, options: q.type === "singleChoice" || q.type === "multiChoice" ? optionsText.split("\n").map((o) => o.trim()).filter(Boolean) : undefined })),
     [questions],
   );
-  const issues = validateAsk(view.db, view.request, { instructions, questions: payload, returnToNodeId: returnTo });
+  const issues = view.validateAsk({ instructions, questions: payload, returnToNodeId: returnTo });
   const update = (id: string, patch: Partial<(typeof questions)[number]>) => setQuestions((qs) => qs.map((q) => (q.id === id ? { ...q, ...patch } : q)));
 
   return (

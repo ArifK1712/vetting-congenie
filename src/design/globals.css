@@ -1,60 +1,67 @@
 @import "tailwindcss";
+@import "./brand-palette.css";
 @import "./dark-palette.css";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /*
- * Vetting design tokens — v2 "premium" direction.
- * Cool-grey canvas with white surfaces, a deep navy navigation rail, a rich
- * indigo accent, and a calibrated colour palette for statuses and
- * categories. Components consume these through Tailwind theme names
- * (bg-surface, text-ink-2, bg-nav, …) and design/tones.ts — never raw hex.
+ * Design tokens — the Congenie colour system (Brand Guidelines: The Colour
+ * Palette, Vol. 01, Quick reference p.11). A calm base of white and soft
+ * slate greys, Congenie Navy for text, and Spark Violet for actions and
+ * selection (60 / 30 / 10). Components consume these through Tailwind theme
+ * names (bg-surface, text-ink-2, bg-nav, …) and design/tones.ts — never raw
+ * hex. Colour ramps live in brand-palette.css (generated).
  */
 
 :root {
-  /* Surfaces */
-  --c-canvas: #f4f5f9;
-  --c-surface: #ffffff;
-  --c-subtle: #f7f8fb;
-  --c-hover: #f1f3f8;
-  --c-active: #e9ecf5;
-  --c-overlay: rgb(14 19 48 / 0.32);
+  /* Surfaces — bg-page, bg-surface, bg-subtle */
+  --c-canvas: #F7F8FB;
+  --c-surface: #FFFFFF;
+  --c-subtle: #EEF0F5;
+  --c-hover: #F3F4FA;
+  --c-active: #E4E5F2;
+  --c-overlay: rgb(4 7 66 / 0.36);
 
-  /* Lines */
-  --c-line: #e7e9f0;
-  --c-line-strong: #d4d8e3;
+  /* Lines — border-subtle, border-control */
+  --c-line: #DDE0EA;
+  --c-line-strong: #C3C7D6;
+  --c-control: #8D92B8;
 
-  /* Text */
-  --c-ink: #11142a;
-  --c-ink-2: #4a5068;
-  --c-ink-3: #8a90a7;
-  --c-ink-inverse: #ffffff;
+  /* Text — text-primary, text-secondary, text-muted, text-on-brand */
+  --c-ink: #040742;
+  --c-ink-2: #4D5269;
+  --c-ink-3: #636880;
+  --c-ink-inverse: #FFFFFF;
 
-  /* Accent — royal indigo */
-  --c-accent: #4f46e5;
-  --c-accent-hover: #4338ca;
-  --c-accent-soft: #eef0ff;
-  --c-accent-text: #4338ca;
+  /* Accent — action-primary, action-primary-hover, bg-brand-subtle, text-link */
+  --c-accent: #843DF5;
+  --c-accent-hover: #7030E0;
+  --c-accent-soft: #F7F2FF;
+  --c-accent-text: #5E1FC4;
+  --c-on-accent: #FFFFFF;
+  --c-focus: #843DF5;
 
-  /* Navigation rail — light */
-  --c-nav: #ffffff;
-  --c-nav-raised: #f7f8fb;
-  --c-nav-line: #e7e9f0;
-  --c-nav-text: #4a5068;
-  --c-nav-muted: #8a90a7;
-  --c-nav-strong: #11142a;
-  --c-nav-hover: #f3f4f8;
-  --c-nav-active: #eef0ff;
+  /* Navigation rail — light, white surface with a violet selection */
+  --c-nav: #FFFFFF;
+  --c-nav-raised: #F7F8FB;
+  --c-nav-line: #DDE0EA;
+  --c-nav-text: #4D5269;
+  --c-nav-muted: #636880;
+  --c-nav-strong: #040742;
+  --c-nav-hover: #F3F4FA;
+  --c-nav-active: #F7F2FF;
 
-  /* Semantic tones */
-  --c-positive: #047857;
-  --c-positive-soft: #ecfdf5;
-  --c-attention: #b45309;
-  --c-attention-dot: #f59e0b;
-  --c-attention-soft: #fffbeb;
-  --c-danger: #b91c1c;
-  --c-danger-dot: #ef4444;
-  --c-danger-soft: #fef2f2;
+  /* Status — success, warning, error (+ subtle backgrounds) */
+  --c-positive: #0F7B5A;
+  --c-positive-soft: #E6F5EF;
+  --c-attention: #A45106;
+  --c-attention-dot: #DA8836;
+  --c-attention-soft: #FDF1E3;
+  --c-danger: #C2273B;
+  --c-danger-dot: #E25C6E;
+  --c-danger-soft: #FCE9EC;
+  --c-info: #1F5FC4;
+  --c-info-soft: #E8F0FC;
 
   /* Type scale — Latin */
   --fs-2xs: 11px;
@@ -70,18 +77,19 @@
 
   --font-ui: var(--font-latin), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
 
-  --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.05);
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.05);
-  --shadow-raised: 0 1px 2px rgb(16 24 40 / 0.04), 0 6px 16px -4px rgb(16 24 40 / 0.08);
-  --shadow-pop: 0 2px 4px rgb(16 24 40 / 0.05), 0 16px 32px -8px rgb(16 24 40 / 0.18);
-  --shadow-panel: 0 0 0 1px var(--c-line), 0 16px 40px -12px rgb(16 24 40 / 0.2);
-  --shadow-accent: 0 1px 2px rgb(67 56 202 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  /* Shadows tinted with Congenie Navy */
+  --shadow-xs: 0 1px 2px rgb(4 7 66 / 0.05);
+  --shadow-card: 0 1px 2px rgb(4 7 66 / 0.04), 0 1px 3px rgb(4 7 66 / 0.05);
+  --shadow-raised: 0 1px 2px rgb(4 7 66 / 0.04), 0 6px 16px -4px rgb(4 7 66 / 0.08);
+  --shadow-pop: 0 2px 4px rgb(4 7 66 / 0.05), 0 16px 32px -8px rgb(4 7 66 / 0.18);
+  --shadow-panel: 0 0 0 1px var(--c-line), 0 16px 40px -12px rgb(4 7 66 / 0.2);
+  --shadow-accent: 0 1px 2px rgb(94 31 196 / 0.25), inset 0 1px 0 rgb(255 255 255 / 0.12);
 
   /* Chart series (see design/chart.ts) */
-  --chart-open: #6366f1;
-  --chart-approved: #10b981;
-  --chart-rejected: #e11d48;
-  --chart-unclaimed: #c7d2fe;
+  --chart-open: #843DF5;
+  --chart-approved: #0F7B5A;
+  --chart-rejected: #C2273B;
+  --chart-unclaimed: #548DE5;
 }
 
 /*
@@ -91,55 +99,62 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --c-canvas: #0b0d18;
-  --c-surface: #141726;
-  --c-subtle: #181b2d;
-  --c-hover: #1e2236;
-  --c-active: #262a42;
-  --c-overlay: rgb(2 4 12 / 0.6);
+  /* Surfaces — deep navy (guideline dark mode) */
+  --c-canvas: #0B0D2E;
+  --c-surface: #141743;
+  --c-subtle: #1D2155;
+  --c-hover: #232860;
+  --c-active: #2A2163;
+  --c-overlay: rgb(2 4 42 / 0.66);
 
-  --c-line: #252a40;
-  --c-line-strong: #343a55;
+  --c-line: #2C3168;
+  --c-line-strong: #3B4180;
+  --c-control: #7479B5;
 
-  --c-ink: #eceef7;
-  --c-ink-2: #b2b7cc;
-  --c-ink-3: #7e849d;
-  --c-ink-inverse: #ffffff;
+  --c-ink: #F1F2FA;
+  --c-ink-2: #A9ADC8;
+  --c-ink-3: #8A8FB0;
+  --c-ink-inverse: #040742;
 
-  --c-accent: #6366f1;
-  --c-accent-hover: #7577f5;
-  --c-accent-soft: #1f2150;
-  --c-accent-text: #a5b4fc;
+  /* Lighter violet accents; text on violet is navy (text-on-brand) */
+  --c-accent: #A47BF9;
+  --c-accent-hover: #C3A3FB;
+  --c-accent-soft: #2A2163;
+  --c-accent-text: #C3A3FB;
+  --c-on-accent: #040742;
+  --c-focus: #A47BF9;
 
-  --c-nav: #11131f;
-  --c-nav-raised: #181b2d;
-  --c-nav-line: #232739;
-  --c-nav-text: #b2b7cc;
-  --c-nav-muted: #7e849d;
-  --c-nav-strong: #eceef7;
-  --c-nav-hover: #1c2033;
-  --c-nav-active: #22254d;
+  --c-nav: #141743;
+  --c-nav-raised: #181B4C;
+  --c-nav-line: #2C3168;
+  --c-nav-text: #A9ADC8;
+  --c-nav-muted: #8A8FB0;
+  --c-nav-strong: #F1F2FA;
+  --c-nav-hover: #1D2155;
+  --c-nav-active: #2A2163;
 
-  --c-positive: #34d399;
-  --c-positive-soft: #0c2a22;
-  --c-attention: #fbbf24;
-  --c-attention-dot: #f59e0b;
-  --c-attention-soft: #2a1f0a;
-  --c-danger: #f87171;
-  --c-danger-dot: #ef4444;
-  --c-danger-soft: #2e1417;
+  --c-positive: #3CC99A;
+  --c-positive-soft: #0F2E2A;
+  --c-attention: #F5A54A;
+  --c-attention-dot: #F5A54A;
+  --c-attention-soft: #33240F;
+  --c-danger: #F27387;
+  --c-danger-dot: #F27387;
+  --c-danger-soft: #3A1626;
+  --c-info: #6EA4F5;
+  --c-info-soft: #142650;
 
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.25);
   --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 16px -4px rgb(0 0 0 / 0.45);
   --shadow-pop: 0 0 0 1px var(--c-line-strong), 0 16px 32px -8px rgb(0 0 0 / 0.6);
   --shadow-panel: 0 0 0 1px var(--c-line), 0 16px 40px -12px rgb(0 0 0 / 0.6);
-  --shadow-accent: 0 1px 2px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  --shadow-accent: 0 1px 2px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.18);
 
-  --chart-open: #7c80f5;
-  --chart-approved: #10a877;
-  --chart-rejected: #e11d48;
-  --chart-unclaimed: #4a43d9;
+  --chart-open: #843DF5;
+  --chart-approved: #1F946F;
+  --chart-rejected: #E25C6E;
+  --chart-unclaimed: #548DE5;
 }
 :root[data-theme="light"] {
   color-scheme: light;
@@ -176,6 +191,11 @@
   --color-accent-hover: var(--c-accent-hover);
   --color-accent-soft: var(--c-accent-soft);
   --color-accent-text: var(--c-accent-text);
+  --color-on-accent: var(--c-on-accent);
+  --color-focus: var(--c-focus);
+  --color-control: var(--c-control);
+  --color-info: var(--c-info);
+  --color-info-soft: var(--c-info-soft);
   --color-nav: var(--c-nav);
   --color-nav-raised: var(--c-nav-raised);
   --color-nav-line: var(--c-nav-line);
@@ -241,10 +261,11 @@
     line-height: var(--lh-normal);
   }
   ::selection {
-    background: var(--c-accent-soft);
+    background: var(--color-violet-200);
+    color: var(--c-ink);
   }
   :focus-visible {
-    outline: 2px solid var(--c-accent);
+    outline: 2px solid var(--c-focus);
     outline-offset: 1px;
     border-radius: var(--radius-sm);
   }

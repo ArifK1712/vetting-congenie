@@ -1,5 +1,5 @@
 import { fieldKey, resolveAccess } from "./fieldAccess";
-import { can, teamsOfUser } from "./permissions";
+import { can, teamsOfUser, type PermissionData, type TeamData } from "./permissions";
 import { normalizeName } from "./screening";
 import { OPEN_STATUSES, STATUS_ORDER, visibleStatus } from "./status";
 import { stageOf } from "./workflow";
@@ -143,7 +143,7 @@ export function buildQueueRows(db: Database, viewerId: ID, eventScope: ID | "all
 }
 
 /** A reviewer can claim an unclaimed, waiting request of a team they belong to. */
-export function canClaim(db: Database, viewerId: ID, r: Pick<VettingRequest, "status" | "claimedBy" | "currentTeamId">): boolean {
+export function canClaim(db: PermissionData & TeamData, viewerId: ID, r: Pick<VettingRequest, "status" | "claimedBy" | "currentTeamId">): boolean {
   if (!can(db, viewerId, "queue.access")) return false;
   if (r.status !== "pending_review" && r.status !== "escalated") return false;
   if (r.claimedBy) return false;

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { DirIcon } from "@/components/ui/DirIcon";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/Menu";
 import { BadgeStatusLabel } from "@/components/ui/Status";
-import { canReassign } from "@/domain/actions";
 import { FINAL_STATUSES } from "@/domain/status";
 import { useFormat } from "@/i18n/format";
 import { useRouter } from "@/i18n/navigation";
@@ -18,7 +17,7 @@ import { requestService } from "@/services/requests";
 import { useQuickAction, useRequestAction } from "@/features/requests/useRequestAction";
 import { ApproveDialog, EscalateDialog, ReassignDialog, RejectDialog, ReopenDialog, type DialogKind } from "./ActionDialogs";
 import { AskInfoDialog } from "./AskInfoDialog";
-import type { RequestView } from "./useRequestView";
+import type { RequestView } from "@/queries/requestView";
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -43,7 +42,7 @@ export function DecisionPanel({
   const t = useTranslations("requestDetail.actions");
   const t2 = useTranslations("requestDetail.reopen");
   const tt = useTranslations("actions.toasts");
-  const { request, viewer, stage, db } = view;
+  const { request, viewer, stage } = view;
   const [dialog, setDialog] = useState<DialogKind>(null);
   const quick = useQuickAction();
   const router = useRouter();
@@ -53,7 +52,7 @@ export function DecisionPanel({
   const byOther = !!request.claimedBy && request.claimedBy !== viewer.id && !FINAL_STATUSES.includes(request.status);
   const allowed = stage?.allowedActions ?? [];
   const canRetryFinal = request.awaitingCapacity && (request.claimedBy === viewer.id || viewer.can("queue.reviewAll"));
-  const reassignable = canReassign(db, viewer.id, request);
+  const reassignable = view.canReassign;
   const disabled = stale || quick.busyId !== null;
 
   let message: string | null = null;
@@ -256,7 +255,7 @@ export function CommentsPanel({ view }: { view: RequestView }) {
       ) : (
         <ul className="mt-3 space-y-3">
           {view.comments.map((c) => {
-            const author = view.db.users[c.authorId];
+            const author = view.lookups.users[c.authorId];
             return (
               <li key={c.id} className="flex gap-2.5">
                 <Avatar name={author.name} size="sm" />

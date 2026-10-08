@@ -192,12 +192,12 @@ function Preview({ m, isStaff }: { m: EmailOutboxItem; isStaff: boolean }) {
         {tpl === "approved" && <p className="mt-2 text-sm text-ink-2">{m.params.badge === "yes" ? t("templates.approved.badgeYes") : t("templates.approved.badgeLater")}</p>}
         {tpl && link && (
           external ? (
-            <a href={`/${fmt.locale}${link}`} target="_blank" rel="noreferrer" className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:bg-accent-hover">
+            <a href={`/${fmt.locale}${link}`} target="_blank" rel="noreferrer" className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent hover:bg-accent-hover">
               {t(`templates.${tpl}.button`)}
               <ExternalLink className="size-4" />
             </a>
           ) : (
-            <Link href={link} className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white hover:bg-accent-hover">
+            <Link href={link} className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent hover:bg-accent-hover">
               {t(`templates.${tpl}.button`)}
             </Link>
           )

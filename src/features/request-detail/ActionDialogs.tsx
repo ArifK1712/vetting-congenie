@@ -2,16 +2,15 @@
 
 import { ArrowUpRight, BadgeCheck, CircleX, Layers, RotateCcw, UserRoundCog } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { ActionDialog, DialogIcon } from "@/components/ui/Dialog";
 import { ChoiceList, Field, TextArea } from "@/components/ui/Field";
-import { approvedEarlierStage, openClaims, previewApprove } from "@/domain/actions";
 import { nodeById, type StageNode } from "@/domain/workflow";
 import { useFormat } from "@/i18n/format";
 import { requestService } from "@/services/requests";
 import { useRequestAction } from "@/features/requests/useRequestAction";
-import type { RequestView } from "./useRequestView";
+import type { RequestView } from "@/queries/requestView";
 
 export type DialogKind = "approve" | "reject" | "escalate" | "reassign" | "reopen" | "ask" | null;
 
@@ -35,7 +34,7 @@ export function ApproveDialog({ view, revision, onClose, onDone }: Props) {
   const fmt = useFormat();
   const [comment, setComment] = useState("");
   const { busy, error, run } = useRequestAction();
-  const preview = useMemo(() => previewApprove(view.db, view.request), [view.db, view.request]);
+  const preview = view.approvePreview;
   const stageName = fmt.text(view.stage?.name);
 
   const confirm = () =>
@@ -70,7 +69,7 @@ export function ApproveDialog({ view, revision, onClose, onDone }: Props) {
           </span>
           <div className="min-w-0 text-sm">
             <p className="font-semibold text-ink">{t("nextStage", { stage: fmt.text(preview.node.stage.name) })}</p>
-            {preview.teamId && <p className="text-ink-2">{t("nextTeam", { team: fmt.text(view.db.teams[preview.teamId]?.name) })}</p>}
+            {preview.teamId && <p className="text-ink-2">{t("nextTeam", { team: fmt.text(view.lookups.teams[preview.teamId]?.name) })}</p>}
           </div>
         </div>
       )}
@@ -134,7 +133,7 @@ export function RejectDialog({ view, revision, onClose, onDone }: Props) {
   const { busy, error, run } = useRequestAction();
   // "Blacklisted" is set only by a confirmed screening match, never by hand.
   // Active reasons in the order set in Settings; Blacklisted is only set by Match Review.
-  const reasons = Object.values(view.db.rejectReasons).filter((r) => r.id !== "rr_blacklisted" && r.active !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const reasons = Object.values(view.lookups.rejectReasons).filter((r) => r.id !== "rr_blacklisted" && r.active !== false).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const required = view.stage?.rejectReasonRequired ?? true;
 
   return (
@@ -202,7 +201,7 @@ export function EscalateDialog({ view, revision, onClose, onDone }: Props) {
           choices={targets.map((n) => ({
             value: n.id,
             label: fmt.text(n.stage.name),
-            hint: n.stage.teams.map((id) => fmt.text(view.db.teams[id]?.name)).join(" · "),
+            hint: n.stage.teams.map((id) => fmt.text(view.lookups.teams[id]?.name)).join(" · "),
             aside: n.stage.mandatory ? <span className="shrink-0 text-2xs font-semibold text-ink-3">{t("mandatory")}</span> : undefined,
           }))}
         />
@@ -217,18 +216,19 @@ export function EscalateDialog({ view, revision, onClose, onDone }: Props) {
 export function ReassignDialog({ view, revision, onClose, onDone }: Props) {
   const t = useTranslations("actions.dialogs.reassign");
   const tt = useTranslations("actions.toasts");
-  const { db, request } = view;
-  const team = request.currentTeamId ? db.teams[request.currentTeamId] : null;
+  const { request } = view;
+  const { users, teams } = view.lookups;
+  const team = request.currentTeamId ? teams[request.currentTeamId] : null;
   const [userId, setUserId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const { busy, error, run } = useRequestAction();
 
   const choices = (team?.members ?? [])
-    .filter((m) => db.users[m.userId]?.active)
+    .filter((m) => users[m.userId]?.active)
     .map((m) => {
-      const user = db.users[m.userId];
+      const user = users[m.userId];
       const current = request.claimedBy === m.userId;
-      const blocked = approvedEarlierStage(db, m.userId, request);
+      const blocked = view.reassignBlocked.has(m.userId);
       return {
         value: m.userId,
         disabled: current || blocked,
@@ -240,7 +240,7 @@ export function ReassignDialog({ view, revision, onClose, onDone }: Props) {
           </span>
         ),
         hint: current ? t("current") : blocked ? t("blocked") : undefined,
-        aside: <span className="tabular shrink-0 text-xs text-ink-3">{t("openCount", { n: openClaims(db, m.userId, team!.id) })}</span>,
+        aside: <span className="tabular shrink-0 text-xs text-ink-3">{t("openCount", { n: view.openClaimsByUser[m.userId] ?? 0 })}</span>,
       };
     });
 
@@ -257,7 +257,7 @@ export function ReassignDialog({ view, revision, onClose, onDone }: Props) {
       onConfirm={() =>
         run(
           () => requestService.reassign({ ...ref(view, revision), toUserId: userId!, reason }),
-          () => tt("reassigned", { id: request.id, name: db.users[userId!].name }),
+          () => tt("reassigned", { id: request.id, name: users[userId!].name }),
           onDone,
         )
       }

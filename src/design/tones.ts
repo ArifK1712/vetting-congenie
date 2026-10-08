@@ -50,7 +50,7 @@ export const BADGE_TYPE_TONE: Record<string, Tone> = {
   bt_media: "sky",
   bt_visitor: "teal",
   bt_exhibitor: "indigo",
-  bt_contractor: "orange",
+  bt_contractor: "slate", // orange and gold (VIP) are both the brand Warning colour
 };
 
 export const AVATAR_TONES: Tone[] = ["indigo", "emerald", "amber", "rose", "sky", "violet", "teal", "orange"];

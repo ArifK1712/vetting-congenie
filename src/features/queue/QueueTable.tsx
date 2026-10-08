@@ -10,7 +10,8 @@ import { DirIcon } from "@/components/ui/DirIcon";
 import { BadgeTypeChip, StatusLabel } from "@/components/ui/Status";
 import { canClaim, type QueueRow } from "@/domain/queue";
 import { OPEN_STATUSES } from "@/domain/status";
-import type { Database, ID } from "@/domain/types";
+import type { ID } from "@/domain/types";
+import type { Lookups } from "@/queries/lookups";
 import { useFormat } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
@@ -39,7 +40,7 @@ const COLUMN_CLASS: Record<string, string> = {
 };
 
 export function QueueTable({
-  db,
+  lookups: db,
   rows,
   viewerId,
   now,
@@ -49,7 +50,7 @@ export function QueueTable({
   onClaim,
   claimingId,
 }: {
-  db: Database;
+  lookups: Lookups;
   rows: QueueRow[];
   viewerId: ID;
   now: number;
@@ -157,7 +158,7 @@ export function QueueTable({
           id: "actions",
           header: () => <span className="sr-only">{t("columns.actions")}</span>,
           cell: ({ row: { original: r } }) =>
-            canClaim(db, viewerId, db.requests[r.id]) ? (
+            canClaim(db, viewerId, { status: r.status, claimedBy: r.claimedBy, currentTeamId: r.teamId }) ? (
               <Button
                 size="sm"
                 disabled={claimingId !== null}

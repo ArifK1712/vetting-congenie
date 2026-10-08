@@ -63,7 +63,7 @@ export function StatusPage({ id }: { id: ID }) {
               <span
                 className={cn(
                   "relative z-[1] inline-flex size-8 items-center justify-center rounded-full ring-4 ring-surface",
-                  s.done ? (s.tone === "positive" ? "bg-emerald-500 text-white" : "bg-accent text-white") : s.current ? (s.tone === "attention" ? "bg-amber-400 text-white" : "bg-indigo-100 text-accent-text") : "bg-hover text-ink-3",
+                  s.done ? (s.tone === "positive" ? "bg-emerald-500 text-white" : "bg-accent text-on-accent") : s.current ? (s.tone === "attention" ? "bg-amber-400 text-white" : "bg-indigo-100 text-accent-text") : "bg-hover text-ink-3",
                 )}
               >
                 {s.done ? <Check className="size-4" strokeWidth={3} /> : s.current ? (s.tone === "attention" ? <FileQuestion className="size-4" /> : <Clock className="size-4" />) : <span className="size-2 rounded-full bg-current" />}
@@ -95,7 +95,7 @@ export function StatusPage({ id }: { id: ID }) {
             {v.info.state === "open" ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-ink-2">{t("provideBy", { date: fmt.full(v.info.tokenExpiresAt) })}</p>
-                <Link href={`/portal/info/${v.info.token}`} className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-white shadow-accent hover:bg-accent-hover">
+                <Link href={`/portal/info/${v.info.token}`} className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent shadow-accent hover:bg-accent-hover">
                   {t("provide")}
                 </Link>
               </div>
@@ -148,7 +148,7 @@ function BadgeDownload({ attendeeId }: { attendeeId: ID }) {
         type="button"
         onClick={() => void download()}
         disabled={busy}
-        className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white shadow-accent hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-on-accent shadow-accent hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-70"
       >
         {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
         {busy ? t("badgeDownloading") : t("badgeDownload")}

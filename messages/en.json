@@ -1,7 +1,14 @@
 {
   "app": {
     "name": "Vetting",
-    "workspace": "Accreditation workspace"
+    "workspace": "Accreditation workspace",
+    "storage": {
+      "title": "Changes can't be saved in this browser",
+      "body": "The browser's storage is full or blocked, so the demo keeps working but your changes will be lost when you reload. Reset the demo data to free space.",
+      "reset": "Reset demo data",
+      "dismiss": "Dismiss",
+      "done": "Demo data reset. Changes are saved again."
+    }
   },
   "navigation": {
     "groups": {

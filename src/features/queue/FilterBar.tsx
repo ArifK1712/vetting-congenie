@@ -6,7 +6,8 @@ import { useMemo } from "react";
 import { MultiFilter, SingleFilter, type FilterOption } from "@/components/ui/FilterMenu";
 import { teamsOfUser } from "@/domain/permissions";
 import { EMPTY_FILTERS, type QueueFilters, type QueueRow } from "@/domain/queue";
-import type { Database, ID } from "@/domain/types";
+import type { ID } from "@/domain/types";
+import type { Lookups } from "@/queries/lookups";
 import { useFormat } from "@/i18n/format";
 
 export function hasActiveFilters(f: QueueFilters) {
@@ -24,14 +25,14 @@ export function hasActiveFilters(f: QueueFilters) {
 }
 
 export function FilterBar({
-  db,
+  lookups: db,
   rows,
   viewerId,
   reviewAll,
   filters,
   onChange,
 }: {
-  db: Database;
+  lookups: Lookups;
   rows: QueueRow[];
   viewerId: ID;
   reviewAll: boolean;

@@ -94,12 +94,12 @@ const STEP_MARK: Record<ProgressStep["state"], string> = {
 /** Vertical timeline of stages. `compact` hides per-visit detail. */
 export function StageProgress({
   steps,
-  db,
+  users,
   now,
   compact,
 }: {
   steps: ProgressStep[];
-  db: Database;
+  users: Database["users"];
   now: number;
   compact?: boolean;
 }) {
@@ -112,7 +112,7 @@ export function StageProgress({
         const last = step.visits[step.visits.length - 1];
         const isLast = i === steps.length - 1;
         const name = step.kind === "final" ? t("finalApproval") : fmt.text(step.name);
-        const reviewer = last?.assignedUserId ? db.users[last.assignedUserId] : undefined;
+        const reviewer = last?.assignedUserId ? users[last.assignedUserId] : undefined;
         const returned = step.visits.filter((v) => v.outcome === "moreInfo").length;
 
         let caption: string | null = null;

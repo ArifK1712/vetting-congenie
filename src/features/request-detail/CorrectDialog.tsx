@@ -9,7 +9,7 @@ import { MultiSelect, Select } from "@/components/ui/Select";
 import { useFormat } from "@/i18n/format";
 import { requestService } from "@/services/requests";
 import { useRequestAction } from "@/features/requests/useRequestAction";
-import type { RequestView } from "./useRequestView";
+import type { RequestView } from "@/queries/requestView";
 
 /** Profile fields used for list screening: correcting one re-runs the check (15.2). */
 const SCREENED = new Set(["email", "mobile", "nationalId", "passportNo", "nationality", "dob", "company"]);
@@ -41,10 +41,10 @@ export function CorrectDialog({ view, revision, field, onClose, onDone }: { view
 
   const countries = useMemo(
     () =>
-      [...new Set(Object.values(view.db.attendees).map((a) => a.profile.nationality))]
+      view.nationalities
         .map((c) => ({ value: c, label: fmt.country(c) }))
         .sort((a, b) => a.label.localeCompare(b.label, fmt.locale)),
-    [view.db, fmt],
+    [view.nationalities, fmt],
   );
   const options = question?.options?.map((o) => ({ value: o.value, label: fmt.text(o.label) }));
 

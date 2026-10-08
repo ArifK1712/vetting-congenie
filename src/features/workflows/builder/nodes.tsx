@@ -18,14 +18,14 @@ export interface BlockData extends Record<string, unknown> {
 
 export type BlockNode = Node<BlockData>;
 
-/** Connection colours: one per action, shared by handles, edges and the legend. */
+/** Connection colours: one per action, shared by handles, edges and the legend (brand tokens, so they follow the theme). */
 export const HANDLE_COLOR: Record<string, string> = {
-  next: "#6366f1",
-  approve: "#10b981",
-  reject: "#e11d48",
-  escalate: "#f59e0b",
-  otherwise: "#94a3b8",
-  branch: "#6366f1",
+  next: "var(--c-accent)",
+  approve: "var(--c-positive)",
+  reject: "var(--c-danger)",
+  escalate: "var(--c-attention)",
+  otherwise: "var(--c-ink-3)",
+  branch: "var(--c-accent)",
 };
 export const colorFor = (handle: string) => HANDLE_COLOR[handle] ?? HANDLE_COLOR.branch;
 
@@ -33,13 +33,13 @@ const handleStyle = (color: string, left?: string): CSSProperties => ({
   width: 11,
   height: 11,
   background: color,
-  border: "2px solid #fff",
-  boxShadow: `0 0 0 1px ${color}55`,
+  border: "2px solid var(--c-surface)",
+  boxShadow: `0 0 0 1px color-mix(in srgb, ${color} 33%, transparent)`,
   ...(left ? { left } : {}),
 });
 
 function InHandle() {
-  return <Handle type="target" position={Position.Top} id="in" style={handleStyle("#94a3b8")} />;
+  return <Handle type="target" position={Position.Top} id="in" style={handleStyle("var(--c-ink-3)")} />;
 }
 
 function IssueBadge({ issues }: { issues: WorkflowIssue[] }) {

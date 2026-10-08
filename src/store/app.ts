@@ -5,6 +5,21 @@ import { createJSONStorage, persist, type StateStorage } from "zustand/middlewar
 import type { Database, ID } from "@/domain/types";
 import { SCHEMA_VERSION, createSeed } from "@/mocks/seed";
 
+/**
+ * Whether the last save to localStorage worked. When the browser's storage is
+ * full or blocked, the app keeps running in memory, but changes would be lost
+ * on reload, so the shell shows a warning (StorageWarning) instead of failing
+ * silently.
+ */
+export const useStorageHealth = create<{ failed: boolean; setFailed: (failed: boolean) => void }>()((set) => ({
+  failed: false,
+  setFailed: (failed) => set({ failed }),
+}));
+
+const reportSave = (ok: boolean) => {
+  if (useStorageHealth.getState().failed !== !ok) useStorageHealth.getState().setFailed(!ok);
+};
+
 /** localStorage can be blocked or full; the prototype must still run in memory. */
 const safeStorage: StateStorage = {
   getItem: (name) => {
@@ -17,8 +32,10 @@ const safeStorage: StateStorage = {
   setItem: (name, value) => {
     try {
       localStorage.setItem(name, value);
+      reportSave(true);
     } catch {
-      /* quota or privacy mode: keep state in memory only */
+      // Quota or privacy mode: keep state in memory only, and say so.
+      reportSave(false);
     }
   },
   removeItem: (name) => {
@@ -47,7 +64,11 @@ export const useAppStore = create<DataState>()(
       db: null,
       hydrated: false,
       setDb: (db) => set({ db }),
-      resetDemo: () => set({ db: createSeed() }),
+      resetDemo: () => {
+        // Free the space first, so the fresh demo data fits again.
+        safeStorage.removeItem(STORE_KEY);
+        set({ db: createSeed() });
+      },
     }),
     {
       name: STORE_KEY,

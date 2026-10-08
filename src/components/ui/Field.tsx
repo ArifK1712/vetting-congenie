@@ -102,7 +102,7 @@ export function ChoiceList({
             <span
               className={cn(
                 "inline-flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors",
-                selected ? "border-accent bg-accent text-white" : "border-line-strong bg-surface",
+                selected ? "border-accent bg-accent text-on-accent" : "border-line-strong bg-surface",
               )}
             >
               {selected && <Check className="size-2.5" strokeWidth={4} />}

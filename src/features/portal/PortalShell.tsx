@@ -17,7 +17,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between gap-3 px-4 sm:px-5">
           <span className="flex items-center gap-2.5">
-            <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">
+            <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-on-accent">
               E
             </span>
             <span className="text-sm font-bold text-ink">{t("brand")}</span>
